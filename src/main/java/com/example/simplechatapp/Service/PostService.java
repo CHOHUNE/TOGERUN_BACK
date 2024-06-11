@@ -1,35 +1,34 @@
 package com.example.simplechatapp.Service;
 
-
-import com.example.simplechatapp.entity.ChatRoom;
+import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.Post;
-import com.example.simplechatapp.repository.ChatRoomRepository;
-import com.example.simplechatapp.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
 
-@Service
-@RequiredArgsConstructor
-public class PostService {
+@Transactional
+public interface PostService {
 
-    private final PostRepository postRepository;
+    PostDTO get(Long id);
 
-    public List<Post> findAll() {
-        return postRepository.findAll();
-
+    default PostDTO entityToDTO(Post post){
+        return PostDTO.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .localDate(post.getLocalDate())
+                .user(post.getUser())
+                .build();
     }
 
-    public Optional<Post> findById(Long id) {
-
-
-        return postRepository.findById(id);
+    default Post dtoToEntity(PostDTO postDTO){
+        return Post.builder()
+                .id(postDTO.getId())
+                .title(postDTO.getTitle())
+                .content(postDTO.getContent())
+                .localDate(postDTO.getLocalDate())
+                .user(postDTO.getUser())
+                .build();
     }
 
-
-    public Post save(Post post) {
-        return postRepository.save(post);
-    }
 }
