@@ -81,4 +81,12 @@ class SimpleChatAppApplicationTests {
     }
 
 
+    @Test
+    @DisplayName("querydsl 테스트")
+    public void test5() {
+        postRepository.search1();
+
+    }
+
+
 }
