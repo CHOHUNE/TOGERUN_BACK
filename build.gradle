@@ -1,3 +1,14 @@
+buildscript {
+
+    ext {
+
+        queryDslVersion = "5.0.0"
+
+    }
+
+}
+
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.0'
@@ -26,14 +37,40 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework:spring-messaging'
     implementation 'org.springframework:spring-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+
+    implementation 'org.modelmapper:modelmapper:3.1.1'
+    implementation "com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta"
+    implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
+
+
+//    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    annotationProcessor(
+
+            "jakarta.persistence:jakarta.persistence-api",
+            "jakarta.annotation:jakarta.annotation-api",
+            "com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+compileJava.dependsOn('clean')
