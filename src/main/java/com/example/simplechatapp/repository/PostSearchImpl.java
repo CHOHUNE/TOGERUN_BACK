@@ -1,13 +1,14 @@
 package com.example.simplechatapp.repository;
 
+import com.example.simplechatapp.dto.PageRequestDTO;
+import com.example.simplechatapp.dto.PageResponseDTO;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.QPost;
 import com.querydsl.jpa.JPQLQuery;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+
+import java.util.List;
 
 public class PostSearchImpl extends QuerydslRepositorySupport implements PostSearch{
 
@@ -15,24 +16,25 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
         super(Post.class);
     }
 
+
     @Override
-    public Page<Post> search1() {
+    public Page<Post> search1(PageRequestDTO pageRequestDTO) {
 
-        QPost qpost = QPost.post;
+        QPost qPost = QPost.post;
 
-        JPQLQuery<Post> query = from(qpost);
-        // select * from post
+        JPQLQuery<Post> query = from(qPost);
 
-        query.where(qpost.title.contains("1"));
+        query.where(qPost.title.contains("1"));
 
-        Pageable pageable = PageRequest.of(1, 10, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1, pageRequestDTO.getSize(), Sort.by("id").descending());
 
         this.getQuerydsl().applyPagination(pageable, query);
 
-        query.fetch();
-        query.fetchCount();
+        List<Post> list = query.fetch();
 
+        long total = query.fetchCount();
 
-        return null;
+        return new PageImpl<>(list, pageable, total);
+
     }
 }

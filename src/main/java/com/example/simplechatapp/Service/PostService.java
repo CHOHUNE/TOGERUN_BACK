@@ -1,5 +1,7 @@
 package com.example.simplechatapp.Service;
 
+import com.example.simplechatapp.dto.PageRequestDTO;
+import com.example.simplechatapp.dto.PageResponseDTO;
 import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.Post;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +17,9 @@ public interface PostService {
 
     void modify(PostDTO postDTO);
 
-    void remove(Long id);
+    PageResponseDTO<PostDTO> getList(PageRequestDTO pageRequestDTO);
 
+    void remove(Long id);
 
     default PostDTO entityToDTO(Post post){
         return PostDTO.builder()
