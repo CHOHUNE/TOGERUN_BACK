@@ -1,6 +1,7 @@
 package com.example.simplechatapp;
 
 import com.example.simplechatapp.Service.PostService;
+import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.Post;
 import lombok.extern.log4j.Log4j2;
@@ -54,6 +55,14 @@ public class PostServiceTest {
                     build();
 
             postService.modify(post);
+    }
+
+    @Test@DisplayName("paging test")
+    public void test4() {
+
+        PageRequestDTO pageRequestDTO = PageRequestDTO.builder().page(1).size(10).build();
+
+        log.info("PagingResult{}",postService.getList(pageRequestDTO));
     }
 
 
