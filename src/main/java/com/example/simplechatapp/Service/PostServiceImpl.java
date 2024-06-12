@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService{
+public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
 
@@ -20,22 +20,49 @@ public class PostServiceImpl implements PostService{
         return postRepository.findAll();
 
     }
+
     @Override
     public PostDTO get(Long id) {
 
-        Optional<Post> result =  postRepository.findById(id);
+        Optional<Post> result = postRepository.findById(id);
         Post post = result.orElseThrow();
 
         return entityToDTO(post);
+    }
+
+    @Override
+    public Long register(PostDTO postDTO) {
+
+        Post save = postRepository.save(dtoToEntity(postDTO));
+
+        return postDTO.getId();
+    }
+
+    @Override
+    public void modify(PostDTO postDTO) {
+
+        Optional<Post> result = postRepository.findById(postDTO.getId());
+
+        Post post = result.orElseThrow();
+
+        post.changeTitle(postDTO.getTitle());
+        post.changeContent(postDTO.getContent());
+
+
+        postRepository.save(post);
+    }
+
+    @Override
+    public void remove(Long id) {
+
+        postRepository.deleteById(id);
+
     }
 
 
     public Post save(Post post) {
         return postRepository.save(post);
     }
-
-
-
 
     @Override
     public PostDTO entityToDTO(Post post) {

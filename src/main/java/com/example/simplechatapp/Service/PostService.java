@@ -11,6 +11,13 @@ public interface PostService {
 
     PostDTO get(Long id);
 
+    Long register(PostDTO postDTO);
+
+    void modify(PostDTO postDTO);
+
+    void remove(Long id);
+
+
     default PostDTO entityToDTO(Post post){
         return PostDTO.builder()
                 .id(post.getId())
