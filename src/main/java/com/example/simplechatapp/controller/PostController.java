@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -43,5 +44,21 @@ public class PostController {
         log.info("list:{}", pageRequestDTO);
 
         return postService.getList(pageRequestDTO);
+    }
+
+    @PutMapping("/{id}")
+    public Map<String, String> modify (@PathVariable Long id, @RequestBody PostDTO postDTO) {
+        postDTO.setId(id);
+        postService.modify(postDTO);
+
+        return Map.of("result","success");
+    }
+
+    @DeleteMapping("/{id}")
+    public Map<String, String> remove(@PathVariable Long id) {
+        postService.remove(id);
+
+        return Map.of("result","success");
+
     }
 }

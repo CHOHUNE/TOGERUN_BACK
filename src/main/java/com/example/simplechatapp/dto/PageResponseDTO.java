@@ -48,11 +48,18 @@ public class PageResponseDTO <E>{
         this.pageNumList= IntStream.rangeClosed(start,end).boxed().collect(Collectors.toList());
         //시작 번호 부터 끝 번호 까지의 정수 스트림을 새성하고, 이를 리스트로 변환하여 페이지 번호 목록을 초기화
 
-        this.prevPage = prev?start-1:1; // 이전 페이지가 존재 하지 않으면 prev는 1 존재하면 start-1
-        this.nextPage = next?end+1:0; // 다음 페이지가 존재하지 않으면 next는 0 존재하면 end+1
+        if (prev) {
+            this.prevPage = prev?start-1:1; // 이전 페이지가 존재 하지 않으면 prev는 1 존재하면 start-1
+        }
+
+        if (next) {
+            this.nextPage = next?end+1:0; // 다음 페이지가 존재하지 않으면 next는 0 존재하면 end+1
+        }
+
+        this.totalPage = this.pageNumList.size();
+        this.current = pageRequestDTO.getPage();
+
     }
-
-
 
 
 }

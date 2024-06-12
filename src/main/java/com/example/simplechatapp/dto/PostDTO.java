@@ -2,6 +2,7 @@ package com.example.simplechatapp.dto;
 
 
 import com.example.simplechatapp.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class PostDTO {
         private String content;
         private User user;
 
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate localDate;
 
 }
