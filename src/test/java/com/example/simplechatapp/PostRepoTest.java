@@ -1,9 +1,7 @@
 package com.example.simplechatapp;
 
 import com.example.simplechatapp.entity.Post;
-import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +20,7 @@ import java.time.LocalDate;
 @SpringBootTest
 @Log4j2
 
-class SimpleChatAppApplicationTests {
+class PostRepoTest {
 
 
 
@@ -87,6 +85,8 @@ class SimpleChatAppApplicationTests {
         postRepository.search1();
 
     }
+
+
 
 
 }
