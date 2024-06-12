@@ -7,6 +7,7 @@ import com.example.simplechatapp.entity.Post;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Transactional
 public interface PostService {
@@ -41,4 +42,7 @@ public interface PostService {
                 .build();
     }
 
+    Post save(PostDTO postDTO);
+
+    List<Post> findAll();
 }

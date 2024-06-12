@@ -20,10 +20,7 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
 
-    public List<Post> findAll() {
-        return postRepository.findAll();
 
-    }
 
     @Override
     public PostDTO get(Long id) {
@@ -86,10 +83,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    public Post save(Post post) {
-        return postRepository.save(post);
-    }
-
     @Override
     public PostDTO entityToDTO(Post post) {
         return PostService.super.entityToDTO(post);
@@ -98,5 +91,15 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post dtoToEntity(PostDTO postDTO) {
         return PostService.super.dtoToEntity(postDTO);
+    }
+
+    @Override
+    public Post save(PostDTO postDTO) {
+        return postRepository.save(dtoToEntity(postDTO));
+    }
+
+    @Override
+    public List<Post> findAll() {
+        return postRepository.findAll();
     }
 }
