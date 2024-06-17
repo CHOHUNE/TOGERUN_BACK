@@ -13,10 +13,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootTest
@@ -100,13 +102,43 @@ class PostRepoTest {
 
     }
 
+    @Transactional
+    @DisplayName("product 읽기 테스트 ")
+    @Test
+    public void test6() {
 
-//    @Test
-//    @DisplayName("querydsl 테스트")
-//    public void test5() {
-//        postRepository.search1();
-//
-//    }
+        Long pno = 1L;
+
+        Optional<Post> result = postRepository.findById(pno);
+
+        Post post = result.orElseThrow();
+
+
+    }
+
+    @Transactional
+    @DisplayName("한방 읽기 쿼리 ")
+    @Test
+    public void test7() {
+
+        Long pno = 1L;
+        Optional<Post> result = postRepository.selectOne(pno);
+        Post post = result.orElseThrow();
+
+        log.info(post);
+        log.info(post.getImageList());
+    }
+
+    @Test
+    @Transactional
+    @Commit
+    public void test8() {
+
+        Long id = 1L;
+
+        postRepository.updateToDelete(1L,true);
+    }
+
 
 
 
