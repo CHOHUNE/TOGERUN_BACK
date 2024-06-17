@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="tbl_project")
-@ToString(exclude = "imageList")
+@ToString(exclude = {"imageList","user"})
 public class Post {
 
     @Id
