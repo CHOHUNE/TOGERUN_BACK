@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Data
@@ -23,5 +26,11 @@ public class PostDTO {
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate localDate;
+
+        private boolean delFlag;
+
+        private List<MultipartFile> file = new ArrayList<>();
+        private List<String> uploadFileName = new ArrayList<>();
+
 
 }

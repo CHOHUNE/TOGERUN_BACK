@@ -24,7 +24,6 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
 
         JPQLQuery<Post> query = from(qPost);
 
-        query.where(qPost.title.contains("1"));
 
         Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1, pageRequestDTO.getSize(), Sort.by("id").descending());
 

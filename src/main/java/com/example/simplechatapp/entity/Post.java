@@ -5,13 +5,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name="tbl_project")
+@ToString(exclude = "imageList")
 public class Post {
 
     @Id
@@ -28,6 +31,13 @@ public class Post {
 
     private LocalDate localDate;
 
+    private boolean delFlag;
+
+    @ElementCollection // 생명주기 관리 자체가 게시물 = 게시물 이미지 이므로 ManyToOne 과 Cascade 를 안쓴다.
+    @Builder.Default
+    private List<PostImage> imageList = new ArrayList<>();
+
+
     public void changeTitle(String title) {
         this.title = title;
     }
@@ -36,5 +46,25 @@ public class Post {
         this.content = content;
     }
 
+    public void changeDelFlag(boolean delFlag) {
+        this.delFlag = delFlag;
+    }
+
+    public void addImage(PostImage image) {
+
+        image.setOrd(imageList.size());
+        imageList.add(image);
+
+    }
+
+    public void addImageString(String fileName) {
+        PostImage postImage = PostImage.builder().fileName(fileName).build();
+
+        addImage(postImage);
+    }
+
+    public void clearList() {
+        imageList.clear();
+    }
 
 }
