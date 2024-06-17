@@ -20,8 +20,6 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
 
-
-
     @Override
     public PostDTO get(Long id) {
 
@@ -48,6 +46,17 @@ public class PostServiceImpl implements PostService {
 
         post.changeTitle(postDTO.getTitle());
         post.changeContent(postDTO.getContent());
+
+        List<String> uploadFileNames = postDTO.getUploadFileName();
+
+        post.clearList();
+
+        if (uploadFileNames != null && !uploadFileNames.isEmpty()) {
+
+            uploadFileNames.forEach(uploadFileName ->{
+                post.addImageString(uploadFileName);
+            });
+        }
 
 
         postRepository.save(post);
@@ -78,7 +87,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public void remove(Long id) {
 
-        postRepository.deleteById(id);
+//        postRepository.deleteById(id);
+        postRepository.updateToDelete(id,true);
+
 
     }
 

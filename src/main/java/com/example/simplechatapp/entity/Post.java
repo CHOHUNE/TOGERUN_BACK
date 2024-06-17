@@ -64,7 +64,7 @@ public class Post {
     }
 
     public void clearList() {
-        imageList.clear();
+        this.imageList.clear();
     }
 
 }
