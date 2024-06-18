@@ -35,13 +35,14 @@ public class PostController {
     }
 
     @PostMapping
-    public Map<String,Long> createPost( PostDTO postDTO) {
+    public Map<String,Long> createPost( @RequestBody  PostDTO postDTO) {
 
-         postService.save(postDTO);
 
-        log.info("postDTO{}", postDTO.getId());
+        log.info("postDTO{}", postDTO);
 
-        return Map.of("id", postDTO.getId());
+        Long id = postService.register(postDTO);
+
+        return Map.of("id", id);
     }
 
     @GetMapping("/list")

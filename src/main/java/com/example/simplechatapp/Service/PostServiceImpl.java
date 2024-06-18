@@ -32,9 +32,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public Long register(PostDTO postDTO) {
 
-        Post save = postRepository.save(dtoToEntity(postDTO));
+        Post result = postRepository.save(dtoToEntity(postDTO));
 
-        return postDTO.getId();
+        return result.getId();
     }
 
     @Override

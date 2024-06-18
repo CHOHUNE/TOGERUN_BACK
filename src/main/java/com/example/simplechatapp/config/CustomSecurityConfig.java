@@ -39,11 +39,6 @@ public class CustomSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER));
 
-
-
-
-
-
         return http.build();
     }
 
