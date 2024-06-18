@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Long register(PostDTO postDTO) {
 
+        postDTO.setLocalDate(LocalDate.now());
         Post result = postRepository.save(dtoToEntity(postDTO));
 
         return result.getId();
@@ -87,8 +89,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public void remove(Long id) {
 
-//        postRepository.deleteById(id);
-        postRepository.updateToDelete(id,true);
+        postRepository.deleteById(id);
+//        postRepository.updateToDelete(id,true);
+
 
 
     }
