@@ -6,6 +6,7 @@ import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PageResponseDTO;
 import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.Post;
+import com.example.simplechatapp.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class PostController {
 
     private final PostService postService;
+    private final CustomFileUtil customFileUtil;
 
     @GetMapping
     public List<Post> getAllPosts() {
@@ -60,6 +62,9 @@ public class PostController {
 
     @DeleteMapping("/{id}")
     public Map<String, String> remove(@PathVariable Long id) {
+
+        List<String> oldFileNames = postService.get(id).getUploadFileName();
+        customFileUtil.deleteFile(oldFileNames);
         postService.remove(id);
 
         return Map.of("result","success");
