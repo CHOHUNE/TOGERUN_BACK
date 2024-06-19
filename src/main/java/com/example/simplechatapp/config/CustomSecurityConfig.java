@@ -1,6 +1,8 @@
 package com.example.simplechatapp.config;
 
 
+import com.example.simplechatapp.security.handler.APILoginFailureHandler;
+import com.example.simplechatapp.security.handler.APILoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +36,15 @@ public class CustomSecurityConfig {
 //        http.cors(httpSecurityCorsConfigurer -> {
 //            httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource());
 //        });
+
+        http.formLogin(config -> {
+            config.loginPage("/login");
+
+            config.successHandler(new APILoginSuccessHandler());
+            config.failureHandler(new APILoginFailureHandler());
+        });
+
+
 
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.csrf(AbstractHttpConfigurer::disable);
