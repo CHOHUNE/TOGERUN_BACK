@@ -16,7 +16,7 @@ import java.util.List;
 public class User {
 
     @Id
-    private Long email;
+    private String email;
 
     private String nickname;
     private String password;
