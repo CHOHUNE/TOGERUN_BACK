@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public
-interface UserRepository extends JpaRepository<User,Long> {
+interface UserRepository extends JpaRepository<User,String> {
 
     @EntityGraph(attributePaths = "memberRoleList")
     @Query("SELECT u FROM User u WHERE u.email = :email")
