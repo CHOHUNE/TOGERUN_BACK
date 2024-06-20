@@ -26,6 +26,13 @@ public class User {
     @Builder.Default
     private List<MemberRole> memberRoleList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user1", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRoom> chatRoomAsUser1 = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user1", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRoom> chatRoomAsUser2 = new ArrayList<>();
+
+
     public void addRole(MemberRole memberRole) {
         memberRoleList.add(memberRole);
     }
