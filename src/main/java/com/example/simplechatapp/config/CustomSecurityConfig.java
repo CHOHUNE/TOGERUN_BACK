@@ -1,6 +1,7 @@
 package com.example.simplechatapp.config;
 
 
+import com.example.simplechatapp.security.filter.JWTCheckFilter;
 import com.example.simplechatapp.security.handler.APILoginFailureHandler;
 import com.example.simplechatapp.security.handler.APILoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class CustomSecurityConfig {
         });
 
 
+        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
 
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.csrf(AbstractHttpConfigurer::disable);
