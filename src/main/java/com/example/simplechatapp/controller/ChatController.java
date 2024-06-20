@@ -24,16 +24,17 @@ public class ChatController {
     private final MessageService messageService;
 
 
-    @GetMapping("/rooms")
-    public List<ChatRoom> getAllChatRooms() {
-        return chatRoomService.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public ChatRoom getChatRoomById(@PathVariable Long id) {
-
-        return chatRoomService.findById(id);
-    }
+//    @GetMapping("/rooms")
+//    public List<ChatRoom> getAllChatRooms() {
+//        return chatRoomService.findAll();
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ChatRoom getChatRoomById(@PathVariable Long id) {
+//
+//        return chatRoomService.findById(id);
+//    }
+//
 
     @GetMapping
     public List<Message> getMessageByChatRoomId() {

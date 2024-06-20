@@ -24,7 +24,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         log.info("..... Check URI ..... " + path);
 
-        return false;
+        return true;
 
     }
 
@@ -32,7 +32,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
 
-        log.info(".....JWT Check FIlter Start.....")
+        log.info(".....JWT Check FIlter Start.....");
 
         String authHeaderStr = request.getHeader("Authorization");
         String accessToken = authHeaderStr.substring(7);
