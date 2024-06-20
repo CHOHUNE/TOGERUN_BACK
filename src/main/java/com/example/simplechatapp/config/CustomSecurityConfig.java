@@ -38,7 +38,7 @@ public class CustomSecurityConfig {
 //        });
 
         http.formLogin(config -> {
-            config.loginPage("/login");
+            config.loginPage("/api/member/login");
 
             config.successHandler(new APILoginSuccessHandler());
             config.failureHandler(new APILoginFailureHandler());
