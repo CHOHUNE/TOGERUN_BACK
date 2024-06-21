@@ -4,6 +4,7 @@ package com.example.simplechatapp.config;
 import com.example.simplechatapp.security.filter.JWTCheckFilter;
 import com.example.simplechatapp.security.handler.APILoginFailureHandler;
 import com.example.simplechatapp.security.handler.APILoginSuccessHandler;
+import com.example.simplechatapp.security.handler.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +48,11 @@ public class CustomSecurityConfig {
 
 
         http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        http.exceptionHandling(httpSecurityExceptionHandlingConfigurer -> {
+            httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler());
+        });
+
 
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.csrf(AbstractHttpConfigurer::disable);
