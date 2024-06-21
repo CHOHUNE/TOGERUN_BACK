@@ -74,7 +74,7 @@ public class JWTUtil {
             throw new CustomJWTException("MalFormed");
 
         } catch (ExpiredJwtException expiredJwtException) {
-            throw new CustomJWTException("Expried");
+            throw new CustomJWTException("Expired");
 
         } catch (InvalidClaimException invalidClaimException) {
             throw new CustomJWTException("Invalid");
