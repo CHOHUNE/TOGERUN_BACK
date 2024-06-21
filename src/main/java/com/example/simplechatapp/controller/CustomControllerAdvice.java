@@ -1,6 +1,7 @@
 package com.example.simplechatapp.controller;
 
 
+import com.example.simplechatapp.util.CustomJWTException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,15 +23,14 @@ public class CustomControllerAdvice {
     @ExceptionHandler(NoSuchElementException.class)
     // 요청한 리소스가 없을 때 발생하는 에러
     public ResponseEntity<?> noExist(NoSuchElementException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message{}",e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message{}", e.getMessage()));
         // 500 에러를 -> 404 코드로 변환
     }
 
 
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> notExist(MethodArgumentNotValidException e) {
-    // 클라이언트가 보낸 요청의 매개변수가 유효하지 않을 때 발생
+        // 클라이언트가 보낸 요청의 매개변수가 유효하지 않을 때 발생
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(Map.of("messages{}", e.getMessage()));
 
     }
@@ -38,7 +38,10 @@ public class CustomControllerAdvice {
     // 해당 컨트롤러의 의도 : 웹 애플리케이션 화면에서 사용자가 좀 더 쉬운 오류 메세지로 편의성을 돕기 위해
 
 
-
-
-
+    @ExceptionHandler(CustomJWTException.class)
+    protected ResponseEntity<?> handleJWTException(CustomJWTException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+    }
+    // HttpStatus.UNAUTHORIZED : 클라이언트가 인증되지 않은 상태에서 보호된 리소스에 액세스하려고 할 때 발생하는 오류
+    // 401 Unauthorized
 }
