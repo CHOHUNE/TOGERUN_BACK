@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ChatRoomDTO {
 
     private Long id;
-    private UserDTO user1;
-    private UserDTO user2;
 
+    private String user1Email;
+    private String user2Email;
 }
