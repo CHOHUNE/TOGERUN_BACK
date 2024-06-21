@@ -9,6 +9,7 @@ import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class PostController {
         return postService.get(id);
     }
 
+//    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     @PostMapping
     public Map<String,Long> createPost( @RequestBody  PostDTO postDTO) {
 
