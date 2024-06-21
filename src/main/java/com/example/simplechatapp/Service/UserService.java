@@ -1,27 +1,32 @@
 package com.example.simplechatapp.Service;
 
 
+import com.example.simplechatapp.dto.UserModifyDTO;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.User;
-import com.example.simplechatapp.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+@Transactional
+public interface UserService {
 
-    private final UserRepository userRepository;
+    UserDTO getKakaoMember(String accessToken);
 
-    public List<User> findAll() {
+    void modifyMember(UserModifyDTO userModifyDTO);
 
-        return userRepository.findAll();
+
+    default UserDTO entityToDTO(User user){
+
+            UserDTO dto = new UserDTO(
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getNickname(),
+                    user.isSocial(),
+                    user.getUserRoleList().stream().map(Enum::name).toList());
+
+            return dto;
     }
 
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
 
 }
