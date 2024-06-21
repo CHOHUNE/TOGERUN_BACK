@@ -24,7 +24,7 @@ public class User {
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Builder.Default
-    private List<MemberRole> memberRoleList = new ArrayList<>();
+    private List<UserRole> userRoleList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user1", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -35,12 +35,12 @@ public class User {
     private List<ChatRoom> chatRoomAsUser2 = new ArrayList<>();
 
 
-    public void addRole(MemberRole memberRole) {
-        memberRoleList.add(memberRole);
+    public void addRole(UserRole userRole) {
+        userRoleList.add(userRole);
     }
 
     public void clearRole() {
-        memberRoleList.clear();
+        userRoleList.clear();
     }
 
     public void changeNickname(String nickname) {

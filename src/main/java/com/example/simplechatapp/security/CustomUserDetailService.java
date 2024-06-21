@@ -10,8 +10,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.stream.Collectors;
-
 
 @Service
 @Log4j2
@@ -41,7 +39,7 @@ public class CustomUserDetailService implements UserDetailsService {
                 user.getPassword(),
                 user.getNickname(),
                 user.isSocial(),
-                user.getMemberRoleList().stream().map(Enum::name).toList());
+                user.getUserRoleList().stream().map(Enum::name).toList());
 
                // user.getMemberRoleList().stream().map(memberRole -> memberRole.name()).collect(Collectors.toUnmodifiableList()));
                 //Enum::name 은 열거형 타입을 name에 할당 해준다. java 16 부터는 toList() 가 .collect(Collectors.toUnmodifiableList()) 과 동일하게 불변 리스트로 만들어 준다.

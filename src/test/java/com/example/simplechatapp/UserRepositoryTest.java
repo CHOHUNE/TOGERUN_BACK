@@ -1,6 +1,6 @@
 package com.example.simplechatapp;
 
-import com.example.simplechatapp.entity.MemberRole;
+import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
@@ -37,9 +37,9 @@ public class UserRepositoryTest {
                 .build();
 
 
-        if(i>7) user.addRole(MemberRole.ADMIN);
-        if(i>5) user.addRole(MemberRole.MANAGER);
-        if(i>0) user.addRole(MemberRole.USER);
+        if(i>7) user.addRole(UserRole.ADMIN);
+        if(i>5) user.addRole(UserRole.MANAGER);
+        if(i>0) user.addRole(UserRole.USER);
 
         userRepository.save(user);
 
@@ -58,7 +58,7 @@ public class UserRepositoryTest {
         User user = userRepository.getWithRole(email);
 
         log.info(user);
-        log.info(user.getMemberRoleList());
+        log.info(user.getUserRoleList());
 
         //User(email=user1, nickname=사용자1, social=false, memberRoleList=[USER]
         // EntityGraph 로 한방 쿼리로  N+1 없이 memberRoleList 까지 가져옴
