@@ -1,12 +1,13 @@
 package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.Service.UserService;
-import com.example.simplechatapp.dto.MemberModifyDTO;
 import com.example.simplechatapp.dto.UserDTO;
+import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,10 +38,10 @@ public class SocialController {
         return claims;
     }
 
-    @GetMapping("/api/member/modify")
-    public Map<String, String> modify (@RequestBody MemberModifyDTO memberModifyDTO) {
-        log.info("memberModifyDTO", memberModifyDTO);
-        userService.modifyMember(memberModifyDTO);
+    @PutMapping("/api/member/modify")
+    public Map<String, String> modify (@RequestBody UserModifyDTO userModifyDTO) {
+        log.info("userModifyDTO{}", userModifyDTO);
+        userService.modifyMember(userModifyDTO);
 
         return Map.of("result", "modified");
 

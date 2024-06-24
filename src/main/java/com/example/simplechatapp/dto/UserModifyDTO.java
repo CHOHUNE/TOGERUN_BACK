@@ -1,6 +1,5 @@
 package com.example.simplechatapp.dto;
 
-
 import lombok.Data;
 
 @Data
