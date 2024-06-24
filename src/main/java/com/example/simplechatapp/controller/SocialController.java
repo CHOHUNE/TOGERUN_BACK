@@ -1,11 +1,13 @@
 package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.Service.UserService;
+import com.example.simplechatapp.dto.MemberModifyDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -33,6 +35,15 @@ public class SocialController {
         claims.put("jwtRefreshToken", jwtRefreshToken);
 
         return claims;
+    }
+
+    @GetMapping("/api/member/modify")
+    public Map<String, String> modify (@RequestBody MemberModifyDTO memberModifyDTO) {
+        log.info("memberModifyDTO", memberModifyDTO);
+        userService.modifyMember(memberModifyDTO);
+
+        return Map.of("result", "modified");
+
     }
 }
 
