@@ -18,7 +18,9 @@ public class CustomUserDetailService implements UserDetailsService {
 
     // 일반적으로 UseDetail 은  DB에서 꺼내온 User 의 정보를 담는다
     // Authentication 객체와 차이점이 뭐냐면 Authentication 은 principal, credential, authorities 을 담는 객체이며
-    // principal : 인증된 사용자의 정보를 담는 객체 , credential : 인증된 사용자의 비밀번호를 담는 객체, authorities : 인증된 사용자의 권한을 담는 객체
+    // principal : 인증된 사용자의 정보를 담는 객체 ,
+    // credential : 인증된 사용자의 비밀번호를 담는 객체,
+    // authorities : 인증된 사용자의 권한을 담는 객체
 
     // Authentication 객체의 principal 이 UserNameDetailService 리턴값 UserDetail 이 담긴다.
 
