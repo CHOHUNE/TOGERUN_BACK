@@ -37,8 +37,10 @@ public class PostController {
 
 //    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     @PostMapping
-    public Map<String,Long> createPost( @RequestBody  PostDTO postDTO) {
+    public Map<String,Long> createPost( PostDTO postDTO) {
 
+        // MultiPart-Data-Form 양식으로 보낼 경우 : @RequestBody 사용하지 않음
+        // @RequestBody 사용시 JSON 형태로 보내야함
 
         log.info("postDTO{}", postDTO);
 
@@ -56,7 +58,7 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public Map<String, String> modify (@PathVariable Long id, @RequestBody PostDTO postDTO) {
+    public Map<String, String> modify (@PathVariable Long id,  PostDTO postDTO) {
         postDTO.setId(id);
         postService.modify(postDTO);
 

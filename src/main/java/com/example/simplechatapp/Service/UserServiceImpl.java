@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService{
 
         User user = User.builder().email(email)
                 .password(passwordEncoder.encode(tempPassword))
-                .nickname(email)
+                .nickname("kakao"+"_"+email)
                 .social(true)
                 .build();
 
