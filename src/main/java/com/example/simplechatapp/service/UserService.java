@@ -1,12 +1,10 @@
-package com.example.simplechatapp.Service;
+package com.example.simplechatapp.service;
 
 
 import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.User;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.stream.Collectors;
 
 @Transactional
 public interface UserService {

@@ -1,4 +1,4 @@
-package com.example.simplechatapp.Service;
+package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PageResponseDTO;
@@ -7,7 +7,6 @@ import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.PostImage;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Transactional

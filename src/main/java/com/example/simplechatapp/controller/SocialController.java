@@ -1,6 +1,6 @@
 package com.example.simplechatapp.controller;
 
-import com.example.simplechatapp.Service.UserService;
+import com.example.simplechatapp.service.UserService;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.util.JWTUtil;
