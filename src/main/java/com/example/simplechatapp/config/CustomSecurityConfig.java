@@ -5,6 +5,7 @@ import com.example.simplechatapp.security.filter.JWTCheckFilter;
 import com.example.simplechatapp.security.handler.APILoginFailureHandler;
 import com.example.simplechatapp.security.handler.APILoginSuccessHandler;
 import com.example.simplechatapp.security.handler.CustomAccessDeniedHandler;
+import com.example.simplechatapp.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -18,11 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @Log4j2
@@ -30,6 +26,9 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class CustomSecurityConfig {
+
+    private final CustomOAuth2UserService CustomOAuth2UserService;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,10 +40,13 @@ public class CustomSecurityConfig {
 
         http.formLogin(config -> {
             config.loginPage("/api/member/login");
-
             config.successHandler(new APILoginSuccessHandler());
             config.failureHandler(new APILoginFailureHandler());
         });
+
+        http.oauth2Login((oauth) -> oauth.userInfoEndpoint(
+                (userInfoEndpointConfig -> userInfoEndpointConfig.userService(CustomOAuth2UserService))
+        )).authorizeHttpRequests((auth) -> auth.requestMatchers("/").permitAll().anyRequest().authenticated());
 
 
         http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -54,9 +56,10 @@ public class CustomSecurityConfig {
         });
 
 
-        http.httpBasic(AbstractHttpConfigurer::disable);
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER));
+        http.httpBasic(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(httpSecuritySessionManagementConfigurer ->
+                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER));
 
         return http.build();
     }

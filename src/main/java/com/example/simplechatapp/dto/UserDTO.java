@@ -36,9 +36,28 @@ public class UserDTO extends User {
         dataMap.put("roleNames", roleNames);
 
         return dataMap;
-
-
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPw() {
+        return pw;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public boolean isSocial() {
+        return social;
+    }
+
+    public List<String> getRoleNames() {
+        return roleNames;
+    }
+
 
 
 }
