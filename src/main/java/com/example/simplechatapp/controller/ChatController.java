@@ -1,9 +1,8 @@
 package com.example.simplechatapp.controller;
 
-import com.example.simplechatapp.Service.ChatRoomService;
-import com.example.simplechatapp.Service.MessageService;
+import com.example.simplechatapp.service.ChatRoomService;
+import com.example.simplechatapp.service.MessageService;
 import com.example.simplechatapp.dto.ChatRoomDTO;
-import com.example.simplechatapp.entity.ChatRoom;
 import com.example.simplechatapp.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

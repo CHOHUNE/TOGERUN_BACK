@@ -1,6 +1,5 @@
-package com.example.simplechatapp.Service;
+package com.example.simplechatapp.service;
 
-import com.example.simplechatapp.entity.ChatRoom;
 import com.example.simplechatapp.entity.Message;
 import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.MessageRepository;
@@ -8,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
