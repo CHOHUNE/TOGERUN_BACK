@@ -6,10 +6,7 @@ import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -20,23 +17,23 @@ public class SocialController {
 
     private final UserService userService;
 
-    @GetMapping("/api/member/kakao")
-    public Map<String,Object> getMemberFromKakao(String accessToken) {
-
-        log.info("KaKaoAccessToken{}", accessToken);
-
-
-        UserDTO userDTO = userService.getKakaoMember(accessToken);
-        Map<String, Object> claims = userDTO.getClaim();
-
-        String jwtAccessToken = JWTUtil.generationToken(claims, 10);
-        String jwtRefreshToken = JWTUtil.generationToken(claims, 60 * 24);
-
-        claims.put("jwtAccessToken", jwtAccessToken);
-        claims.put("jwtRefreshToken", jwtRefreshToken);
-
-        return claims;
-    }
+//    @GetMapping("/api/member/kakao")
+//    public Map<String,Object> getMemberFromKakao(String accessToken) {
+//
+//        log.info("KaKaoAccessToken{}", accessToken);
+//
+//
+//        UserDTO userDTO = userService.getKakaoMember(accessToken);
+//        Map<String, Object> claims = userDTO.getClaim();
+//
+//        String jwtAccessToken = JWTUtil.generationToken(claims, 10);
+//        String jwtRefreshToken = JWTUtil.generationToken(claims, 60 * 24);
+//
+//        claims.put("jwtAccessToken", jwtAccessToken);
+//        claims.put("jwtRefreshToken", jwtRefreshToken);
+//
+//        return claims;
+//    }
 
     @PutMapping("/api/member/modify")
     public Map<String, String> modify (@RequestBody UserModifyDTO userModifyDTO) {
@@ -46,6 +43,9 @@ public class SocialController {
         return Map.of("result", "modified");
 
     }
+
+
+
 }
 
 

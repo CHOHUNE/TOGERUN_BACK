@@ -2,6 +2,7 @@ package com.example.simplechatapp.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -9,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Map;
 
+@Component
 public class JWTUtil {
 
     private static  String key = "123213143258asdklsdjioasjivzcxiuhuihuivxcuihadsuidashiudasuu934589239";

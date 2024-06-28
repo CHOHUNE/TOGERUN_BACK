@@ -1,6 +1,7 @@
 package com.example.simplechatapp.security.filter;
 
 import com.example.simplechatapp.dto.UserDTO;
+import com.example.simplechatapp.dto.oauth2.CustomOAuth2User;
 import com.example.simplechatapp.util.CustomJWTException;
 import com.example.simplechatapp.util.JWTUtil;
 import com.google.gson.Gson;
@@ -27,12 +28,12 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         log.info("..... Check URI ..... " + path);
 
-//        if (path.startsWith("/api/member/login") || path.startsWith("/api/member/refresh)")) {
-//            return true;
-//        }
+        if (path.startsWith("/api/member/login") || path.startsWith("/api/member/refresh)")||path.startsWith("/api/member/logout")) {
+            return true;
+        }
 
 
-        return true;
+        return false;
 
     }
 
@@ -56,8 +57,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             String email=(String)claims.get("email");
             String pw = (String)claims.get("pw");
             String nickname=(String)claims.get("nickname");
-
             Boolean social = (Boolean) claims.get("social");
+
             List<String> roleNames = (List<String>) claims.get("roleNames");
 
             UserDTO userDTO = new UserDTO(email, pw, nickname, social.booleanValue(), roleNames);
@@ -65,14 +66,24 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             log.info("userDTO{}", userDTO);
             log.info(userDTO.getAuthorities());
 
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDTO, pw, userDTO.getAuthorities());
-            // 토큰의 파라메타는 principal 과 credential (접근하려는 대상, 권한 )
+            String path = request.getRequestURI();
+            if(path.startsWith("/api/login/oauth2")){
 
+                CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }else{
+
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDTO, pw, userDTO.getAuthorities());
+                // 토큰의 파라메타는 principal 과 credential (접근하려는 대상, 권한 )
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
+
             filterChain.doFilter(request, response);
-
 
         } catch (CustomJWTException e) {
 

@@ -27,7 +27,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler{
         printWriter.close();
 
         // Gson을 이용해 json 형태로 에러메세지 생성후 response 에 담아 보낸다.
-        //
+        //r
 
     }
 }

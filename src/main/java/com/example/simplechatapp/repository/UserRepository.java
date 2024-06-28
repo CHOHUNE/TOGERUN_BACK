@@ -13,6 +13,9 @@ interface UserRepository extends JpaRepository<User,String> {
     @Query("SELECT u FROM User u WHERE u.email = :email")
     User getWithRole(@Param("email")String email);
 
+    boolean existsByNickname(String nickname);
+    User findByNickname(String nickname);
+
 
 
 }

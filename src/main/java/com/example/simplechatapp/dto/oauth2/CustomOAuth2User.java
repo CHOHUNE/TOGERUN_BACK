@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
@@ -60,5 +57,16 @@ public class CustomOAuth2User implements OAuth2User {
         return userDTO.getRoleNames();
     }
 
+    public Map<String,Object> getClaim() {
+        Map<String, Object> dataMap = new HashMap<>();
+
+        dataMap.put("email", getEmail());
+        dataMap.put("nickname", getNickname());
+        dataMap.put("social", isSocial());
+        dataMap.put("pw", userDTO.getPassword());
+
+        return dataMap;
+
+    }
 
 }
