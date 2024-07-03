@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -25,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JWTUtil jwtUtil;
+//    private final JWTUtil jwtUtil;
 
 
     @Override
@@ -36,8 +35,8 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         Map<String, Object> claims = customUserDetails.getClaim();
 
 
-        String accessToken = JWTUtil.generationToken(claims, 10);
-        String refreshToken = JWTUtil.generationToken(claims, 60 * 24);
+        String accessToken = JWTUtil.generateToken(claims, 10);
+        String refreshToken = JWTUtil.generateToken(claims, 60 * 24);
 
         claims.put("accessToken", accessToken);
         claims.put("refreshToken", refreshToken);

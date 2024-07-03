@@ -24,8 +24,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @Log4j2
@@ -47,40 +50,29 @@ public class CustomSecurityConfig {
         http.httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
-                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER))
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                        CorsConfiguration configuration = new CorsConfiguration();
-
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
-
-                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                        return configuration;
-                    }
-                }));
+                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
+                                SessionCreationPolicy.NEVER)).cors(httpSecurityCorsConfigurer -> {
+                    httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource());
+                });
 
 
-        http.formLogin(config -> {
+
+
+        http.
+                formLogin(config -> {
             config.loginPage("/api/member/login");
             config.successHandler(new APILoginSuccessHandler());
             config.failureHandler(new APILoginFailureHandler());
         });
 
-        http.oauth2Login((oauth) -> oauth.userInfoEndpoint(
-                                (userInfoEndpointConfig) -> userInfoEndpointConfig //userInfoEndpointConfig : 사용자 정보를 가져오는 엔드포인트를 구성하는 빌더
-                                        .userService(customOAuth2UserService))
-                        .successHandler(customOauthSuccessHandler))
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/oauth2/authorization/kakao", "/login", "/error").permitAll() // Explicitly permit OAuth2 login and error page
-                        .anyRequest().authenticated()
-                );
+//        http.oauth2Login((oauth) -> oauth.userInfoEndpoint(
+//                                (userInfoEndpointConfig) -> userInfoEndpointConfig //userInfoEndpointConfig : 사용자 정보를 가져오는 엔드포인트를 구성하는 빌더
+//                                        .userService(customOAuth2UserService))
+//                        .successHandler(customOauthSuccessHandler))
+//                .authorizeHttpRequests((auth) -> auth
+//                        .requestMatchers("/oauth2/authorization/kakao", "/error").permitAll() // Explicitly permit OAuth2 login and error page
+//                        .anyRequest().authenticated()
+//                );
 
         http.logout(logout -> logout
                 .logoutUrl("/api/member/logout") // Endpoint to trigger logout
@@ -90,8 +82,6 @@ public class CustomSecurityConfig {
                 .logoutSuccessUrl("http://localhost:3000/") // Redirect after logout
         );
 
-
-//  requestMatchers 부분에 소셜로그인 링크 추가
 
 //        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(new JWTCheckFilter(), OAuth2LoginAuthenticationFilter.class);
@@ -110,6 +100,23 @@ public class CustomSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(); // reactive 아닌 것 ?
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+
+    }
 
 
 

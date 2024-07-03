@@ -28,7 +28,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         log.info("..... Check URI ..... " + path);
 
-        if (path.startsWith("/api/member/login") || path.startsWith("/api/member/refresh)")||path.startsWith("/api/member/logout")) {
+        if (path.startsWith("/api/member")) {
             return true;
         }
 
@@ -41,7 +41,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
 
-        log.info(".....JWT Check FIlter Start.....");
+        log.info(".....JWT Check Filter Start.....");
 
         String authHeaderStr = request.getHeader("Authorization");
 
@@ -69,6 +69,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             String path = request.getRequestURI();
             if(path.startsWith("/api/login/oauth2")){
 
+                log.info(".....OAuth2 Login Start.....");
                 CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 
                 UsernamePasswordAuthenticationToken authenticationToken =
@@ -76,6 +77,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }else{
+                log.info(".....JWT Login Start.....");
 
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(userDTO, pw, userDTO.getAuthorities());

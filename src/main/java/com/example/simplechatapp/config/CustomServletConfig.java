@@ -20,16 +20,16 @@ public class CustomServletConfig implements WebMvcConfigurer {
 
     }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("http://localhost:8080", "http://localhost:3000") // use allowedOriginPatterns here
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("Authorization", "Content-Type")
-                .allowCredentials(true)
-                .exposedHeaders("Custom-Header")
-                .exposedHeaders("Set-Cookie")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedOriginPatterns("http://localhost:8080", "http://localhost:3000") // use allowedOriginPatterns here
+//                .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                .allowedHeaders("Authorization", "Content-Type")
+//                .allowCredentials(true)
+//                .exposedHeaders("Custom-Header")
+//                .exposedHeaders("Set-Cookie")
+//                .allowCredentials(true)
+//                .maxAge(3600);
+//    }
 }

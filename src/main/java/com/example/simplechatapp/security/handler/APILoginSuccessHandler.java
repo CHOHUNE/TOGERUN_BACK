@@ -3,7 +3,6 @@ package com.example.simplechatapp.security.handler;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.util.JWTUtil;
 import com.google.gson.Gson;
-import com.nimbusds.jwt.JWT;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,8 +22,8 @@ public class APILoginSuccessHandler implements org.springframework.security.web.
 
         Map<String, Object> claims = userDTO.getClaim();
 
-        String accessToken = JWTUtil.generationToken(claims, 10);
-        String refreshToken = JWTUtil.generationToken(claims, 60 * 24);
+        String accessToken = JWTUtil.generateToken(claims, 1);
+        String refreshToken = JWTUtil.generateToken(claims, 60 * 24);
 
 
         claims.put("accessToken", accessToken);
