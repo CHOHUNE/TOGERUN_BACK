@@ -1,13 +1,18 @@
 package com.example.simplechatapp.dto;
+import lombok.Data;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 public class UserDTO extends User {
 
-    private String email, pw, nickname;
+
+    private final String email;
+    private final String pw;
+    private final String nickname;
 
     private boolean social;
 
@@ -21,6 +26,7 @@ public class UserDTO extends User {
 
         this.email = email;
         this.pw = password;
+        this.social=social;
         this.nickname = nickname;
         this.roleNames = roleNames;
 

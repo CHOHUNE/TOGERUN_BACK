@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,9 +39,18 @@ import java.util.List;
 public class CustomSecurityConfig {
 
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOauthSuccessHandler customOauthSuccessHandler;
+
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService, CustomOauthSuccessHandler customOauthSuccessHandler) throws Exception {
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+                .requestMatchers("/error", "/favicon.ico");
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         log.info("-----------------security config---------------------");
 
 //        http.cors(httpSecurityCorsConfigurer -> {
@@ -56,31 +66,24 @@ public class CustomSecurityConfig {
                 });
 
 
-
-
         http.
                 formLogin(config -> {
-            config.loginPage("/api/member/login");
-            config.successHandler(new APILoginSuccessHandler());
-            config.failureHandler(new APILoginFailureHandler());
-        });
-
-//        http.oauth2Login((oauth) -> oauth.userInfoEndpoint(
-//                                (userInfoEndpointConfig) -> userInfoEndpointConfig //userInfoEndpointConfig : 사용자 정보를 가져오는 엔드포인트를 구성하는 빌더
-//                                        .userService(customOAuth2UserService))
-//                        .successHandler(customOauthSuccessHandler))
-//                .authorizeHttpRequests((auth) -> auth
-//                        .requestMatchers("/oauth2/authorization/kakao", "/error").permitAll() // Explicitly permit OAuth2 login and error page
-//                        .anyRequest().authenticated()
+                    config.loginPage("/api/member/login");
+                    config.successHandler(new APILoginSuccessHandler());
+                    config.failureHandler(new APILoginFailureHandler());
+                })
+                .oauth2Login((oauth) -> oauth.userInfoEndpoint(
+                                (userInfoEndpointConfig) -> userInfoEndpointConfig //userInfoEndpointConfig : 사용자 정보를 가져오는 엔드포인트를 구성하는 빌더
+                                        .userService(customOAuth2UserService))
+                        .successHandler(new CustomOauthSuccessHandler()))
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/").permitAll()
+                        .anyRequest().authenticated());
+//                logout(logout -> logout.logoutUrl("/api/member/logout") // Endpoint to trigger logout
+//                        .invalidateHttpSession(true) // Invalidate session
+//                        .clearAuthentication(true) // Clear authentication
+//                        .deleteCookies("JSESSIONID", "member") // Specify cookies to delete
 //                );
-
-        http.logout(logout -> logout
-                .logoutUrl("/api/member/logout") // Endpoint to trigger logout
-                .invalidateHttpSession(true) // Invalidate session
-                .clearAuthentication(true) // Clear authentication
-                .deleteCookies("JSESSIONID", "member") // Specify cookies to delete
-                .logoutSuccessUrl("http://localhost:3000/") // Redirect after logout
-        );
 
 
 //        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -89,7 +92,6 @@ public class CustomSecurityConfig {
         http.exceptionHandling(httpSecurityExceptionHandlingConfigurer -> {
             httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler());
         });
-
 
 
         return http.build();
@@ -117,7 +119,4 @@ public class CustomSecurityConfig {
         return source;
 
     }
-
-
-
 }

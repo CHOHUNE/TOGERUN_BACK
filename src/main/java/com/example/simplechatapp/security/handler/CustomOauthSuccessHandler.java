@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -45,25 +46,25 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         String jsonStr = gson.toJson(claims);
 
-        String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
 
         response.setContentType("application/json;charset=UTF-8");
 
 
+        String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
         Cookie cookie = new Cookie("member", encodedJsonStr);
         cookie.setMaxAge(60 * 60 * 60);
         cookie.setPath("/");
 //        cookie.setHttpOnly(true);
-
-
-
         response.addCookie(cookie);
+
 
         response.sendRedirect("http://localhost:3000/");
 
-//        PrintWriter printWriter = response.getWriter(); // response 에 json 형태로 claims 를 담아 보낸다.
-//        printWriter.println(jsonStr);
-//        printWriter.close();
+
+        PrintWriter printWriter = response.getWriter(); // response 에 json 형태로 claims 를 담아 보낸다.
+        printWriter.println(jsonStr);
+        printWriter.close();
+
 
     }
 

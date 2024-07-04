@@ -40,9 +40,5 @@ public class APILoginSuccessHandler implements org.springframework.security.web.
         printWriter.close();
 
 
-
-
-
-
     }
 }

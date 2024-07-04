@@ -61,9 +61,10 @@ public class CustomOAuth2User implements OAuth2User {
         Map<String, Object> dataMap = new HashMap<>();
 
         dataMap.put("email", getEmail());
+        dataMap.put("pw", userDTO.getPassword());
         dataMap.put("nickname", getNickname());
         dataMap.put("social", isSocial());
-        dataMap.put("pw", userDTO.getPassword());
+        dataMap.put("roleNames", getRoleNames());
 
         return dataMap;
 

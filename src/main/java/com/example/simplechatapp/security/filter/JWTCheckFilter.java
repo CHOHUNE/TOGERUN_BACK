@@ -28,7 +28,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         log.info("..... Check URI ..... " + path);
 
-        if (path.startsWith("/api/member")) {
+        if (path.startsWith("/api/member")||path.startsWith("/api/login")) {
             return true;
         }
 
@@ -62,6 +62,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             List<String> roleNames = (List<String>) claims.get("roleNames");
 
             UserDTO userDTO = new UserDTO(email, pw, nickname, social.booleanValue(), roleNames);
+
             log.info(".....JWT Check Success.....");
             log.info("userDTO{}", userDTO);
             log.info(userDTO.getAuthorities());

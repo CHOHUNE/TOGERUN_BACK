@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = "password")
+@ToString(exclude = {"chatRoomAsUser1", "chatRoomAsUser2", "userRoleList"})
 public class User {
 
     @Id
