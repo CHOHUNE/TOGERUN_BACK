@@ -36,7 +36,7 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         Map<String, Object> claims = customUserDetails.getClaim();
 
 
-        String accessToken = JWTUtil.generateToken(claims, 10);
+        String accessToken = JWTUtil.generateToken(claims, 1);
         String refreshToken = JWTUtil.generateToken(claims, 60 * 24);
 
         claims.put("accessToken", accessToken);
@@ -60,6 +60,8 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         response.sendRedirect("http://localhost:3000/");
 
+
+        request.getSession().invalidate();
 
         PrintWriter printWriter = response.getWriter(); // response 에 json 형태로 claims 를 담아 보낸다.
         printWriter.println(jsonStr);

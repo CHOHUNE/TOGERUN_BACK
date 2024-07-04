@@ -66,19 +66,20 @@ public class CustomSecurityConfig {
                 });
 
 
-        http.
-                formLogin(config -> {
+        http
+                .formLogin(config -> {
                     config.loginPage("/api/member/login");
                     config.successHandler(new APILoginSuccessHandler());
                     config.failureHandler(new APILoginFailureHandler());
                 })
-                .oauth2Login((oauth) -> oauth.userInfoEndpoint(
-                                (userInfoEndpointConfig) -> userInfoEndpointConfig //userInfoEndpointConfig : 사용자 정보를 가져오는 엔드포인트를 구성하는 빌더
-                                        .userService(customOAuth2UserService))
-                        .successHandler(new CustomOauthSuccessHandler()))
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/").permitAll()
-                        .anyRequest().authenticated());
+                .oauth2Login(oauth -> oauth.userInfoEndpoint(userInfoEndpointConfig ->
+                                userInfoEndpointConfig.userService(customOAuth2UserService))
+                        .successHandler(new CustomOauthSuccessHandler())
+                        .failureHandler(new APILoginFailureHandler()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/**").permitAll()
+                        .anyRequest().authenticated()
+                );
 //                logout(logout -> logout.logoutUrl("/api/member/logout") // Endpoint to trigger logout
 //                        .invalidateHttpSession(true) // Invalidate session
 //                        .clearAuthentication(true) // Clear authentication

@@ -26,12 +26,12 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
 
-        log.info("..... Check URI ..... " + path);
+        log.info("..... Check URI ..... " + path
+        );
 
-        if (path.startsWith("/api/member")||path.startsWith("/api/login")) {
+        if (path.startsWith("/api/member")||path.matches("^\\/oauth2(?:\\/.*)?$")){
             return true;
         }
-
 
         return false;
 
@@ -39,6 +39,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
 
 
         log.info(".....JWT Check Filter Start.....");
