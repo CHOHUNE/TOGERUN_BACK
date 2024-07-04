@@ -65,8 +65,7 @@ public class CustomSecurityConfig {
                     httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource());
                 });
 
-
-        http
+            http
                 .formLogin(config -> {
                     config.loginPage("/api/member/login");
                     config.successHandler(new APILoginSuccessHandler());
@@ -77,14 +76,15 @@ public class CustomSecurityConfig {
                         .successHandler(new CustomOauthSuccessHandler())
                         .failureHandler(new APILoginFailureHandler()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/api/member/refresh").permitAll()
                         .anyRequest().authenticated()
+                ).
+                logout(logout -> logout.logoutUrl("/api/member/logout") // Endpoint to trigger logout
+                        .invalidateHttpSession(true) // Invalidate session
+                        .clearAuthentication(true) // Clear authentication
+                        .deleteCookies("JSESSIONID", "member") // Specify cookies to delete
                 );
-//                logout(logout -> logout.logoutUrl("/api/member/logout") // Endpoint to trigger logout
-//                        .invalidateHttpSession(true) // Invalidate session
-//                        .clearAuthentication(true) // Clear authentication
-//                        .deleteCookies("JSESSIONID", "member") // Specify cookies to delete
-//                );
 
 
 //        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);

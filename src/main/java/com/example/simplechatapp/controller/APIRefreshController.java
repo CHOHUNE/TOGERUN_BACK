@@ -43,7 +43,6 @@ public class APIRefreshController {
                 checkTime((Integer) claims.get("exp")) ? JWTUtil.generateToken(claims, 60 * 24) : refreshToken;
 
         return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
-
     }
 
     private boolean checkTime(Integer exp) {
