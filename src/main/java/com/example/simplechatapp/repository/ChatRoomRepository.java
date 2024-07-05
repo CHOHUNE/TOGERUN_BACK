@@ -8,4 +8,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom,Long> {
 
     @Query("SELECT cr FROM ChatRoom cr WHERE cr.user1.email = ?1 AND cr.user2.email = ?2")
     ChatRoom findByUserEmails(String user1Email, String user2Email);
+
+
+
 }

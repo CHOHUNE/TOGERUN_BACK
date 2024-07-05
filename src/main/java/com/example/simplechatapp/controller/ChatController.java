@@ -1,80 +1,39 @@
 package com.example.simplechatapp.controller;
 
-import com.example.simplechatapp.service.ChatRoomService;
-import com.example.simplechatapp.service.MessageService;
-import com.example.simplechatapp.dto.ChatRoomDTO;
-import com.example.simplechatapp.entity.Message;
+import com.example.simplechatapp.dto.ChatMessageDTO;
+import com.example.simplechatapp.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/chats")
+@Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ChatController {
 
-    private final ChatRoomService chatRoomService;
-    private final MessageService messageService;
+    private final ChatMessageService chatMessageService;
 
 
-//    @GetMapping("/rooms")
-//    public List<ChatRoom> getAllChatRooms() {
-//        return chatRoomService.findAll();
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ChatRoom getChatRoomById(@PathVariable Long id) {
-//
-//        return chatRoomService.findById(id);
-//    }
-//
+    @MessageMapping("/chat/{chatRoomId}/sendMessage")
+    @SendTo("/topic/{chatRoomId}")
+    public ResponseEntity<ChatMessageDTO> sendMessage(Principal principal, ChatMessageDTO requestDTO, @DestinationVariable Long chatRoomId) {
 
-    @GetMapping
-    public List<Message> getMessageByChatRoomId() {
-
-        return messageService.findAllMessage();
-    }
-
-    @MessageMapping("/sendMessage")
-    @SendTo("/topic/messages")
-    public Message sendMessage(Message message) {
-        return messageService.saveMessage(message);
-    }
-
-//TODO : 채팅방 생성, 채팅방 조회
-
-    @PostMapping("/create")
-    public ResponseEntity<ChatRoomDTO> createChatRoom(@RequestParam("user1Email")String user1Email, @RequestParam("user2Email")String user2Email) {
-
-        try {
-            ChatRoomDTO createdChatRoom = chatRoomService.createOrGetChatRoom(user1Email, user2Email);
-            return new ResponseEntity<>(createdChatRoom, HttpStatus.CREATED);
-        } catch (Exception e) {
-
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        String email = principal.getName();
 
+        ChatMessageDTO responseDTO = chatMessageService.createChatMessage(requestDTO.getContent(), chatRoomId, email);
+
+        return ResponseEntity.ok().body(responseDTO);
     }
 
-//    @GetMapping("/get")
-//    public ResponseEntity<ChatRoomDTO> getChatRoom(@RequestParam("user1Email")String user1Email, @RequestParam("user2Email")String user2Email) {
-//
-//        try {
-//            ChatRoomDTO chatRoom = chatRoomService.getChatRoom(user1Email, user2Email);
-//            if (chatRoom != null) {
-//                return new ResponseEntity<>(chatRoom, HttpStatus.OK);
-//            } else {
-//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//            }
-//        } catch (Exception e) {
-//
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 }

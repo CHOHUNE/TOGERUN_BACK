@@ -26,14 +26,17 @@ public class User {
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user1", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<ChatRoom> chatRoomAsUser1 = new ArrayList<>();
+    private List<ChatRoom> chatRoomAsCreator = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user1", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<ChatRoom> chatRoomAsUser2 = new ArrayList<>();
+    private List<ChatRoom> chatRoomAsParticipant = new ArrayList<>();
 
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ExerciseEvent> organizedEvents = new ArrayList<>();
 
     public void addRole(UserRole userRole) {
         userRoleList.add(userRole);

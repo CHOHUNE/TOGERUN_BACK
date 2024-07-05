@@ -23,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -77,14 +79,15 @@ public class CustomSecurityConfig {
                         .failureHandler(new APILoginFailureHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/member/refresh").permitAll()
+                        .requestMatchers("/api/member/refresh").permitAll() // Oauth2.0 을 추가시 requestMatchers 를 좀 더 엄격히 설정 해야한다.
                         .anyRequest().authenticated()
-                ).
-                logout(logout -> logout.logoutUrl("/api/member/logout") // Endpoint to trigger logout
-                        .invalidateHttpSession(true) // Invalidate session
-                        .clearAuthentication(true) // Clear authentication
-                        .deleteCookies("JSESSIONID", "member") // Specify cookies to delete
-                );
+                ).logout(logout -> logout
+                .logoutUrl("/api/member/logout")
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()) //HTTP 상태를 반환
+                .addLogoutHandler(new SecurityContextLogoutHandler()) //세션을 무효화하고 보안 컨텍스를 정리
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID", "member"));
 
 
 //        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);

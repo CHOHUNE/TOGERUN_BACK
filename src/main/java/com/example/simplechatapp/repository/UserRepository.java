@@ -14,7 +14,7 @@ interface UserRepository extends JpaRepository<User,String> {
     User getWithRole(@Param("email")String email);
 
     boolean existsByNickname(String nickname);
-    User findByNickname(String nickname);
+    User findByEmail(String email);
 
 
 
