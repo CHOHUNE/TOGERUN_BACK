@@ -16,7 +16,7 @@ public class ChatMessageDTO {
         dto.setId(chatMessage.getId());
         dto.setContent(chatMessage.getContent());
         dto.setChatRoomId(chatMessage.getChatRoom().getId());
-        dto.setUserEmail(chatMessage.getUser().getEmail());
+        dto.setUserEmail(chatMessage.getSender().getEmail());
         return dto;
     }
 

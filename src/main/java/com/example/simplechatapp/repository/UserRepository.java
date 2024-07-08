@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.ResponseEntity;
 
 public
 interface UserRepository extends JpaRepository<User,String> {
@@ -14,6 +15,7 @@ interface UserRepository extends JpaRepository<User,String> {
     User getWithRole(@Param("email")String email);
 
     boolean existsByNickname(String nickname);
+
     User findByEmail(String email);
 
 

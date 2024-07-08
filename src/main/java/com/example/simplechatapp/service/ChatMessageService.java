@@ -30,19 +30,11 @@ public class ChatMessageService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
 
-
         ChatMessage chatMessage = new ChatMessage(message, chatRoom, sender);
 
         ChatMessage saveChatMessage = chatMessageRepository.save(chatMessage);
 
-
         return ChatMessageDTO.toDto(saveChatMessage);
 
     }
-
-
-
-
-
-
 }

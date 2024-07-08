@@ -26,11 +26,11 @@ public class User {
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ChatRoom> chatRoomAsCreator = new ArrayList<>();
 
-    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ChatRoom> chatRoomAsParticipant = new ArrayList<>();
 
