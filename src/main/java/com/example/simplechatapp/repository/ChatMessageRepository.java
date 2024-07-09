@@ -4,11 +4,13 @@ import com.example.simplechatapp.entity.ChatMessage;
 import com.example.simplechatapp.entity.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long>{
 
-
-    @Query("SELECT cm.chatRoom FROM ChatMessage cm WHERE cm.content LIKE %:message% AND cm.chatRoom.id = :chatRoomId")
-    ChatRoom findChatRoomByMessageAndChatRoomId(String message, Long chatRoomId);
+    @Query("SELECT cm FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId ORDER BY cm.id ASC")
+    List<ChatMessage> findMessagesByChatRoomIdOrderByTimestampAsc(@Param("chatRoomId") Long chatRoomId);
 
 }

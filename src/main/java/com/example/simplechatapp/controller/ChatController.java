@@ -1,7 +1,6 @@
 package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.dto.ChatMessageDTO;
-import com.example.simplechatapp.entity.ChatRoom;
 import com.example.simplechatapp.service.ChatMessageService;
 import com.example.simplechatapp.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
@@ -11,16 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,7 +23,6 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
 
 
-
     @MessageMapping("/chat/{chatRoomId}/sendMessage")
     @SendTo("/topic/{chatRoomId}")
     public ResponseEntity<ChatMessageDTO> sendMessage(Principal principal, ChatMessageDTO requestDTO, @DestinationVariable Long chatRoomId) {
@@ -39,11 +30,12 @@ public class ChatController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
         String email = principal.getName();
 
-        if(!chatRoomService.isUserAllowedInChatRoom(chatRoomId, email)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+//        if(!chatRoomService.isUserAllowedInChatRoom(chatRoomId, email)){
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+//        }
 
         ChatMessageDTO responseDTO = chatMessageService.createChatMessage(requestDTO.getContent(), chatRoomId, email);
 

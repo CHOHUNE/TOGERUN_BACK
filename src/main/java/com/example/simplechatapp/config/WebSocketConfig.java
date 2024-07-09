@@ -51,6 +51,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // app: 클라이언트가 메시지를 송신할 때 사용할 prefix
         // pub/chat 으로 메세지를 보내면 서버의 컨트롤러로 라우팅 된다.
 
+
     }
 
 

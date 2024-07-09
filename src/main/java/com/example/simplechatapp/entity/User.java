@@ -26,13 +26,13 @@ public class User {
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ChatRoom> chatRoomAsCreator = new ArrayList<>();
-
-    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ChatRoom> chatRoomAsParticipant = new ArrayList<>();
+//    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @Builder.Default
+//    private List<ChatRoom> chatRoomAsCreator = new ArrayList<>();
+//
+//    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @Builder.Default
+//    private List<ChatRoom> chatRoomAsParticipant = new ArrayList<>();
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

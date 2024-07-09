@@ -72,6 +72,5 @@ public class PostController {
         postService.remove(id);
 
         return Map.of("result","success");
-
     }
 }

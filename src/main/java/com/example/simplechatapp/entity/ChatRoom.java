@@ -4,7 +4,6 @@ package com.example.simplechatapp.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
@@ -39,9 +38,22 @@ public class ChatRoom {
     // ManyToMany 로 엔티티 변경
 
     public void addParticipant(User user) {
-        participants.add(user);
+        if (!hasParticipant(user)) {
+            participants.add(user);
+        }else{
+            throw new IllegalArgumentException("User already exists in this chat room");
+        }
 
+    } //  hasParticipant 로 검증 과정 추가
+
+
+
+    public boolean hasParticipant(User user) {
+        return participants.contains(user);
+
+        //있으면 true 없으면 false
     }
+
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name="writer_id")

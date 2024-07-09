@@ -1,8 +1,11 @@
 package com.example.simplechatapp.service;
 
+import com.example.simplechatapp.dto.ChatMessageDTO;
+import com.example.simplechatapp.entity.ChatMessage;
 import com.example.simplechatapp.entity.ChatRoom;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
+import com.example.simplechatapp.repository.ChatMessageRepository;
 import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
@@ -12,32 +15,47 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private UserRepository userRepository;
     private PostRepository postRepository;
 
-    public Long getChatRoomId(Long postId, Long writerId, Long subscriberId) {
 
-        return Math.min(postId, writerId) + Math.max(postId, writerId) + subscriberId;
-    }
 
-    public boolean isUserAllowedInChatRoom(Long chatRoomId, String email) {
-        User user = userRepository.findByEmail(email);
+//    public boolean isUserAllowedInChatRoom(Long chatRoomId, String email) {
+//        User user = userRepository.findByEmail(email);
+//
+//        return chatRoomRepository.isUserAllowedInChatRoom(chatRoomId, user.getEmail());
+//    }
 
-        return chatRoomRepository.isUserAllowedInChatRoom(chatRoomId, user.getEmail());
+    public List<ChatMessageDTO> getMessageByChatRoomId(Long chatRoomId) {
+
+        List<ChatMessage> chatMessages = chatMessageRepository.findMessagesByChatRoomIdOrderByTimestampAsc(chatRoomId);
+        return chatMessages.stream()
+                .map(ChatMessageDTO::toDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public ChatRoom joinChatRoom(Long postId, String userEmail) {
+
+        // 클라이언트에서 버튼 클릭시 email 과 postId 를 전달 받고
+        // 채팅방 유무 확인 후 생성 OR 참가
+        // 기존 참가 여부 확인 후 참가 OR 불러오기
+
+
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new IllegalArgumentException(" POST NOT FOUND ")
         );
+        // 포스트가 없으면 예외 처리
 
         User user = userRepository.findByEmail(userEmail);
 
@@ -49,7 +67,13 @@ public class ChatRoomService {
                     return chatRoomRepository.save(newChatRoom);
                 });
 
+
+        if (chatRoom.hasParticipant(user)) {
+            throw new IllegalArgumentException("User already exists in this chat room");
+        }
+
         chatRoom.addParticipant(user);
+        // addParticipant 에 검증과정
 
         return chatRoomRepository.save(chatRoom);
 
