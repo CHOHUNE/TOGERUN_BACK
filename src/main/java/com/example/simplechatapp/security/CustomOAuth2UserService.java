@@ -56,43 +56,38 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (existData == null) {
 
-            User user = User.builder()
-                    .nickname(existData.getNickname())
-                    .email(existData.getEmail())
-                    .social(true)
-                    .userRoleList(List.of(UserRole.USER))
-                    .build();
+            existData = new User();
+            existData.setNickname(oAuth2Response.getName());
+            existData.setEmail(oAuth2Response.getEmail());
+            existData.setSocial(true);
+            existData.setUserRoleList(List.of(UserRole.USER));
+            userRepository.save(existData);
 
-            userRepository.save(user);
+            userRepository.save(existData);
 
-            UserDTO userDTO = new UserDTO(
-                    oAuth2Response.getEmail(),
-                    "Temp",
-                    oAuth2Response.getName(),
-                    true,
-                    List.of("ROLE_USER"));
 
-            return new CustomOAuth2User(userDTO);
 
-        }else{
+        }else {
 
             existData.setNickname(oAuth2Response.getName());
             existData.setEmail(oAuth2Response.getEmail());
 
             userRepository.save(existData);
 
-            UserDTO userDTO = new UserDTO(
-                    existData.getNickname(),
-                    "Temp",
-                    existData.getEmail(),
-                    true,
-                    List.of("ROLE_USER"));
-
-
-            return new CustomOAuth2User(userDTO);
 
         }
 
-    }
+        UserDTO userDTO = new UserDTO(
+                existData.getNickname(),
+                "Temp",
+                existData.getEmail(),
+                true,
+                List.of("ROLE_USER"));
+
+        return new CustomOAuth2User(userDTO);
+
+        }
+
+
 
 }
