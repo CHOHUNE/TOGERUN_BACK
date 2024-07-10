@@ -11,19 +11,19 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/post")
+@RequestMapping("/api/post/{postId}")
 public class ChatRoomController {
 
 
     private final ChatRoomService chatRoomService;
 
-    @PostMapping("/join")
-    public ChatRoom joinChatRoom(@RequestParam Long postId, @RequestParam String email) {
+    @PostMapping("/chat/join")
+    public ChatRoom joinChatRoom(@PathVariable Long postId, @RequestParam String email) {
 
         return chatRoomService.joinChatRoom(postId, email);
     }
 
-    @GetMapping("/{postId}/chat")
+    @GetMapping("/chat")
     public List<ChatMessageDTO> getMessages(@PathVariable Long postId) {
         return chatRoomService.getMessageByChatRoomId(postId);
     }

@@ -23,9 +23,9 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
 
 
-    @MessageMapping("/chat/{chatRoomId}/sendMessage")
-    @SendTo("/topic/{chatRoomId}")
-    public ResponseEntity<ChatMessageDTO> sendMessage(Principal principal, ChatMessageDTO requestDTO, @DestinationVariable Long chatRoomId) {
+    @MessageMapping("/chat/{postId}/sendMessage")
+    @SendTo("/topic/{postId}")
+    public ResponseEntity<ChatMessageDTO> sendMessage(Principal principal, ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
 
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -37,7 +37,7 @@ public class ChatController {
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 //        }
 
-        ChatMessageDTO responseDTO = chatMessageService.createChatMessage(requestDTO.getContent(), chatRoomId, email);
+        ChatMessageDTO responseDTO = chatMessageService.createChatMessage(requestDTO.getContent(), postId, email);
 
         return ResponseEntity.ok().body(responseDTO);
     }

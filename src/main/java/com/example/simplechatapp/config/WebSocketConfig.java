@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
 
-        registry.addEndpoint("/ws/{chatRoomId}")
+        registry.addEndpoint("/ws/{postId}")
                 .addInterceptors(new CustomHandshakeInterceptor())// 클라이언트가 /ws/{chatRoomId} endpoint로 소켓 연결을 시도
                 .setAllowedOriginPatterns("*");
 

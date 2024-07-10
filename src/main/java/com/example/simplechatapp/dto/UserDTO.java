@@ -22,7 +22,7 @@ public class UserDTO extends User {
 
     public UserDTO(String email, String password, String nickname, boolean social, List<String> roleNames) {
 
-        super(email, password, roleNames.stream().map(str-> new SimpleGrantedAuthority("ROLE_" + str)).collect(Collectors.toList()));
+        super(email, password, roleNames.stream().map(str-> new SimpleGrantedAuthority(str)).collect(Collectors.toList()));
 
         this.email = email;
         this.pw = password;
