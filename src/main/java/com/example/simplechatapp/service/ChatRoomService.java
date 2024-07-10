@@ -9,17 +9,16 @@ import com.example.simplechatapp.repository.ChatMessageRepository;
 import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class ChatRoomService {
 
@@ -35,6 +34,7 @@ public class ChatRoomService {
 //
 //        return chatRoomRepository.isUserAllowedInChatRoom(chatRoomId, user.getEmail());
 //    }
+// 단체 채팅방으로 변경 하면서 사용자 검증은 필요 없어짐 -> 단순 참여 유무 확인 후 추가 과정으로 대체
 
     public List<ChatMessageDTO> getMessageByChatRoomId(Long chatRoomId) {
 
@@ -51,14 +51,13 @@ public class ChatRoomService {
         // 채팅방 유무 확인 후 생성 OR 참가
         // 기존 참가 여부 확인 후 참가 OR 불러오기
 
-
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new IllegalArgumentException(" POST NOT FOUND ")
         );
         // 포스트가 없으면 예외 처리
 
-        User user = userRepository.findByEmail(userEmail);
 
+// 1번 채팅방 생성 유무 검증
         ChatRoom chatRoom = chatRoomRepository.findByPost(post)
                 .orElseGet(() -> {
                     ChatRoom newChatRoom = new ChatRoom();
@@ -66,13 +65,22 @@ public class ChatRoomService {
                     newChatRoom.addParticipant(post.getUser()); // 게시글 작성자를 자동으로 추가
                     return chatRoomRepository.save(newChatRoom);
                 });
+        //게시판 생성시 채팅방 생성은 비동기 처리 -> 채팅방에 등록된 포스트를 찾은 후 없으면 새로 생성
 
+// 2번 참가자 추가 유무 검증
 
-        if (chatRoom.hasParticipant(user)) {
-            throw new IllegalArgumentException("User already exists in this chat room");
+        User user = userRepository.findByEmail(userEmail);
+        //해당 유저를 찾고
+
+        if (!chatRoom.hasParticipant(user)) {
+            chatRoom.addParticipant(user);
+
+        }else{
+//            throw new IllegalArgumentException("이미 참가한 사용자입니다.");
+            // 예외처리시 메소드가 즉시 중단되므로 로그 처리 후 리턴
+            log.info("이미 참가한 사용자입니다.");
         }
 
-        chatRoom.addParticipant(user);
         // addParticipant 에 검증과정
 
         return chatRoomRepository.save(chatRoom);

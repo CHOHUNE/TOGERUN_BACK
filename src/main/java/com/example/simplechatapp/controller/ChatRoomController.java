@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/chatroom")
+@RequestMapping("/api/post")
 public class ChatRoomController {
 
 
@@ -23,9 +23,9 @@ public class ChatRoomController {
         return chatRoomService.joinChatRoom(postId, email);
     }
 
-    @GetMapping("/{chatRoomId}/messages")
-    public List<ChatMessageDTO> getMessages(@PathVariable Long chatRoomId) {
-        return chatRoomService.getMessageByChatRoomId(chatRoomId);
+    @GetMapping("/{postId}/chat")
+    public List<ChatMessageDTO> getMessages(@PathVariable Long postId) {
+        return chatRoomService.getMessageByChatRoomId(postId);
     }
 
 //    @GetMapping("/{postId}") // post={postId} 가 아니다.

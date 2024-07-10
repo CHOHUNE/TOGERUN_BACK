@@ -61,11 +61,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             existData.setEmail(oAuth2Response.getEmail());
             existData.setSocial(true);
             existData.setUserRoleList(List.of(UserRole.USER));
-            userRepository.save(existData);
 
             userRepository.save(existData);
-
-
 
         }else {
 
@@ -74,20 +71,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             userRepository.save(existData);
 
-
         }
 
         UserDTO userDTO = new UserDTO(
-                existData.getNickname(),
-                "Temp",
                 existData.getEmail(),
+                "Temp",
+                existData.getNickname(),
                 true,
                 List.of("ROLE_USER"));
 
         return new CustomOAuth2User(userDTO);
 
         }
-
-
 
 }
