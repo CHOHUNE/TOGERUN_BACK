@@ -78,7 +78,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 "Temp",
                 existData.getNickname(),
                 true,
-                List.of("ROLE_USER"));
+                List.of("USER"));
 
         return new CustomOAuth2User(userDTO);
 
