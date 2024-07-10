@@ -30,7 +30,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         );
 
 //        if (path.startsWith("/api/member")||path.matches("^\\/oauth2(?:\\/.*)?$")){
-        if (path.startsWith("/api/member")){
+        if (path.startsWith("/api/member")||path.startsWith("/api/ws")){
             return true;
         }
 
