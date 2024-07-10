@@ -79,8 +79,10 @@ public class CustomSecurityConfig {
                         .failureHandler(new APILoginFailureHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/member/refresh").permitAll() // Oauth2.0 을 추가시 requestMatchers 를 좀 더 엄격히 설정 해야한다.
+                        .requestMatchers("/api/member/refresh").permitAll() //// Oauth2.0 을 추가시 requestMatchers 를 좀 더 엄격히 설정 해야한다.
+                        .requestMatchers("/ws/**").permitAll()   // 웹소켓 처음 연결하는 api : 쿠키를 골라서 보내는 방법이 없길래 일단 제외 했다.
                         .anyRequest().authenticated()
+
                 ).logout(logout -> logout
                 .logoutUrl("/api/member/logout")
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()) //HTTP 상태를 반환
