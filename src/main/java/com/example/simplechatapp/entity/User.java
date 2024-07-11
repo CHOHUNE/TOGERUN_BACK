@@ -12,10 +12,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = {"chatRoomAsUser1", "chatRoomAsUser2", "userRoleList"})
+@ToString(exclude = { "userRoleList"})
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String email;
 
     private String nickname;
@@ -26,9 +29,13 @@ public class User {
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @Builder.Default
+//    private List<ExerciseEvent> organizedEvents = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "participants")
     @Builder.Default
-    private List<ExerciseEvent> organizedEvents = new ArrayList<>();
+    private List<ChatRoom> joinedChatRoom = new ArrayList<>();
 
     public void addRole(UserRole userRole) {
         userRoleList.add(userRole);

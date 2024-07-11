@@ -32,6 +32,9 @@ public class ChatController {
         }
 
         String email = principal.getName();
+        log.info("principal : {}", principal);
+        log.info("email : {}", email);
+
 
 //        if(!chatRoomService.isUserAllowedInChatRoom(chatRoomId, email)){
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

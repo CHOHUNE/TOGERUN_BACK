@@ -38,7 +38,7 @@ public class ChatRoomService {
 
     public List<ChatMessageDTO> getMessageByChatRoomId(Long chatRoomId) {
 
-        List<ChatMessage> chatMessages = chatMessageRepository.findMessagesByChatRoomIdOrderByTimestampAsc(chatRoomId);
+        List<ChatMessage> chatMessages = chatMessageRepository.findMessagesByChatRoomId(chatRoomId);
         return chatMessages.stream()
                 .map(ChatMessageDTO::toDto)
                 .collect(Collectors.toList());

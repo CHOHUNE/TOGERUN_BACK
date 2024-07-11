@@ -1,9 +1,7 @@
 package com.example.simplechatapp.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="tbl_project")
+@Table(name="post")
 @ToString(exclude = {"imageList","user"})
 public class Post {
 
@@ -32,6 +30,11 @@ public class Post {
     private LocalDate localDate;
 
     private boolean delFlag;
+
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name="chat_room_id")
+    private ChatRoom chatRoom;
+
 
     @ElementCollection // 생명주기 관리 자체가 게시물 = 게시물 이미지 이므로 ManyToOne 과 Cascade 를 안쓴다.
     @Builder.Default
