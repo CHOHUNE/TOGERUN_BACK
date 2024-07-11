@@ -28,16 +28,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/{postId}")
-                .setAllowedOriginPatterns("*")
+        registry.addEndpoint("/chat") // SockJS 는 기본적으로 /info /websocket /xhr 등과 같은 경로를 사용하는데, 세그먼트가 3개 여야 한다. /ws/1/info 는 두개의 세그먼트로 보고 있다.
+                .setAllowedOriginPatterns("*"); // 일반 HTTP 요청과 별도로 @RequestMapping 경로와는 별도로 취급 되어 api 를 따로 붙일 필요가 없다.
+//        @EnableWebSocketMessageBroker 를 스면 스프링의 웹소켓 지원에 직접 사용된다
+
 //                .setHandshakeHandler(new DefaultHandshakeHandler() {
 //                    @Override
 //                    protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
 //                        return request.getPrincipal();
 //                    }
 //                })
-                .addInterceptors(new CustomHandshakeInterceptor())
-                .withSockJS();
+
+//                .addInterceptors(new CustomHandshakeInterceptor());
+//                .withSockJS();
     }
 
     // use allowedOriginPatterns here
@@ -54,11 +57,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         log.info("Configuring message broker{}", registry);
 
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic"); //구독 URL
         // 메모리 내에 simple 메시지 브로커를 활성화하고, /topic 으로 시작하는 메세지를 브로커가 처리하도록 합니다.
         // 주로 구독에 사용된다.
 
-        registry.setApplicationDestinationPrefixes("/app");
+        registry.setApplicationDestinationPrefixes("/app"); //prefix
         // app: 클라이언트가 메시지를 송신할 때 사용할 prefix
         // pub/chat 으로 메세지를 보내면 서버의 컨트롤러로 라우팅 된다.
 

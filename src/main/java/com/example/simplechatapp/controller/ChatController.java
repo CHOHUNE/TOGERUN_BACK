@@ -23,8 +23,8 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
 
 
-    @MessageMapping("/chat/{postId}/sendMessage")
-    @SendTo("/topic/{postId}")
+    @MessageMapping("/chat/{postId}/send")
+    @SendTo("/topic/chat/{postId}")
     public ResponseEntity<ChatMessageDTO> sendMessage(Principal principal, ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
 
         if (principal == null) {
