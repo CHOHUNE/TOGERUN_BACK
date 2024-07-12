@@ -57,4 +57,20 @@ public class User {
         this.social = social;
     }
 
+    // -- 양방향 관계 편의 메서드 --
+
+    public void joinChatRoom(ChatRoom chatRoom) {
+        if (!this.joinedChatRoom.contains(chatRoom)) {
+            this.joinedChatRoom.add(chatRoom);
+            chatRoom.getParticipants().add(this);
+        }
+    }
+
+    public void leaveChatRoom(ChatRoom chatRoom) {
+
+        if (this.joinedChatRoom.remove(chatRoom)) {
+            chatRoom.getParticipants().remove(this);
+        }
+    }
+
 }

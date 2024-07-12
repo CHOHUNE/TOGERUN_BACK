@@ -13,10 +13,11 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ChatRoomDTO {
 
     private Long id;
     private Post post;
+
     private Set<User> participants = new HashSet<>();
+
 }

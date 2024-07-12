@@ -2,15 +2,13 @@ package com.example.simplechatapp.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
 @Entity
-
 @NoArgsConstructor
-@Getter
+@Data
 @Table(name = "chat_messages")
 public class ChatMessage {
 
@@ -32,6 +30,14 @@ public class ChatMessage {
         this.chatRoom = chatRoom;
         this.sender = user;
     }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+        if (chatRoom != null && chatRoom.getChatMessageList().contains(this)) {
+            chatRoom.getChatMessageList().add(this);
+        }
+    }
+
 
 
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @Entity
 @Builder
 @NoArgsConstructor
@@ -64,6 +65,13 @@ public class Post {
         PostImage postImage = PostImage.builder().fileName(fileName).build();
 
         addImage(postImage);
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+        if (chatRoom != null && chatRoom.getPost() != this) {
+            chatRoom.setPost(this);
+        }
     }
 
     public void clearList() {
