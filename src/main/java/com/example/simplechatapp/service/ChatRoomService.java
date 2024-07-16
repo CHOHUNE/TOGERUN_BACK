@@ -36,9 +36,9 @@ public class ChatRoomService {
 //    }
 // 단체 채팅방으로 변경 하면서 사용자 검증은 필요 없어짐 -> 단순 참여 유무 확인 후 추가 과정으로 대체
 
-    public List<ChatMessageDTO> getMessageByChatRoomId(Long chatRoomId) {
+    public List<ChatMessageDTO> getMessageByPostId(Long postId) {
 
-        List<ChatMessage> chatMessages = chatMessageRepository.findMessagesByChatRoomId(chatRoomId);
+        List<ChatMessage> chatMessages = chatMessageRepository.findChatMessageByPostId(postId);
         return chatMessages.stream()
                 .map(ChatMessageDTO::ChatMessageEntityToDto)
                 .collect(Collectors.toList());

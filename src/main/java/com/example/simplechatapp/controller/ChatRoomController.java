@@ -25,7 +25,7 @@ public class ChatRoomController {
 
     @GetMapping("/chat")
     public List<ChatMessageDTO> getMessages(@PathVariable Long postId) {
-        return chatRoomService.getMessageByChatRoomId(postId);
+        return chatRoomService.getMessageByPostId(postId);
     }
 
 //    @GetMapping("/{postId}") // post={postId} 가 아니다.
