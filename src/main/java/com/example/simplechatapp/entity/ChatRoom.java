@@ -47,7 +47,9 @@ public class ChatRoom {
     public void addParticipant(User user) {
         if (!hasParticipant(user)) {
             this.participants.add(user);
-            user.getJoinedChatRoom().add(this);
+//            user.getJoinedChatRoom().add(this);
+            ;
+
         }
     } //  hasParticipant 로 검증 과정 추가
 
