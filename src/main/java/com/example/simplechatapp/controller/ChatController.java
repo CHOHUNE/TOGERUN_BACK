@@ -9,10 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,24 +27,15 @@ public class ChatController {
 
     @MessageMapping("/chat/{postId}/send")
     @SendTo("/topic/chat/{postId}")
-    public ResponseEntity<ChatMessageDTO> sendMessage(Principal principal, ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
-
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String email = principal.getName();
-        log.info("principal : {}", principal);
-        log.info("email : {}", email);
+    public Map<String,String> sendMessage(@Payload ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
 
 
 //        if(!chatRoomService.isUserAllowedInChatRoom(chatRoomId, email)){
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 //        }
 
-        ChatMessageDTO responseDTO = chatMessageService.createChatMessage(requestDTO.getContent(), postId, email);
+        chatMessageService.createChatMessage(requestDTO, postId);
 
-        return ResponseEntity.ok().body(responseDTO);
+        return Map.of("messageSending", "success");
     }
-
 }

@@ -23,18 +23,18 @@ public class ChatMessageService {
 
 
     @Transactional
-    public ChatMessageDTO createChatMessage(String message, Long chatRoomId, String email){
+    public void createChatMessage(ChatMessageDTO chatMessageDTO, Long postId){
 
-        User sender = userRepository.findByEmail(email);
+        User sender = userRepository.findByEmail(chatMessageDTO.getEmail());
 
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
 
-        ChatMessage chatMessage = new ChatMessage(message, chatRoom, sender);
+        ChatMessage chatMessage = ChatMessage.chatMessageDtoToEntity(chatMessageDTO, chatRoom,sender);
 
         ChatMessage saveChatMessage = chatMessageRepository.save(chatMessage);
 
-        return ChatMessageDTO.toDto(saveChatMessage);
+//        return ChatMessageDTO.ChatMessageEntityToDto(saveChatMessage);
 
     }
 }
