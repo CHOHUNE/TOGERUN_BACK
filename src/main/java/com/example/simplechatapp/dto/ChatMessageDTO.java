@@ -16,6 +16,7 @@ public class ChatMessageDTO {
     private String nickname;
     private String email;
     private LocalDateTime createdAt;
+    private String chatMessageType;
 
     public static ChatMessageDTO ChatMessageEntityToDto(ChatMessage chatMessage) {
         return
@@ -26,6 +27,8 @@ public class ChatMessageDTO {
                         .nickname(chatMessage.getUser().getNickname())
                         .email(chatMessage.getUser().getEmail())
                         .createdAt(chatMessage.getCreatedAt())
+                        .chatMessageType(chatMessage.getChatMessageType().name())
+
                         .build();
     }
 

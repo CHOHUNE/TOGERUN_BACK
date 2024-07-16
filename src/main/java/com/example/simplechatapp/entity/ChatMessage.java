@@ -2,6 +2,7 @@ package com.example.simplechatapp.entity;
 
 
 import com.example.simplechatapp.dto.ChatMessageDTO;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class ChatMessage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
+    @JsonBackReference
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,6 +37,12 @@ public class ChatMessage {
     private User user;
 
     private LocalDateTime createdAt;
+
+
+    @Enumerated(EnumType.STRING) // 번호로 사용시 추후 오류 발생을 미연에 방지
+    private ChatMessageType chatMessageType;
+
+
 
 //    private String email;
 
@@ -44,7 +52,9 @@ public class ChatMessage {
                 .chatRoom(chatRoom)
                 .user(user)
                 .createdAt(chatMessageDTO.getCreatedAt())
+                .chatMessageType(ChatMessageType.valueOf(chatMessageDTO.getChatMessageType())) // 추가
                 .build();
+
     }
 
 //    public ChatMessage(String content, ChatRoom chatRoom, User user) {

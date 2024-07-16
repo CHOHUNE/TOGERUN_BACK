@@ -1,5 +1,6 @@
 package com.example.simplechatapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class ChatRoom {
 
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 
 
