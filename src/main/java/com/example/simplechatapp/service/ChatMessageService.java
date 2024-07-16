@@ -35,16 +35,16 @@ public class ChatMessageService {
         ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
 
-        ChatMessage chatMessage = ChatMessage.chatMessageDtoToEntity(chatMessageRequestDTO, chatRoom,sender);
+        ChatMessage chatMessageResponseEntity = ChatMessage.chatMessageDtoToEntity(chatMessageRequestDTO, chatRoom,sender);
 
-        log.info("chatMessageRequestDTO{}",chatMessageRequestDTO.getEmail());
-        log.info("chatMessageRequestDTO{}",chatMessageRequestDTO.getContent());
+//        log.info("chatMessageRequestDTO{}",chatMessageRequestDTO.getEmail());
+//        log.info("chatMessageRequestDTO{}",chatMessageRequestDTO.getContent());
+//
+//        log.info("sender{}",sender);
 
-        log.info("sender{}",sender);
+        chatMessageRepository.save(chatMessageResponseEntity);
 
-        ChatMessage save = chatMessageRepository.save(chatMessage);
-
-        return ChatMessageDTO.ChatMessageEntityToDto(save);
+        return ChatMessageDTO.ChatMessageEntityToDto(chatMessageResponseEntity);
 
 //        return chatMessageRequestDTO;
     }

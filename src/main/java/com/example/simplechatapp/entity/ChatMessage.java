@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @NoArgsConstructor
@@ -32,6 +34,8 @@ public class ChatMessage {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private LocalDateTime createdAt;
+
 //    private String email;
 
     public static ChatMessage chatMessageDtoToEntity(ChatMessageDTO chatMessageDTO, ChatRoom chatRoom, User user) {
@@ -39,6 +43,7 @@ public class ChatMessage {
                 .content(chatMessageDTO.getContent())
                 .chatRoom(chatRoom)
                 .user(user)
+                .createdAt(chatMessageDTO.getCreatedAt())
                 .build();
     }
 
