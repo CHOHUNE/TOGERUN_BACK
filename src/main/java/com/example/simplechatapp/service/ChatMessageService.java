@@ -10,8 +10,6 @@ import com.example.simplechatapp.repository.UserRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,23 +26,26 @@ public class ChatMessageService {
 
 
     @Transactional
-    public void createChatMessage(ChatMessageDTO chatMessageDTO, Long postId){
+    public ChatMessageDTO createChatMessage(ChatMessageDTO chatMessageRequestDTO, Long postId){
 
-        User sender = userRepository.findByEmail(chatMessageDTO.getEmail());
+        //RequestDTO 엔 email 과 content 만 있음
+
+        User sender = userRepository.findByEmail(chatMessageRequestDTO.getEmail());
 
         ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
 
-        ChatMessage chatMessage = ChatMessage.chatMessageDtoToEntity(chatMessageDTO, chatRoom,sender);
+        ChatMessage chatMessage = ChatMessage.chatMessageDtoToEntity(chatMessageRequestDTO, chatRoom,sender);
 
-        log.info("chatMessageDTO{}",chatMessageDTO.getEmail());
-        log.info("chatMessageDTO{}",chatMessageDTO.getContent());
+        log.info("chatMessageRequestDTO{}",chatMessageRequestDTO.getEmail());
+        log.info("chatMessageRequestDTO{}",chatMessageRequestDTO.getContent());
 
         log.info("sender{}",sender);
 
-        chatMessageRepository.save(chatMessage);
+        ChatMessage save = chatMessageRepository.save(chatMessage);
 
-//        return ChatMessageDTO.ChatMessageEntityToDto(saveChatMessage);
+        return ChatMessageDTO.ChatMessageEntityToDto(save);
 
+//        return chatMessageRequestDTO;
     }
 }

@@ -27,15 +27,15 @@ public class ChatController {
 
     @MessageMapping("/chat/{postId}/send")
     @SendTo("/topic/chat/{postId}")
-    public Map<String,String> sendMessage(@Payload ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
+    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
 
 
 //        if(!chatRoomService.isUserAllowedInChatRoom(chatRoomId, email)){
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 //        }
 
-        chatMessageService.createChatMessage(requestDTO, postId);
+        return chatMessageService.createChatMessage(requestDTO, postId);
 
-        return Map.of("messageSending", "success");
+//        return Map.of("messageSending", "success");
     }
 }
