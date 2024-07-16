@@ -1,20 +1,21 @@
 package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.ChatMessageDTO;
-import com.example.simplechatapp.entity.ChatMessage;
-import com.example.simplechatapp.entity.ChatRoom;
-import com.example.simplechatapp.entity.Post;
-import com.example.simplechatapp.entity.User;
+import com.example.simplechatapp.entity.*;
 import com.example.simplechatapp.repository.ChatMessageRepository;
 import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +27,7 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
 
@@ -78,6 +80,25 @@ public class ChatRoomService {
 
         if (!chatRoom.hasParticipant(user)) {
             chatRoom.addParticipant(user);
+            log.info("처음 참가한 사용자 입니다.");
+
+
+
+            ChatMessage joinMessage = ChatMessage.builder()
+                    .chatRoom(chatRoom)
+                    .content(user.getEmail() + "님이 입장하셨습니다.")
+                    .user(userRepository.findById(1L)) //SYSTEM 계정이 1이라고 가정
+                    .createdAt(LocalDateTime.now())
+                    .chatMessageType(ChatMessageType.SYSTEM)
+                    .build();
+
+            chatMessageRepository.save(joinMessage);
+
+
+            // WebSocket을 통해 모든 클라이언트에게 입장 메시지 전송
+
+            messagingTemplate.convertAndSend("/topic/chat/" + postId, joinMessage);
+
 
         }else{
 //            throw new IllegalArgumentException("이미 참가한 사용자입니다.");

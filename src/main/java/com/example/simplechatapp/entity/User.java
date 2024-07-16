@@ -26,6 +26,7 @@ public class User {
     private boolean social;
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING) // 번호로 사용시 추후 오류 발생을 미연에 방지
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
 
