@@ -40,7 +40,7 @@ public class ChatRoomService {
 
         List<ChatMessage> chatMessages = chatMessageRepository.findMessagesByChatRoomId(chatRoomId);
         return chatMessages.stream()
-                .map(ChatMessageDTO::toDto)
+                .map(ChatMessageDTO::ChatMessageEntityToDto)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +58,7 @@ public class ChatRoomService {
 
 
 // 1번 채팅방 생성 유무 검증
-        ChatRoom chatRoom = chatRoomRepository.findByPost(post)
+        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
                 .orElseGet(() -> {
                     ChatRoom newChatRoom = new ChatRoom();
                     newChatRoom.setPost(post);
@@ -71,6 +71,10 @@ public class ChatRoomService {
 
         User user = userRepository.findByEmail(userEmail);
         //해당 유저를 찾고
+
+        if (user == null) {
+            throw new IllegalArgumentException("USER NOT FOUND");
+        }
 
         if (!chatRoom.hasParticipant(user)) {
             chatRoom.addParticipant(user);

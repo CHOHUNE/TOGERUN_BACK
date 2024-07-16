@@ -1,15 +1,20 @@
 package com.example.simplechatapp.entity;
 
 
+import com.example.simplechatapp.dto.ChatMessageDTO;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Table(name = "chat_messages")
+@Builder
 public class ChatMessage {
 
     @Id
@@ -20,16 +25,28 @@ public class ChatMessage {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User sender;
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public ChatMessage(String content, ChatRoom chatRoom, User user) {
-        this.content = content;
-        this.chatRoom = chatRoom;
-        this.sender = user;
+//    private String email;
+
+    public static ChatMessage chatMessageDtoToEntity(ChatMessageDTO chatMessageDTO, ChatRoom chatRoom, User user) {
+        return ChatMessage.builder()
+                .content(chatMessageDTO.getContent())
+                .chatRoom(chatRoom)
+                .user(user)
+                .build();
     }
+
+//    public ChatMessage(String content, ChatRoom chatRoom, User user) {
+//        this.content = content;
+//        this.chatRoom = chatRoom;
+//        this.nickname = user;
+//    }
 
     public void setChatRoom(ChatRoom chatRoom) {
         this.chatRoom = chatRoom;

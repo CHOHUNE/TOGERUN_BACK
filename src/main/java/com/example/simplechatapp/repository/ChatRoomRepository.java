@@ -24,8 +24,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom,Long> {
 //           "WHERE cr.id = :chatRoomId AND p.email = :email")
 //    boolean isUserAllowedInChatRoom(@Param("chatRoomId") Long chatRoomId, @Param("email") String email);
 
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.post =?1")
-    Optional<ChatRoom> findByPost(@Param("post") Post post);
+    @Query("SELECT cr FROM ChatRoom cr WHERE cr.post.id =?1")
+    Optional<ChatRoom> findByPostId(@Param("postId") Long postId);
+
+
 
 }
 
