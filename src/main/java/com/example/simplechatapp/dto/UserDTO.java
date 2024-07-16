@@ -13,8 +13,7 @@ public class UserDTO extends User {
     private final String email;
     private final String pw;
     private final String nickname;
-
-    private boolean social;
+    private final boolean social;
 
     private List<String> roleNames = new ArrayList<>();
 
@@ -22,7 +21,7 @@ public class UserDTO extends User {
 
     public UserDTO(String email, String password, String nickname, boolean social, List<String> roleNames) {
 
-        super(email, password, roleNames.stream().map(str-> new SimpleGrantedAuthority(str)).collect(Collectors.toList()));
+        super(email, password, roleNames.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
 
         this.email = email;
         this.pw = password;
