@@ -51,17 +51,15 @@ public class ChatRoom {
     public void addParticipant(User user) {
         if (!hasParticipant(user)) {
             this.participants.add(user);
-//            user.getJoinedChatRoom().add(this);
-            ;
+//            user.getJoinedChatRoom().add(this); -> 중간 테이블인 participants 만 관리하면 자동으로 동기화 된다. -> 불필요한 코드
 
         }
     } //  hasParticipant 로 검증 과정 추가
 
     public void removeParticipant(User user) {
-        if (hasParticipant(user)) {
-            this.participants.remove(user);
-            user.getJoinedChatRoom().remove(this);
-        }
+        this.participants.remove(user);
+//            user.leaveChatRoom(this); // 마찬가지로 중간 테이블만 관리
+
     }
 
     public void addChatMessage(ChatMessage chatMessage) {

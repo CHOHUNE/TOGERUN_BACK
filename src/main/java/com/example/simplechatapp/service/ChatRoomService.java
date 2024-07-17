@@ -86,8 +86,8 @@ public class ChatRoomService {
 
             ChatMessage joinMessage = ChatMessage.builder()
                     .chatRoom(chatRoom)
-                    .content(user.getEmail() + "님이 입장하셨습니다.")
-                    .user(userRepository.findById(1L)) //SYSTEM 계정이 1이라고 가정
+                    .content(user.getNickname() + "님이 입장하셨습니다.")
+                    .user(user) //SYSTEM 계정이 1이라고 가정 -> 그냥 user 해당 유저로 변경 (해당 유저에 해당하는 SYSTEM 메세지임을 앎기 위함)
                     .createdAt(LocalDateTime.now())
                     .chatMessageType(ChatMessageType.SYSTEM)
                     .build();
@@ -95,16 +95,17 @@ public class ChatRoomService {
             chatMessageRepository.save(joinMessage);
 
 
-            // WebSocket을 통해 모든 클라이언트에게 입장 메시지 전송
+            // Websocket 통해 모든 클라이언트에게 입장 메시지 전송
 
             messagingTemplate.convertAndSend("/topic/chat/" + postId, joinMessage);
 
 
-        }else{
-//            throw new IllegalArgumentException("이미 참가한 사용자입니다.");
-            // 예외처리시 메소드가 즉시 중단되므로 로그 처리 후 리턴
-            log.info("이미 참가한 사용자입니다.");
         }
+//        else{
+//           throw new IllegalArgumentException("이미 참가한 사용자입니다.");
+//            예외처리시 메소드가 즉시 중단되므로 로그 처리 후 리턴
+//            log.info("이미 참가한 사용자입니다.");
+//        }
 
         // addParticipant 에 검증과정
 

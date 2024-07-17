@@ -60,20 +60,18 @@ public class User {
         this.social = social;
     }
 
-    // -- 양방향 관계 편의 메서드 --
+
+// 편의관계 메서드는 ChatRoom 쪽에만 쓸 예정 -> 굳이 살려둔다면 아래 방식으로 중간 테이블만 변경해서 관리 해준다.
 
     public void joinChatRoom(ChatRoom chatRoom) {
         if (!this.joinedChatRoom.contains(chatRoom)) {
-            this.joinedChatRoom.add(chatRoom);
+//            this.joinedChatRoom.add(chatRoom);
             chatRoom.getParticipants().add(this);
         }
     }
 
     public void leaveChatRoom(ChatRoom chatRoom) {
-
-        if (this.joinedChatRoom.remove(chatRoom)) {
             chatRoom.getParticipants().remove(this);
-        }
     }
 
 }
