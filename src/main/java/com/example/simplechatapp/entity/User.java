@@ -1,6 +1,7 @@
 package com.example.simplechatapp.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,7 @@ public class User {
 
     @ManyToMany(mappedBy = "participants")
     @Builder.Default
+    @JsonBackReference
     private List<ChatRoom> joinedChatRoom = new ArrayList<>();
 
     public void addRole(UserRole userRole) {

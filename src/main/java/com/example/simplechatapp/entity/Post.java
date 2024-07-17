@@ -1,5 +1,6 @@
 package com.example.simplechatapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ public class Post {
 
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name="chat_room_id")
+    @JsonManagedReference
     private ChatRoom chatRoom;
 
 

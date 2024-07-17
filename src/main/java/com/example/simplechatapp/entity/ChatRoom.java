@@ -1,5 +1,6 @@
 package com.example.simplechatapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +24,7 @@ public class ChatRoom {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY,mappedBy = "chatRoom")
+    @JsonBackReference
     private Post post;
 
     @ManyToMany(fetch = FetchType.LAZY)
