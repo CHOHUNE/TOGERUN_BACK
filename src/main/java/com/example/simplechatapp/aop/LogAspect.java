@@ -1,4 +1,4 @@
-package com.example.simplechatapp.aspect;
+package com.example.simplechatapp.aop;
 
 
 import lombok.extern.slf4j.Slf4j;

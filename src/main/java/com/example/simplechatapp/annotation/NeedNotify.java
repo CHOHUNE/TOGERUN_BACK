@@ -1,4 +1,4 @@
-package com.example.simplechatapp.aspect;
+package com.example.simplechatapp.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

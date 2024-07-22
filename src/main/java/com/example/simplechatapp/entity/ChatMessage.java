@@ -1,6 +1,7 @@
 package com.example.simplechatapp.entity;
 
 
+import com.example.simplechatapp.aop.proxy.NotifyInfo;
 import com.example.simplechatapp.dto.ChatMessageDTO;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -18,13 +19,13 @@ import java.time.LocalDateTime;
 @Data
 @Table(name = "chat_messages")
 @Builder
-public class ChatMessage {
+public class ChatMessage implements NotifyInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 1000)
+    @Column(length = 500, nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,5 +72,18 @@ public class ChatMessage {
     }
 
 
+    @Override
+    public User getReceiver() {
+        return chatRoom.getParticipants();
+    }
 
+    @Override
+    public Long getGoUrlId() {
+        return chatRoom.getId();
+    }
+
+    @Override
+    public NotificationType getNotificationType() {
+        return NotificationType.CHAT;
+    }
 }

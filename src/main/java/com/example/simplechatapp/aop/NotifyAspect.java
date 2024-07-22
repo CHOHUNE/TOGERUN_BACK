@@ -1,5 +1,6 @@
-package com.example.simplechatapp.aspect;
+package com.example.simplechatapp.aop;
 
+import com.example.simplechatapp.aop.proxy.NotifyInfo;
 import com.example.simplechatapp.entity.NotifyMessage;
 import com.example.simplechatapp.service.NotifyService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class NotifyAspect {
 
     private final NotifyService notifyService;
 
-    @Pointcut("@annotation(com.example.simplechatapp.aspect.NeedNotify)")
+    @Pointcut("@annotation(com.example.simplechatapp.annotation.NeedNotify)")
     // 포인트 컷을 해당 어노테이션이 붙은 메소드로 지정하겠다는 설정
     public void annotationPointcut() {
 

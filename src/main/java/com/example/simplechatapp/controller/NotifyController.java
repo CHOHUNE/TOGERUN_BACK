@@ -23,9 +23,10 @@ public class NotifyController {
         return ResponseEntity.ok(notifyService.subscribe(principal.getNickname(), lastEventId));
     }
 
-    // 임시로 서버에서 클라이언트로 알림을 주기 위한 send-data 메서드
-    @PostMapping("/send-data/{id}")
-    public void sendData(@PathVariable Long id) {
-        notifyService.notify(id, "data");
-    }
+//    // 임시로 서버에서 클라이언트로 알림을 주기 위한 send-data 메서드
+//    @PostMapping("/send-data/{id}")
+//    public void sendData(@PathVariable Long id) {
+//        notifyService.notify(id, "data");
+//    }
+
 }

@@ -11,12 +11,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
-import java.security.Principal;
-import java.util.Map;
-
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+
 public class ChatController {
 
     private final ChatMessageService chatMessageService;
