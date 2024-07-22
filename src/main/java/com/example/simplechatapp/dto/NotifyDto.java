@@ -2,7 +2,6 @@ package com.example.simplechatapp.dto;
 
 
 import com.example.simplechatapp.entity.Notify;
-import jakarta.persistence.GeneratedValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +24,7 @@ public class NotifyDto {
 
             return Response.builder()
                     .id(notify.getId().toString())
-                    .nickname(notify.getUser().getNickname())
+                    .nickname(notify.getReceiver().getNickname())
                     .content(notify.getContent())
                     .type(notify.getNotificationType().name())
                     .createdAt(notify.getCreatedAt().toString())

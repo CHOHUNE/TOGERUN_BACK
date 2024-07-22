@@ -17,7 +17,7 @@ import java.util.Map;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class NotificationService {
+public class NotifyService {
 
 
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;

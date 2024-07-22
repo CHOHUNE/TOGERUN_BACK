@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.domain.Auditable;
 
 import java.time.LocalDateTime;
 
@@ -32,13 +31,13 @@ public class Notify {
 
     @ManyToOne@JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE) // User 가 삭제되면 같이 삭제
-    private User user;
+    private User receiver;
 
     private LocalDateTime createdAt;
 
     @Builder
     public Notify (User receiver, NotificationType notificationType, String content, String url, Boolean isRead) {
-        this.user = receiver;
+        this.receiver = receiver;
         this.notificationType = notificationType;
         this.content = content;
         this.url = url;
