@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
@@ -43,6 +44,7 @@ public class CustomSecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOauthSuccessHandler customOauthSuccessHandler;
+    private final UserDetailsService userDetailsService;
 
 
 //    @Bean
@@ -80,7 +82,8 @@ public class CustomSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/api/member/refresh").permitAll() //// Oauth2.0 을 추가시 requestMatchers 를 좀 더 엄격히 설정 해야한다.
-                        .requestMatchers("/chat").permitAll()   // 웹소켓 처음 연결하는 api : 쿠키를 골라서 보내는 방법이 없길래 일단 제외 했다.
+                        .requestMatchers("/chat").permitAll() // 웹소켓 처음 연결하는 api : 쿠키를 골라서 보내는 방법이 없길래 일단 제외 했다.
+                        .requestMatchers("/api/notifications/subscribe").permitAll()
                         .anyRequest().authenticated()
 
                 ).logout(logout -> logout
@@ -93,7 +96,7 @@ public class CustomSecurityConfig {
 
 
 //        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(new JWTCheckFilter(), OAuth2LoginAuthenticationFilter.class);
+        http.addFilterAfter(new JWTCheckFilter(userDetailsService), OAuth2LoginAuthenticationFilter.class);
 
         http.exceptionHandling(httpSecurityExceptionHandlingConfigurer -> {
             httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler());

@@ -38,7 +38,6 @@ public class UserRepositoryTest {
 
 
         if(i>7) user.addRole(UserRole.ADMIN);
-        if(i>5) user.addRole(UserRole.MANAGER);
         if(i>0) user.addRole(UserRole.USER);
 
         userRepository.save(user);

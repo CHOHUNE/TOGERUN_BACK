@@ -2,6 +2,7 @@ package com.example.simplechatapp.security.filter;
 
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.dto.oauth2.CustomOAuth2User;
+import com.example.simplechatapp.security.CustomUserDetailService;
 import com.example.simplechatapp.util.CustomJWTException;
 import com.example.simplechatapp.util.JWTUtil;
 import com.google.gson.Gson;
@@ -9,9 +10,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -22,6 +26,13 @@ import java.util.Map;
 @Log4j2
 public class JWTCheckFilter extends OncePerRequestFilter {
 
+    private final UserDetailsService userDetailsService;
+
+    public JWTCheckFilter(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
@@ -30,7 +41,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         log.info("..... Check URI ..... " + path
         );
 
-        if (path.startsWith("/api/member")||path.startsWith("/chat")){
+        if (path.startsWith("/api/member")||path.startsWith("/chat")||path.startsWith("/api/notifications/subscribe")){
             return true;
         }
 
