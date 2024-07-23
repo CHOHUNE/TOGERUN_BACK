@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 
 @Entity
@@ -73,7 +74,7 @@ public class ChatMessage implements NotifyInfo {
 
 
     @Override
-    public User getReceiver() {
+    public Set<User> getReceiver() {
         return chatRoom.getParticipants();
     }
 

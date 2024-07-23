@@ -1,5 +1,6 @@
 package com.example.simplechatapp.controller;
 
+import com.example.simplechatapp.annotation.NeedNotify;
 import com.example.simplechatapp.dto.ChatMessageDTO;
 import com.example.simplechatapp.service.ChatMessageService;
 import com.example.simplechatapp.service.ChatRoomService;
@@ -23,6 +24,7 @@ public class ChatController {
 
     @MessageMapping("/chat/{postId}/send")
     @SendTo("/topic/chat/{postId}")
+    @NeedNotify
     public ChatMessageDTO sendMessage(@Payload ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
 
 

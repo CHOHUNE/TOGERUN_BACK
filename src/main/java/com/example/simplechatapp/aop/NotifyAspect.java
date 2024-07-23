@@ -2,6 +2,7 @@ package com.example.simplechatapp.aop;
 
 import com.example.simplechatapp.aop.proxy.NotifyInfo;
 import com.example.simplechatapp.entity.NotifyMessage;
+import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.service.NotifyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Aspect
 @Slf4j
@@ -35,17 +38,29 @@ public class NotifyAspect {
     @AfterReturning(pointcut = "annotationPointcut()", returning = "result")
     public void checkValue(JoinPoint joinPoint, Object result) throws Throwable {
 
-        NotifyInfo notifyProxy = (NotifyInfo) result;
 
-        notifyService.send(
-                notifyProxy.getReceiver(),
-                notifyProxy.getNotificationType(),
-                NotifyMessage.CHAT_APP_ALERT.getMessage(),
-                "/api/notify" + (notifyProxy.getGoUrlId())
-        );
+        if (result instanceof NotifyInfo) {
 
-        log.info("result ={} ", result);
+            NotifyInfo notifyProxy = (NotifyInfo) result;
+
+            Set<User> receivers = notifyProxy.getReceiver(); // 단체
+
+            for (User receiver : receivers) {
+
+                notifyService.send(
+                        receiver,
+                        notifyProxy.getNotificationType(),
+                        NotifyMessage.CHAT_APP_ALERT.getMessage(),
+                        "/api/notify/" + (notifyProxy.getGoUrlId())
+                );
+            }
+
+            log.info("result ={} ", result);
+
+        }else{
+
+            log.error("Method didnt return a NotifyInfo Instance");
+
+        }
     }
-
-
 }

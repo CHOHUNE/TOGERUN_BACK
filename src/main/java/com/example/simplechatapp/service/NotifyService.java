@@ -92,7 +92,7 @@ public class NotifyService {
                 .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
 
     }
-// 구독자의 이메일을 기반으로 이벤트 캐시를 가져와 마지막 이벤ㅌ ID 와 비교하여 미수신한 데이터 전송
+// 구독자의 이메일을 기반으로 이벤트 캐시를 가져와 마지막 이벤트 ID 와 비교하여 미수신한 데이터 전송
 
 
 
