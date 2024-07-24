@@ -76,23 +76,25 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             log.info(userDTO.getAuthorities());
 
             String path = request.getRequestURI();
-            if(path.startsWith("/api/login/oauth2")){
+//            if(path.startsWith("/api/oauth2")){
+//
+//                log.info(".....OAuth2 Login Start.....");
+//                CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+//
+//                UsernamePasswordAuthenticationToken authenticationToken =
+//                        new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+//
+//                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+//            }else{
+            //
 
-                log.info(".....OAuth2 Login Start.....");
-                CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
-
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }else{
                 log.info(".....JWT Login Start.....");
 
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(userDTO, pw, userDTO.getAuthorities());
                 // 토큰의 파라메타는 principal 과 credential (접근하려는 대상, 권한 )
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
+//            }
 
             filterChain.doFilter(request, response);
 

@@ -57,9 +57,7 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 //        cookie.setHttpOnly(true);
         response.addCookie(cookie);
 
-
         response.sendRedirect("http://localhost:3000/");
-
 
         request.getSession().invalidate();
 

@@ -1,5 +1,6 @@
 package com.example.simplechatapp.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
@@ -13,6 +14,7 @@ import java.util.Map;
 public class JWTUtil {
 
     private static  String key = "123213143258asdklsdjioasjivzcxiuhuihuivxcuihadsuidashiudasuu934589239";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static String generateToken(Map<String, Object> valueMap, int min) {
 
@@ -59,5 +61,13 @@ public class JWTUtil {
             throw new CustomJWTException("Error");
         }
         return claims;
+    }
+
+    public static Map<String, Object> parseCookieValue(String cookieValue) {
+        try {
+            return objectMapper.readValue(cookieValue, Map.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse cookie value", e);
+        }
     }
 }
