@@ -26,12 +26,6 @@ import java.util.Map;
 @Log4j2
 public class JWTCheckFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
-
-    public JWTCheckFilter(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
-
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {

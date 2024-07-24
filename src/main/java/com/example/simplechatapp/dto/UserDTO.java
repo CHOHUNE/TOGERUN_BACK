@@ -1,5 +1,6 @@
 package com.example.simplechatapp.dto;
 import lombok.Data;
+import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,6 +9,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
+
+@Getter
 public class UserDTO extends User  {
 
 
@@ -43,27 +46,6 @@ public class UserDTO extends User  {
 
         return dataMap;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPw() {
-        return pw;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public boolean isSocial() {
-        return social;
-    }
-
-    public List<String> getRoleNames() {
-        return roleNames;
-    }
-
 
 
 }
