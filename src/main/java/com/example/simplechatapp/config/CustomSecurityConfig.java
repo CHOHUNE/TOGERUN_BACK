@@ -95,8 +95,10 @@ public class CustomSecurityConfig {
                 .deleteCookies("JSESSIONID", "member"));
 
 
-//        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(new JWTCheckFilter(userDetailsService), OAuth2LoginAuthenticationFilter.class);
+        http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterAfter(new JWTCheckFilter(), OAuth2LoginAuthenticationFilter.class);
+
+
 
         http.exceptionHandling(httpSecurityExceptionHandlingConfigurer -> {
             httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler());

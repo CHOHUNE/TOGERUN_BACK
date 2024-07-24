@@ -36,7 +36,7 @@ public class CustomUserDetailService implements UserDetailsService {
 
         if(user==null) throw new UsernameNotFoundException("NOT FOUND");
 
-        UserDTO userDTO = new UserDTO(
+        return  new UserDTO(
                 user.getEmail(),
                 user.getPassword(),
                 user.getNickname(),
@@ -46,6 +46,5 @@ public class CustomUserDetailService implements UserDetailsService {
                // user.getMemberRoleList().stream().map(memberRole -> memberRole.name()).collect(Collectors.toUnmodifiableList()));
                 //Enum::name 은 열거형 타입을 name에 할당 해준다. java 16 부터는 toList() 가 .collect(Collectors.toUnmodifiableList()) 과 동일하게 불변 리스트로 만들어 준다.
 
-        return userDTO;
     }
 }

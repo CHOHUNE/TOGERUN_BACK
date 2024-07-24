@@ -1,5 +1,6 @@
 package com.example.simplechatapp.controller;
 
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.service.NotifyService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class NotifyController {
 
     // 클라이언트 구독 subscribe 메서드
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal User principal,
+    public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDTO principal,
                                                 @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
         return ResponseEntity.ok(notifyService.subscribe(principal.getNickname(), lastEventId));
     }
