@@ -3,6 +3,7 @@ package com.example.simplechatapp.dto;
 import com.example.simplechatapp.aop.proxy.NotifyInfo;
 import com.example.simplechatapp.entity.ChatMessage;
 import com.example.simplechatapp.entity.NotificationType;
+import com.example.simplechatapp.entity.NotifyMessage;
 import com.example.simplechatapp.entity.User;
 import lombok.Builder;
 import lombok.Data;
@@ -26,8 +27,8 @@ public class ChatMessageDTO implements NotifyInfo {
     private Set<String> receivers; // User 를 직접 참조 했다가 오류가 생김 - > UserDTO 참조로 변경 -> String 으로 변경
     //  Hibernate 는 지연로딩을 위해 프록시 객체를 사용하는데 이 Jackson 라이브러리는 프록시 객체를 처리하지 못한다.
     // Jackson 라이브러리란 ? : 자바 객체를 JSON으로 변환하거나 JSON을 자바 객체로 변환하는데 사용하는 라이브러리
-    private Long goUrlId;
-    private NotificationType notificationType;
+    private String goUrlId;
+//    private NotificationType notificationType;
 
     public static ChatMessageDTO ChatMessageEntityToDto(ChatMessage chatMessage) {
 
@@ -42,12 +43,9 @@ public class ChatMessageDTO implements NotifyInfo {
                         .chatMessageType(chatMessage.getChatMessageType().name())
                         .receivers(chatMessage.getChatRoom().getParticipants().parallelStream()
                                 .map(User::getEmail)
-                                .collect(Collectors.toSet()))
-                        .goUrlId(chatMessage.getChatRoom().getId())
-                        .notificationType(NotificationType.CHAT)
-
-
-
+                                .collect(Collectors.toSet())) //participants 에서 email 만 추출
+                        .goUrlId("/api/post/"+chatMessage.getChatRoom().getId()+"/chat/")
+//                        .notificationType(NotificationType.CHAT)
                         .build();
     }
 
@@ -57,12 +55,17 @@ public class ChatMessageDTO implements NotifyInfo {
     }
 
     @Override
-    public Long getGoUrlId() {
+    public String getGoUrlId() {
         return goUrlId;
     }
 
     @Override
     public NotificationType getNotificationType() {
         return NotificationType.CHAT;
+    }
+
+    @Override
+    public NotifyMessage getNotifyMessage() {
+        return NotifyMessage.CHAT_APP_ALERT;
     }
 }

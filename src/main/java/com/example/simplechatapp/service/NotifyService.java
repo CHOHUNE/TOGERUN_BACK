@@ -44,6 +44,7 @@ public class NotifyService {
         sendNotification(sseEmitter, eventId, emitterId, "EventStream Created. [userEmail=" + userNickname + "]");
 
         // 클라이언트가 미수신한 Event 목록이 존재할 경우 전송하여 Event 유실을 예방
+
         if(hasLostData(lastEventId)){
             sendLostData(lastEventId,userNickname,emitterId,sseEmitter);
         }

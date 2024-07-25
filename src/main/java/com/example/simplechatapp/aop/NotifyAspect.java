@@ -51,8 +51,8 @@ public class NotifyAspect {
                 notifyService.send(
                         receiver,
                         notifyProxy.getNotificationType(),
-                        NotifyMessage.CHAT_APP_ALERT.getMessage(),
-                        "/api/notify/" + (notifyProxy.getGoUrlId())
+                        notifyProxy.getNotifyMessage().getMessage(),
+                        notifyProxy.getGoUrlId()
                 );
             }
 
