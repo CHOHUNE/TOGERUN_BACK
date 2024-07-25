@@ -1,6 +1,7 @@
 package com.example.simplechatapp.aop;
 
 import com.example.simplechatapp.aop.proxy.NotifyInfo;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.NotifyMessage;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.service.NotifyService;
@@ -43,9 +44,9 @@ public class NotifyAspect {
 
             NotifyInfo notifyProxy = (NotifyInfo) result;
 
-            Set<User> receivers = notifyProxy.getReceiver(); // 단체
+            Set<String> receivers = notifyProxy.getReceiver(); // 단체
 
-            for (User receiver : receivers) {
+            for (String receiver : receivers) {
 
                 notifyService.send(
                         receiver,

@@ -3,6 +3,7 @@ package com.example.simplechatapp.entity;
 
 import com.example.simplechatapp.aop.proxy.NotifyInfo;
 import com.example.simplechatapp.dto.ChatMessageDTO;
+import com.example.simplechatapp.dto.UserDTO;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.Set;
 @Data
 @Table(name = "chat_messages")
 @Builder
-public class ChatMessage implements NotifyInfo {
+public class ChatMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +46,6 @@ public class ChatMessage implements NotifyInfo {
     private ChatMessageType chatMessageType;
 
 
-
 //    private String email;
 
     public static ChatMessage chatMessageDtoToEntity(ChatMessageDTO chatMessageDTO, ChatRoom chatRoom, User user) {
@@ -59,12 +59,6 @@ public class ChatMessage implements NotifyInfo {
 
     }
 
-//    public ChatMessage(String content, ChatRoom chatRoom, User user) {
-//        this.content = content;
-//        this.chatRoom = chatRoom;
-//        this.nickname = user;
-//    }
-
     public void setChatRoom(ChatRoom chatRoom) {
         this.chatRoom = chatRoom;
         if (chatRoom != null && chatRoom.getChatMessageList().contains(this)) {
@@ -73,18 +67,20 @@ public class ChatMessage implements NotifyInfo {
     }
 
 
-    @Override
-    public Set<User> getReceiver() {
-        return chatRoom.getParticipants();
-    }
+//    @Override
+//    public Set<UserDTO> getReceiver() {
+//        return chatRoom.getParticipants();
+//    }
+//
+//    @Override
+//    public Long getGoUrlId() {
+//        return chatRoom.getId();
+//    }
+//
+//    @Override
+//    public NotificationType getNotificationType() {
+//        return NotificationType.CHAT;
+//    }
+//}
 
-    @Override
-    public Long getGoUrlId() {
-        return chatRoom.getId();
-    }
-
-    @Override
-    public NotificationType getNotificationType() {
-        return NotificationType.CHAT;
-    }
 }

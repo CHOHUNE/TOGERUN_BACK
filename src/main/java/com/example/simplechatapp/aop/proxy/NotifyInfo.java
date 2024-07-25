@@ -1,12 +1,12 @@
 package com.example.simplechatapp.aop.proxy;
 
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.NotificationType;
-import com.example.simplechatapp.entity.User;
 
 import java.util.Set;
 
 public interface NotifyInfo {
-    Set<User> getReceiver();
+    Set<String> getReceiver();
     Long getGoUrlId();
     NotificationType getNotificationType();
 

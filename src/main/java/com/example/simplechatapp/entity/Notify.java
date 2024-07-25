@@ -36,10 +36,11 @@ public class Notify {
     private LocalDateTime createdAt;
 
     @Builder
-    public Notify (User receiver, NotificationType notificationType, String content, String url, Boolean isRead) {
+    public Notify (User receiver, NotificationType notificationType, String content, String url, Boolean isRead, LocalDateTime createdAt) {
         this.receiver = receiver;
         this.notificationType = notificationType;
         this.content = content;
+        this.createdAt = createdAt;
         this.url = url;
         this.isRead = isRead;
     }
@@ -47,8 +48,4 @@ public class Notify {
     public Notify() {
 
     }
-
-
-
-
 }

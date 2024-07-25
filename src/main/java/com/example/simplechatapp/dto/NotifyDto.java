@@ -2,10 +2,14 @@ package com.example.simplechatapp.dto;
 
 
 import com.example.simplechatapp.entity.Notify;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class NotifyDto {
 
@@ -18,7 +22,8 @@ public class NotifyDto {
         String nickname;
         String content;
         String type;
-        String createdAt;
+
+        LocalDateTime createdAt;
 
         public static Response createResponse(Notify notify) {
 
@@ -27,7 +32,7 @@ public class NotifyDto {
                     .nickname(notify.getReceiver().getNickname())
                     .content(notify.getContent())
                     .type(notify.getNotificationType().name())
-                    .createdAt(notify.getCreatedAt().toString())
+                    .createdAt(notify.getCreatedAt())
                     .build();
         }
     }

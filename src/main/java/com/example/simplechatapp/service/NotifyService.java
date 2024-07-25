@@ -1,17 +1,20 @@
 package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.NotifyDto;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.NotificationType;
 import com.example.simplechatapp.entity.Notify;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.EmitterRepository;
 import com.example.simplechatapp.repository.NotifyRepository;
+import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -24,6 +27,7 @@ public class NotifyService {
 
     private final EmitterRepository emitterRepository;
     private final NotifyRepository notifyRepository;
+    private final UserRepository userRepository;
 
     public SseEmitter subscribe(String userNickname, String lastEventId) {
 
@@ -96,15 +100,15 @@ public class NotifyService {
 
 
 
-    public void send(User receiver, NotificationType notificationType, String content, String url) {
+    public void send(String receiver, NotificationType notificationType, String content, String url) {
 
         Notify notification = notifyRepository.save(createNotification(receiver, notificationType, content, url));
 
-        String receiveEmail = receiver.getEmail();
 
-        String eventId = receiveEmail + "_" + System.currentTimeMillis();
 
-        Map<String,SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserNickname(receiveEmail);
+        String eventId = receiver + "_" + System.currentTimeMillis();
+
+        Map<String,SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserNickname(receiver);
 
         emitters.forEach(
                 (key,emitter) ->{
@@ -119,10 +123,13 @@ public class NotifyService {
     // 각 Ssemitter 에 대해 이벤트 캐시에 key 와 생성한 Notify 객체를 저장하고,
     // SendNotification 메서드를 호출해 알림과 관련된 데이터 (eventId, key, ResponseNotifyDto) 를 emitter 로 전송
 
-    private Notify createNotification(User receiver, NotificationType notificationType, String content, String url) {
+    private Notify createNotification(String receiver, NotificationType notificationType, String content, String url) {
+
+        User user = userRepository.findByEmail(receiver);
 
         return Notify.builder()
-                .receiver(receiver)
+                .createdAt(LocalDateTime.now())
+                .receiver(user)
                 .notificationType(notificationType)
                 .content(content)
                 .url(url)
