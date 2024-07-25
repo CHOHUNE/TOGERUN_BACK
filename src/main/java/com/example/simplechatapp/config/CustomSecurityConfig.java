@@ -83,7 +83,7 @@ public class CustomSecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/api/member/refresh").permitAll() //// Oauth2.0 을 추가시 requestMatchers 를 좀 더 엄격히 설정 해야한다.
                         .requestMatchers("/chat").permitAll() // 웹소켓 처음 연결하는 api : 쿠키를 골라서 보내는 방법이 없길래 일단 제외 했다.
-                        .requestMatchers("/api/notifications/subscribe").permitAll()
+//                        .requestMatchers("/api/notifications/subscribe").permitAll() // EventSourcePolyfill 추가로 헤더에 토큰을 담아서 보낼 수 있게 됨 따라서 주석 처리
                         .anyRequest().authenticated()
 
                 ).logout(logout -> logout

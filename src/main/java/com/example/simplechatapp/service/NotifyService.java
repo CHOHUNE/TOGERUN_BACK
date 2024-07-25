@@ -13,8 +13,10 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.management.Notification;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -28,6 +30,10 @@ public class NotifyService {
     private final EmitterRepository emitterRepository;
     private final NotifyRepository notifyRepository;
     private final UserRepository userRepository;
+
+//    public List<Notification> getNotificationList(String userEmail) {
+//        return notifyRepository.findAllByReceiverEmail(userEmail);
+//    }
 
     public SseEmitter subscribe(String userNickname, String lastEventId) {
 

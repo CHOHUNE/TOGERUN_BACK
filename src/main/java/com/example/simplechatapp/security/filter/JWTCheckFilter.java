@@ -35,7 +35,9 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         log.info("..... Check URI ..... " + path
         );
 
-        if (path.startsWith("/api/member")||path.startsWith("/chat")||path.startsWith("/api/notifications/subscribe")){
+        if (path.startsWith("/api/member")||path.startsWith("/chat")
+//            ||path.startsWith("/api/notifications/subscribe") EventSourcePolyfill 추가로 헤더에 토큰을 담아서 보낼 수 있게 됨 따라서 주석 처리
+        ){
             return true;
         }
 
