@@ -6,6 +6,7 @@ import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.PostImage;
+import com.example.simplechatapp.repository.UserRepository;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Transactional
 public interface PostService {
+
 
     PostDTO get(Long id);
 
@@ -30,7 +32,8 @@ public interface PostService {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .localDate(post.getLocalDate())
-                .user(post.getUser())
+                .nickname(post.getUser().getNickname())
+                .userId(post.getUser().getId())
                 .delFlag(post.isDelFlag())
                 .build();
 
@@ -51,7 +54,7 @@ public interface PostService {
                 .title(postDTO.getTitle())
                 .content(postDTO.getContent())
                 .localDate(postDTO.getLocalDate())
-                .user(postDTO.getUser())
+                .user(null) //래퍼지토리 주입 관계로 impl 에서 따로 주입
                 .delFlag(postDTO.isDelFlag())
                 .build();
 

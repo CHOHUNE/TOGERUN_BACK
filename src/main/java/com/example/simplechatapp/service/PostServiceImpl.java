@@ -42,7 +42,7 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findByEmail(principal.getEmail());
 
         postDTO.setLocalDate(LocalDate.now());
-        postDTO.setUser(user);
+        postDTO.setUserId(user.getId());
 
         Post result = postRepository.save(dtoToEntity(postDTO));
 
@@ -102,8 +102,6 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteById(id);
 //        postRepository.updateToDelete(id,true);
 
-
-
     }
 
 
@@ -114,7 +112,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post dtoToEntity(PostDTO postDTO) {
-        return PostService.super.dtoToEntity(postDTO);
+
+        Post post = PostService.super.dtoToEntity(postDTO);
+
+        post.setUser(userRepository.findById(postDTO.getUserId()));
+
+        return post;
     }
 
     @Override
