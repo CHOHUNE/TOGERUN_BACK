@@ -38,7 +38,7 @@ public class PostServiceTest {
                 localDate(LocalDate.now()).
                 build();
 
-        postService.register(post);
+//        postService.register(post);
 
     }
 

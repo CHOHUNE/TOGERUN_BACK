@@ -4,10 +4,14 @@ package com.example.simplechatapp.service;
 import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PageResponseDTO;
 import com.example.simplechatapp.dto.PostDTO;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.Post;
+import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.PostRepository;
+import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,6 +24,7 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     @Override
     public PostDTO get(Long id) {
@@ -30,10 +35,15 @@ public class PostServiceImpl implements PostService {
         return entityToDTO(post);
     }
 
+
     @Override
-    public Long register(PostDTO postDTO) {
+        public Long register(@AuthenticationPrincipal UserDTO principal, PostDTO postDTO) {
+
+        User user = userRepository.findByEmail(principal.getEmail());
 
         postDTO.setLocalDate(LocalDate.now());
+        postDTO.setUser(user);
+
         Post result = postRepository.save(dtoToEntity(postDTO));
 
         return result.getId();

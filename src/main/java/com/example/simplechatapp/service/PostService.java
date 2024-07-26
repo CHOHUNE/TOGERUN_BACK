@@ -3,8 +3,10 @@ package com.example.simplechatapp.service;
 import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PageResponseDTO;
 import com.example.simplechatapp.dto.PostDTO;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.PostImage;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -14,7 +16,7 @@ public interface PostService {
 
     PostDTO get(Long id);
 
-    Long register(PostDTO postDTO);
+    Long register(@AuthenticationPrincipal UserDTO principal, PostDTO postDTO);
 
     void modify(PostDTO postDTO);
 
