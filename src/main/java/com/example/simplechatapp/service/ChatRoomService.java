@@ -64,7 +64,7 @@ public class ChatRoomService {
                 .orElseGet(() -> {
                     ChatRoom newChatRoom = new ChatRoom();
                     newChatRoom.setPost(post);
-                    newChatRoom.addParticipant(post.getUser()); // 게시글 작성자를 자동으로 추가
+//                    newChatRoom.addParticipant(post.getUser()); // 게시글 작성자를 자동으로 추가 -> 입장 메세지가 안가서 주석 처리
                     return chatRoomRepository.save(newChatRoom);
                 });
         //게시판 생성시 채팅방 생성은 비동기 처리 -> 채팅방에 등록된 포스트를 찾은 후 없으면 새로 생성
@@ -87,7 +87,7 @@ public class ChatRoomService {
             ChatMessage joinMessage = ChatMessage.builder()
                     .chatRoom(chatRoom)
                     .content(user.getNickname() + "님이 입장하셨습니다.")
-                    .user(user) //SYSTEM 계정이 1이라고 가정 -> 그냥 user 해당 유저로 변경 (해당 유저에 해당하는 SYSTEM 메세지임을 앎기 위함)
+                    .user(user)
                     .createdAt(LocalDateTime.now())
                     .chatMessageType(ChatMessageType.SYSTEM)
                     .build();
