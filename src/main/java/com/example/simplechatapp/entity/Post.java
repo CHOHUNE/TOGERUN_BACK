@@ -43,6 +43,10 @@ public class Post {
     @Builder.Default
     private List<PostImage> imageList = new ArrayList<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+
 
     public void changeTitle(String title) {
         this.title = title;
