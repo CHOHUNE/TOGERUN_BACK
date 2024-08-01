@@ -28,6 +28,8 @@ public class CommentRequestDto {
 
     private Integer senderNo;
     private Long parentId;
+
+    @Builder.Default
     private List<Comment> children = new ArrayList<>();
 
 

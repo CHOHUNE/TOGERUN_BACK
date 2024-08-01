@@ -30,6 +30,8 @@ public class CommentResponseDto {
 
     private Long parentId;
 
+
+    @Builder.Default
     private List<CommentResponseDto> children = new ArrayList<>();
 
     private LocalDateTime createdAt;
