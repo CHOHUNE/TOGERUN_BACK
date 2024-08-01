@@ -27,7 +27,7 @@ public class Comment {
 //    @JoinColumn(name = "user_id")
 //    private User user;
 
-    private String createdBy;
+    private String createdBy; // 이메일을 or 아이디를 넣을지 고민 -> 이메일
 
     // 소규모 프로젝트, 성능을 중시하는 경우에 단순히 createdBy를 사용해도 무방
     // 대규모 프로젝트, 무결성을 중시하는 겨우에는 User 객체를 사용하는 것이 좋음
