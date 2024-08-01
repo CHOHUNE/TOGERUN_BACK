@@ -2,7 +2,7 @@ package com.example.simplechatapp.config;
 
 
 import com.example.simplechatapp.controller.formatter.LocalDateFormatter;
-import com.example.simplechatapp.security.resolver.CustomArgumentResolver;
+//import com.example.simplechatapp.security.resolver.CustomArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -26,15 +26,15 @@ public class CustomServletConfig implements WebMvcConfigurer {
 
     }
 
-    @Bean
-    public CustomArgumentResolver customArgumentResolver() {
-        return new CustomArgumentResolver();
-    }
-
-    @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-        argumentResolvers.add(customArgumentResolver());
-    }
+//    @Bean
+//    public CustomArgumentResolver customArgumentResolver() {
+//        return new CustomArgumentResolver();
+//    }
+//
+//    @Override
+//    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+//        argumentResolvers.add(customArgumentResolver());
+//    }
 
     //    @Override
 //    public void addCorsMappings(CorsRegistry registry) {
