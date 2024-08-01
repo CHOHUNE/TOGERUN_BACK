@@ -1,16 +1,14 @@
 package com.example.simplechatapp.repository;
 
-import com.example.simplechatapp.dto.CommentDto;
 import com.example.simplechatapp.entity.Comment;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
-
-public interface CommentRepository {
-
-    public List<CommentDto> convertNestedStructure(List<Comment> comments);
-
-    public void updateComment(Comment comment);
+@Repository
+public interface CommentRepository extends JpaRepository<Comment, Long>, CustomCommentRepository{
 
 }
+
