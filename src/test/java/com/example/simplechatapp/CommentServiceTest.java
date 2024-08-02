@@ -5,6 +5,7 @@ import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
 import com.example.simplechatapp.entity.Comment;
 import com.example.simplechatapp.entity.Post;
+import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.CommentRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.service.CommentService;
@@ -90,8 +91,6 @@ public class CommentServiceTest {
         assertThrows(CustomException.class, () -> {
             commentService.createComment(commentRequestDto);
         }, "해당 게시글 정보를 찾을 수 없습니다.");
-
-
     }
 
     @Test
@@ -101,6 +100,7 @@ public class CommentServiceTest {
         Post post = Post.builder().
                 id(1L)
                 .title("제목")
+                .user(User.builder().email("작성자").build())
                 .content("댓글 작성 테스트 ")
                 .build();
 

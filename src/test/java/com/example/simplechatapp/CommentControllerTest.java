@@ -1,7 +1,6 @@
 package com.example.simplechatapp;
 
 
-import ch.qos.logback.core.spi.ErrorCodes;
 import com.example.simplechatapp.controller.CommentController;
 import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.util.JpaMetamodel;
 import org.springframework.http.MediaType;
