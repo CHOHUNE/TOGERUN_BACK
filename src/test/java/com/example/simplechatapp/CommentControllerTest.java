@@ -4,6 +4,7 @@ package com.example.simplechatapp;
 import com.example.simplechatapp.controller.CommentController;
 import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.service.CommentService;
 
 import com.example.simplechatapp.util.CustomException;
@@ -62,7 +63,11 @@ public class CommentControllerTest {
                 .content("댓글 작성 테스트")
                 .createdBy("Lee")
                 .build();
-        given(commentService.createComment(commentRequestDto)).willReturn(snsCommentResponseDto);
+
+        UserDTO principal = new UserDTO("작성자", null, null, false, null);
+
+
+        given(commentService.createComment(commentRequestDto, principal)).willReturn(snsCommentResponseDto);
         String expectedJson = createStringJson(snsCommentResponseDto);
         //then
         mvc.perform(post("/api/comment")
@@ -128,7 +133,10 @@ public class CommentControllerTest {
 
         String stringJson = createStringJson(commentRequestDto);
 
-        given(commentService.createComment(any(CommentRequestDto.class)))
+        UserDTO principal = new UserDTO("작성자", null, null, false, null);
+
+
+        given(commentService.createComment(any(CommentRequestDto.class), principal))
                 .willThrow(new CustomException(ErrorCode.POST_NOT_FOUND));
 
         mvc.perform(post("/api/comment")

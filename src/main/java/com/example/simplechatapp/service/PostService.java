@@ -18,7 +18,7 @@ public interface PostService {
 
     PostDTO get(Long id);
 
-    Long register(@AuthenticationPrincipal UserDTO principal, PostDTO postDTO);
+    Long register( UserDTO principal, PostDTO postDTO);
 
     void modify(PostDTO postDTO);
 

@@ -58,5 +58,9 @@ public class Comment {
         this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 
+    public void update(String content) {
+        this.content = content;
+    }
+
 
 }

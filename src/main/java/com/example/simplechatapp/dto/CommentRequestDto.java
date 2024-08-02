@@ -17,6 +17,10 @@ import java.util.List;
 @Builder
 public class CommentRequestDto {
 
+
+    private Long id;
+
+
     @NotNull
     private Long postId;
 
@@ -27,6 +31,7 @@ public class CommentRequestDto {
     private String createdBy;
 
     private Integer senderNo;
+
     private Long parentId;
 
     @Builder.Default

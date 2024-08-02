@@ -3,6 +3,7 @@ package com.example.simplechatapp;
 
 import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.Comment;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
@@ -66,7 +67,9 @@ public class CommentServiceTest {
         //when
         when(postRepository.findById(1L)).thenReturn(Optional.ofNullable(post));
 
-        CommentResponseDto expectedDto = commentService.createComment(commentRequestDto);
+        UserDTO principal = new UserDTO("작성자", null, null, false, null);
+
+        CommentResponseDto expectedDto = commentService.createComment(commentRequestDto, principal);
         Assertions.assertThat(expectedDto.getCreatedBy()).isEqualTo("작성자");
 
         verify(commentRepository, times(1)).save(any());
@@ -88,8 +91,11 @@ public class CommentServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
         // then
 
+        UserDTO principal = new UserDTO("작성자", null, null, false, null);
+
+
         assertThrows(CustomException.class, () -> {
-            commentService.createComment(commentRequestDto);
+            commentService.createComment(commentRequestDto, principal);
         }, "해당 게시글 정보를 찾을 수 없습니다.");
     }
 

@@ -37,7 +37,7 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-        public Long register(@AuthenticationPrincipal UserDTO principal, PostDTO postDTO) {
+        public Long register( UserDTO principal, PostDTO postDTO) {
 
         User user = userRepository.findByEmail(principal.getEmail());
 
@@ -69,7 +69,6 @@ public class PostServiceImpl implements PostService {
                 post.addImageString(uploadFileName);
             });
         }
-
 
         postRepository.save(post);
     }
