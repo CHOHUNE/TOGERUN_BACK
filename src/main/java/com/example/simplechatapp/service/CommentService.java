@@ -3,6 +3,7 @@ package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.Comment;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.repository.CommentRepository;
@@ -24,16 +25,16 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto commentRequestDto) {
+    public CommentResponseDto createComment(CommentRequestDto commentRequestDto, UserDTO principal) {
 
         Optional<Post> post = postRepository.findById(commentRequestDto.getPostId());
 
-        Comment comment =Comment.builder()
+        Comment comment = Comment.builder()
                 .post(post.orElseThrow())
                 .content(commentRequestDto.getContent())
-                .createdBy(commentRequestDto.getCreatedBy())
+                .createdBy(principal.getEmail()) //
                 .parent(commentRequestDto.getParentId() != null ?
-                        commentRepository.findById(commentRequestDto.getParentId()).orElseThrow():null )
+                        commentRepository.findById(commentRequestDto.getParentId()).orElseThrow() : null)
                 .build();
 
         commentRepository.save(comment);
@@ -41,6 +42,27 @@ public class CommentService {
         // 해당 부분은 추후에 추가
 
         return CommentResponseDto.convertCommentToDto(comment);
+    }
+
+    public CommentResponseDto modifyComment(CommentRequestDto commentRequestDto,UserDTO principal) {
+
+        //댓글 조회 : RequestDto 에 있는 id 로 조회
+        Comment comment = commentRepository.findById(commentRequestDto.getId()).orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        //댓글 작성자와 수정 요청자가 같은지 확인
+        if (!principal.getEmail().equals(commentRequestDto.getCreatedBy())) {
+            throw new IllegalArgumentException("댓글 작성자만 수정 가능합니다.");
+        }
+
+
+        //업데이트
+        comment.update(commentRequestDto.getContent());
+        //저장
+        commentRepository.save(comment);
+
+        return CommentResponseDto.convertCommentToDto(comment);
+
+
     }
 
     public List<CommentResponseDto> findCommentListByPostId(Long postId) {
@@ -51,10 +73,11 @@ public class CommentService {
         List<CommentResponseDto> commentResponseDtoList = commentLIst.stream()
                 .map(comment -> CommentResponseDto.convertCommentToDto(comment))
                 .collect(Collectors.toList());
-        
+
         return convertNestedStructure(commentResponseDtoList);
 
     }
+
 
     public void deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
@@ -71,16 +94,16 @@ public class CommentService {
                 .map(CommentResponseDto::getId)
                 .collect(Collectors.toList());
 
-        for(Long commentId : commentIdList){
-          commentRepository.deleteById(commentId);
+        for (Long commentId : commentIdList) {
+            commentRepository.deleteById(commentId);
         }
 
     }
 
 
     /*
-    *  sns 댓글 <-> 대댓글 대댓글의 중첩 구조 변환 메서드
-    * */
+     *  sns 댓글 <-> 대댓글 대댓글의 중첩 구조 변환 메서드
+     * */
 
     private List<CommentResponseDto> convertNestedStructure(List<CommentResponseDto> commentResponseDtoList) {
 
@@ -105,4 +128,5 @@ public class CommentService {
         return result;
 
     }
+
 }
