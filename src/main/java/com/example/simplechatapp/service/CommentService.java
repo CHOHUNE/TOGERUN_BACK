@@ -27,14 +27,14 @@ public class CommentService {
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, UserDTO principal) {
 
-        Optional<Post> post = postRepository.findById(commentRequestDto.getPostId());
+        Optional<Post> post = postRepository.findById(commentRequestDto.getPost_id());
 
         Comment comment = Comment.builder()
                 .post(post.orElseThrow())
                 .content(commentRequestDto.getContent())
                 .createdBy(principal.getEmail()) //
-                .parent(commentRequestDto.getParentId() != null ?
-                        commentRepository.findById(commentRequestDto.getParentId()).orElseThrow() : null)
+                .parent(commentRequestDto.getParent_id() != null ?
+                        commentRepository.findById(commentRequestDto.getParent_id()).orElseThrow() : null)
                 .build();
 
         commentRepository.save(comment);
@@ -114,9 +114,9 @@ public class CommentService {
 
             map.put(comment.getId(), comment);
 
-            if (comment.getParentId() != null) { // 댓글이 부모 댓글을 가지고 있는 경우
+            if (comment.getParent_id() != null) { // 댓글이 부모 댓글을 가지고 있는 경우
 
-                map.get(comment.getParentId()).getChildren().add(comment); // 부모 댓글의 자식 리스트에 추가
+                map.get(comment.getParent_id()).getChildren().add(comment); // 부모 댓글의 자식 리스트에 추가
 
             } else {
 

@@ -47,7 +47,7 @@ public class CommentServiceTest {
         //given
 
         CommentRequestDto commentRequestDto = CommentRequestDto.builder().
-                postId(1L)
+                post_id(1L)
                 .content("댓글 작성 테스트")
                 .createdBy("작성자")
                 .build();
@@ -83,7 +83,7 @@ public class CommentServiceTest {
 
         //given
         CommentRequestDto commentRequestDto = CommentRequestDto.builder()
-                .postId(1L)
+                .post_id(1L)
                 .content("댓글 작성 테스트")
                 .createdBy("작성자")
                 .build();

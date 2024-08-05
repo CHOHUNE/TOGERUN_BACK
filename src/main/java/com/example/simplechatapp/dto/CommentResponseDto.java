@@ -23,7 +23,7 @@ import java.util.Set;
 public class CommentResponseDto implements NotifyInfo {
 
     private Long id;
-    private Long postId;
+    private Long post_id;
 
     @NotNull
     private String content;
@@ -31,7 +31,7 @@ public class CommentResponseDto implements NotifyInfo {
     @NotNull
     private String createdBy;
 
-    private Long parentId;
+    private Long parent_id;
 
     private Set<String> receivers;
     private String goUrlId;
@@ -52,10 +52,10 @@ public class CommentResponseDto implements NotifyInfo {
     public static CommentResponseDto convertCommentToDto(Comment comment) {
         return CommentResponseDto.builder()
                 .id(comment.getId())
-                .postId(comment.getPost().getId())
+                .post_id(comment.getPost().getId())
                 .content(comment.getContent())
                 .createdBy(comment.getCreatedBy())
-                .parentId(comment.getParent() == null ? null : comment.getParent().getId())
+                .parent_id(comment.getParent() == null ? null : comment.getParent().getId())
                 .createdAt(comment.getCreatedAt())
                 .receivers(comment.getPost().getUser().getEmail() ==comment.getCreatedBy() ? Set.of() : Set.of(comment.getPost().getUser().getEmail()))
                 // 포스트 작성자와 코멘트 게재자가 같을 경우에 알람이 가지 않는다.

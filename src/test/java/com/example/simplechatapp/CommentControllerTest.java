@@ -52,7 +52,7 @@ public class CommentControllerTest {
     void createSnsCommentTest() throws Exception{
         //given
         CommentRequestDto commentRequestDto = CommentRequestDto.builder()
-                .postId(1L)
+                .post_id(1L)
                 .content("댓글 작성 테스트")
                 .createdBy("Lee")
                 .build();
@@ -91,14 +91,14 @@ public class CommentControllerTest {
 
         CommentResponseDto parentComment = CommentResponseDto.builder()
                 .id(1L)
-                .postId(1L)
+                .post_id(1L)
                 .content("댓글 작성 테스트")
                 .createdBy("Lee")
                 .build();
 
         CommentResponseDto childComment = CommentResponseDto.builder()
                 .id(2L)
-                .postId(1L)
+                .post_id(1L)
                 .content("대댓글 작성 테스트2")
                 .createdBy("Lee")
                 .build();
@@ -126,7 +126,7 @@ public class CommentControllerTest {
         //given
 
         CommentRequestDto commentRequestDto = CommentRequestDto.builder()
-                .postId(1L)
+                .post_id(1L)
                 .content("댓글 작성 테스트")
                 .createdBy("Lee")
                 .build();

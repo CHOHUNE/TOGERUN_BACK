@@ -22,7 +22,7 @@ public class CommentRequestDto {
 
 
     @NotNull
-    private Long postId;
+    private Long post_id;
 
     @NotNull
     private String content;
@@ -32,7 +32,7 @@ public class CommentRequestDto {
 
     private Integer senderNo;
 
-    private Long parentId;
+    private Long parent_id;
 
     @Builder.Default
     private List<Comment> children = new ArrayList<>();
