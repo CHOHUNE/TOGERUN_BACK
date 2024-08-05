@@ -50,7 +50,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentRequestDto.getId()).orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
         //댓글 작성자와 수정 요청자가 같은지 확인
-        if (!principal.getEmail().equals(commentRequestDto.getCreatedBy())) {
+        if (!principal.getEmail().equals(comment.getCreatedBy())) {
             throw new IllegalArgumentException("댓글 작성자만 수정 가능합니다.");
         }
 

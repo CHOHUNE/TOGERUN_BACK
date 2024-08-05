@@ -20,7 +20,6 @@ public class CommentController {
     private final CommentService commentService;
 
 
-
     @PostMapping // postId 는 CommentRequestDto 에 포함 되어 있어서 파라메터로 받지 않음
     public ResponseEntity<CommentResponseDto> createComment(@RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDTO principal) {
 
@@ -43,6 +42,7 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     public void deleteSnsComment(@PathVariable Long commentId) {
+
         commentService.deleteComment(commentId);
     }
 }
