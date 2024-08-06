@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "post_like") // 예약어인 like 를 테이블명 그대로 쓸수 없다.
 @Getter
 @Setter
 @NoArgsConstructor
