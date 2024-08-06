@@ -64,6 +64,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             log.info("JWT claims{}", claims);
 
+            Long id = (Long) claims.get("id");
             String email=(String)claims.get("email");
             String pw = (String)claims.get("pw");
             String nickname=(String)claims.get("nickname");
@@ -71,7 +72,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             List<String> roleNames = (List<String>) claims.get("roleNames");
 
-            UserDTO userDTO = new UserDTO(email, pw, nickname, social.booleanValue(), roleNames);
+            UserDTO userDTO = new UserDTO(id ,email, pw, nickname, social.booleanValue(), roleNames);
 
             log.info(".....JWT Check Success.....");
             log.info("userDTO{}", userDTO);

@@ -17,6 +17,7 @@ public interface UserService {
     default UserDTO entityToDTO(User user){
 
             UserDTO dto = new UserDTO(
+                    user.getId(),
                     user.getEmail(),
                     user.getPassword(),
                     user.getNickname(),

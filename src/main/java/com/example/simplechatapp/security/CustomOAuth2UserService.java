@@ -74,6 +74,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         UserDTO userDTO = new UserDTO(
+                existData.getId()
+                ,
                 existData.getEmail(),
                 "Temp",
                 existData.getNickname(),
