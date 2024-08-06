@@ -23,14 +23,12 @@ public class CommentController {
 
     @PostMapping // postId 는 CommentRequestDto 에 포함 되어 있어서 파라메터로 받지 않음
     @NeedNotify
-    public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDTO principal) {
+    public ResponseEntity<CommentResponseDto> createComment(@RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDTO principal) {
 
         CommentResponseDto commentResponseDto = commentService.createComment(commentRequestDto, principal);
-//        return ResponseEntity.ok().body(commentResponseDto);
+        return ResponseEntity.ok().body(commentResponseDto);
 
-        return commentService.createComment(commentRequestDto, principal);
-
-        //TODO : NotifyAspect 에서 ResponseEntity 인지도 검사하도록 하는 로직 만들기?
+//        return commentService.createComment(commentRequestDto, principal);
 
     }
 

@@ -11,6 +11,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
@@ -38,30 +39,32 @@ public class NotifyAspect {
     @Async
     @AfterReturning(pointcut = "annotationPointcut()", returning = "result")
     public void checkValue(JoinPoint joinPoint, Object result) throws Throwable {
+        NotifyInfo notifyInfo = null;
 
+        if (result instanceof ResponseEntity) {
+            ResponseEntity<?> responseEntity = (ResponseEntity<?>) result;
+            Object body = responseEntity.getBody();
+            if (body instanceof NotifyInfo) {
+                notifyInfo = (NotifyInfo) body;
+            }
+        } else if (result instanceof NotifyInfo) {
+            notifyInfo = (NotifyInfo) result;
+        }
 
-        if (result instanceof NotifyInfo) {
-
-            NotifyInfo notifyProxy = (NotifyInfo) result;
-
-            Set<String> receivers = notifyProxy.getReceiver(); // 단체
+        if (notifyInfo != null) {
+            Set<String> receivers = notifyInfo.getReceiver();
 
             for (String receiver : receivers) {
-
                 notifyService.send(
                         receiver,
-                        notifyProxy.getNotificationType(),
-                        notifyProxy.getNotifyMessage().getMessage(),
-                        notifyProxy.getGoUrlId()
+                        notifyInfo.getNotificationType(),
+                        notifyInfo.getNotifyMessage().getMessage(),
+                        notifyInfo.getGoUrlId()
                 );
             }
 
-            log.info("result ={} ", result);
-
-        }else{
-
-            log.error("Method didnt return a NotifyInfo Instance");
-
+            log.info("Notification sent for result: {}", notifyInfo);
+        } else {
+            log.error("Method did not return a NotifyInfo instance or ResponseEntity with NotifyInfo body");
         }
-    }
-}
+    }}
