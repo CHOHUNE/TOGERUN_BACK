@@ -43,8 +43,9 @@ public class CustomSecurityConfig {
 
 
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomOauthSuccessHandler customOauthSuccessHandler;
-    private final UserDetailsService userDetailsService;
+
+//    private final CustomOauthSuccessHandler customOauthSuccessHandler;
+//    private final UserDetailsService userDetailsService;
 
 
 //    @Bean
