@@ -1,54 +1,56 @@
 package com.example.simplechatapp.service;
 
-import com.example.simplechatapp.dto.FavoriteDTO;
-import com.example.simplechatapp.entity.Favorite;
+import com.example.simplechatapp.dto.LikeDTO;
+import com.example.simplechatapp.entity.Like;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
-import com.example.simplechatapp.repository.FavoriteRepository;
+import com.example.simplechatapp.repository.LikeRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
-public class FavoriteService {
+public class LikeService {
 
-    private final FavoriteRepository favoriteRepository;
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
-    public FavoriteDTO favoriteToggle(Long userId, Long postId) {
+    public LikeDTO likeToggle(Long userId, Long postId) {
+
         User user = userRepository.findById(userId);
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
 
-        boolean existsByUserIdAndPostId = favoriteRepository.existsByUserIdAndPostId(userId, postId);
+        boolean existsByUserIdAndPostId = likeRepository.existsByUserIdAndPostId(userId, postId);
 
         if (existsByUserIdAndPostId) {
 
-            favoriteRepository.deleteByUserIdAndPostId(userId, postId);
+            likeRepository.deleteByUserIdAndPostId(userId, postId);
 
-            return null; // return null if the favorite is removed
-
+            return null; // return null if the like is removed
         } else {
-            Favorite favorite = Favorite.builder()
+            Like like = Like.builder()
                     .user(user)
                     .post(post)
                     .build();
 
-            return convertToDTO(favoriteRepository.save(favorite));
-
+            return convertToDTO(likeRepository.save(like));
 
         }
 
-
     }
 
-    private FavoriteDTO convertToDTO(Favorite save) {
-        return FavoriteDTO.builder()
+    private LikeDTO convertToDTO(Like save) {
+        return LikeDTO.builder()
                 .id(save.getId())
                 .userId(save.getUser().getId())
                 .postId(save.getPost().getId())
                 .build();
     }
+
+
 }

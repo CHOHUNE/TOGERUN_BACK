@@ -1,15 +1,15 @@
 package com.example.simplechatapp.controller;
 
 
-import com.example.simplechatapp.dto.UserDTO;
+import com.example.simplechatapp.dto.*;
+import com.example.simplechatapp.service.FavoriteService;
+import com.example.simplechatapp.service.LikeService;
 import com.example.simplechatapp.service.PostService;
-import com.example.simplechatapp.dto.PageRequestDTO;
-import com.example.simplechatapp.dto.PageResponseDTO;
-import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +24,8 @@ public class PostController {
 
     private final PostService postService;
     private final CustomFileUtil customFileUtil;
+    private final LikeService likeService;
+    private final FavoriteService favoriteService;
 
     @GetMapping
     public List<Post> getAllPosts() {
@@ -76,4 +78,22 @@ public class PostController {
 
         return Map.of("result","success");
     }
+
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<FavoriteDTO> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
+
+        FavoriteDTO favoriteDTO = favoriteService.favoriteToggle(principal.getId(), id);
+
+        return ResponseEntity.ok(favoriteDTO);
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<LikeDTO> toggleLike(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
+
+        LikeDTO likeDTO = likeService.likeToggle(principal.getId(), id);
+
+        return ResponseEntity.ok(likeDTO);
+    }
+
+
 }
