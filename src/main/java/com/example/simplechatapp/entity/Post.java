@@ -47,6 +47,16 @@ public class Post {
     private List<Comment> comments;
 
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorite> favorites = new ArrayList<>(); // Favorite 가 주인
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>(); //LIKE 가 주인
+
+    // mappedBy 가 있는 쪽은 읽기 전용이다. 즉, 데이터를 수정할 수 없다.
+    // 즉 관계의 주인이 아니란 것 -> 데이터베이스 외래 키를 가지고 있지 않음
+    // mappedBy 가 없는 쪽이 관계의 주인이다. -> 데이터베이스 외래 키를 가지고 있음
+
 
     public void changeTitle(String title) {
         this.title = title;

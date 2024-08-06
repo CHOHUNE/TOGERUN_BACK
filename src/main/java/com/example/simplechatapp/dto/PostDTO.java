@@ -32,6 +32,12 @@ public class PostDTO {
 
         private boolean delFlag;
 
+//        private int favoriteCount;
+        private int likeCount;
+        private boolean isFavorite;
+        private boolean isLike;
+
+
         @Builder.Default // Builder.Default 를 사용하면 초기화한 상태를 직접 설정할 수 있다.
         // 가령 List 를 초기화 하지 않으면 null 값이 들어가고, nullPointException 등이 발생될 수 있다.
         private List<MultipartFile> file = new ArrayList<>();
