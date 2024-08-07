@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface UserService {
 
-    UserDTO getKakaoMember(String accessToken);
+//    UserDTO getKakaoMember(String accessToken);
 
     void modifyMember(UserModifyDTO userModifyDTO);
 

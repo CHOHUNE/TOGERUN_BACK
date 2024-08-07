@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Optional;
+
 public
-interface UserRepository extends JpaRepository<User,String> {
+interface UserRepository extends JpaRepository<User,Long> {
 
     @EntityGraph(attributePaths = "userRoleList")
     @Query("SELECT u FROM User u WHERE u.email = :email")
@@ -17,10 +19,7 @@ interface UserRepository extends JpaRepository<User,String> {
     boolean existsByNickname(String nickname);
 
     @Query("SELECT u FROM User u WHERE u.email = :email")
-    User findByEmail(String email);
-
-
-    User findById(Long id);
+    Optional<User> findByEmail(String email);
 
 
 

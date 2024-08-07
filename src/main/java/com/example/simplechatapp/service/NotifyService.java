@@ -132,7 +132,7 @@ public class NotifyService {
 
     private Notify createNotification(String receiver, NotificationType notificationType, String content, String url) {
 
-        User user = userRepository.findByEmail(receiver);
+        User user = userRepository.findByEmail(receiver).orElseThrow(()->new RuntimeException("User Not Found"));
 
         return Notify.builder()
                 .createdAt(LocalDateTime.now())

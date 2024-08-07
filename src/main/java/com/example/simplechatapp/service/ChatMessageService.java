@@ -30,7 +30,7 @@ public class ChatMessageService {
 
         //RequestDTO 엔 email 과 content 만 있음
 
-        User sender = userRepository.findByEmail(chatMessageRequestDTO.getEmail());
+        User sender = userRepository.findByEmail(chatMessageRequestDTO.getEmail()).orElseThrow(()-> new RuntimeException("User Not Found"));
 
         ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));

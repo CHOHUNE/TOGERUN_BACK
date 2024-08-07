@@ -48,9 +48,11 @@ public class Post {
 
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Favorite> favorites = new ArrayList<>(); // Favorite 가 주인
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Like> likes = new ArrayList<>(); //LIKE 가 주인
 
     // mappedBy 가 있는 쪽은 읽기 전용이다. 즉, 데이터를 수정할 수 없다.

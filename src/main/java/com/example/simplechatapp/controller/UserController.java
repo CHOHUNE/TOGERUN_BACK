@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceImpl userService;
+//    private final UserServiceImpl userService;
 
 
 //    @GetMapping

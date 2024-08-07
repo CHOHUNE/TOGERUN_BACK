@@ -71,7 +71,7 @@ public class ChatRoomService {
 
 // 2번 참가자 추가 유무 검증
 
-        User user = userRepository.findByEmail(userEmail);
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()->new RuntimeException("User Not Found"));
         //해당 유저를 찾고
 
         if (user == null) {
