@@ -32,8 +32,7 @@ public class PostDTO {
 
         private boolean delFlag;
 
-//        private int favoriteCount;
-        private int likeCount;
+        private Long likeCount;
         private boolean isFavorite;
         private boolean isLike;
 
@@ -43,6 +42,19 @@ public class PostDTO {
         private List<MultipartFile> file = new ArrayList<>();
         @Builder.Default
         private List<String> uploadFileName = new ArrayList<>();
+
+        public PostDTO(Long id, String title, String content, Long userId, String nickname, LocalDate localDate, boolean delFlag, boolean isFavorite, boolean isLike, Long likeCount) {
+                this.id = id;
+                this.title = title;
+                this.content = content;
+                this.userId = userId;
+                this.nickname = nickname;
+                this.localDate = localDate;
+                this.delFlag = delFlag;
+                this.isFavorite = isFavorite;
+                this.isLike = isLike;
+                this.likeCount = likeCount;
+        }
 
 
 }

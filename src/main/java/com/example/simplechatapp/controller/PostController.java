@@ -2,6 +2,9 @@ package com.example.simplechatapp.controller;
 
 
 import com.example.simplechatapp.dto.*;
+import com.example.simplechatapp.entity.User;
+import com.example.simplechatapp.repository.PostSearch;
+import com.example.simplechatapp.repository.UserRepository;
 import com.example.simplechatapp.service.FavoriteService;
 import com.example.simplechatapp.service.LikeService;
 import com.example.simplechatapp.service.PostService;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/post")
@@ -26,19 +30,24 @@ public class PostController {
     private final CustomFileUtil customFileUtil;
     private final LikeService likeService;
     private final FavoriteService favoriteService;
+    private final UserRepository userRepository;
 
-    @GetMapping
-    public List<Post> getAllPosts() {
-        return postService.findAll();
-    }
+@GetMapping
+public List<Post> getAllPosts() {
+
+    return postService.findAll();
+}
 
     @GetMapping("/{id}")
-    public PostDTO getPostById(@PathVariable Long id) {
+    public ResponseEntity<PostDTO> getPostById(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
 
-        return postService.get(id);
+        User user = userRepository.findByEmail(principal.getEmail()).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        return postService.findPostWithLikeAndFavorite(id, user.getId())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-
-//    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    //    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     @PostMapping
     public Map<String,Long> createPost( @AuthenticationPrincipal UserDTO principal,
             PostDTO postDTO) {

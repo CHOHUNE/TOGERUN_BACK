@@ -1,15 +1,16 @@
 package com.example.simplechatapp.repository;
 
 import com.example.simplechatapp.dto.PageRequestDTO;
-import com.example.simplechatapp.entity.Post;
-import com.example.simplechatapp.entity.QPost;
-import com.example.simplechatapp.entity.QUser;
+import com.example.simplechatapp.dto.PostDTO;
+import com.example.simplechatapp.entity.*;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PostSearchImpl extends QuerydslRepositorySupport implements PostSearch {
 
@@ -44,6 +45,37 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
 
         return new PageImpl<>(list, pageable, total);
     }
+
+    @Override
+    public Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId) {
+
+        QPost qPost = QPost.post;
+        QUser qUser = QUser.user;
+        QLike qLike = QLike.like;
+        QFavorite qFavorite = QFavorite.favorite;
+
+        JPQLQuery<PostDTO> query = from(qPost)
+                .leftJoin(qPost.user,qUser)
+                .leftJoin(qLike).on(qLike.post.eq(qPost).and(qLike.user.id.eq(userId)))
+                .leftJoin(qFavorite).on(qFavorite.post.eq(qPost).and(qFavorite.user.id.eq(userId)))
+                .where(qPost.id.eq(postId))
+                .select(Projections.constructor(PostDTO.class,
+                        qPost.id,
+                        qPost.title,
+                        qPost.content,
+                        qUser.id,
+                        qUser.nickname,
+                        qPost.localDate,
+                        qPost.delFlag,
+                        qFavorite.isActive.coalesce(false),
+                        qLike.isActive.coalesce(false),
+                        qLike.id.count()
+                        ));
+
+
+        return Optional.ofNullable(query.fetchOne());
+    }
+
 
     private BooleanExpression containsKeyword(QPost qPost, String keyword) {
         if (keyword == null || keyword.isEmpty()) {

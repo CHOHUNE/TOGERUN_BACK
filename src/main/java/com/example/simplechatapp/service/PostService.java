@@ -11,12 +11,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional
 public interface PostService {
 
 
     PostDTO get(Long id);
+
+    Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId);
 
     Long register( UserDTO principal, PostDTO postDTO);
 

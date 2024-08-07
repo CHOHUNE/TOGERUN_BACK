@@ -35,6 +35,11 @@ public class PostServiceImpl implements PostService {
         return entityToDTO(post);
     }
 
+    @Override
+    public Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId) {
+        return postRepository.findPostWithLikeAndFavorite(postId, userId);
+    }
+
 
     @Override
         public Long register( UserDTO principal, PostDTO postDTO) {
