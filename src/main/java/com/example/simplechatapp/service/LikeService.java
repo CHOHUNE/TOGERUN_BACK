@@ -36,17 +36,11 @@ public class LikeService {
 
         like.setActive(!like.isActive()); // 현재 상태를 반전 시킨다
 
-        return convertToDTO(likeRepository.save(like));
+        return LikeDTO.convertLikeToDto(likeRepository.save(like));
 
     }
 
-    private LikeDTO convertToDTO(Like save) {
-        return LikeDTO.builder()
-                .id(save.getId())
-                .userId(save.getUser().getId())
-                .postId(save.getPost().getId())
-                .build();
-    }
+
 
 
 }

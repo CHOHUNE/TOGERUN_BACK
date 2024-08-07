@@ -1,6 +1,7 @@
 package com.example.simplechatapp.controller;
 
 
+import com.example.simplechatapp.annotation.NeedNotify;
 import com.example.simplechatapp.dto.*;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.PostSearch;
@@ -100,6 +101,7 @@ public List<Post> getAllPosts() {
     }
 
     @PostMapping("/{id}/like")
+    @NeedNotify
     public ResponseEntity<LikeDTO> toggleLike(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
 
         LikeDTO likeDTO = likeService.likeToggle(principal.getEmail(), id);
