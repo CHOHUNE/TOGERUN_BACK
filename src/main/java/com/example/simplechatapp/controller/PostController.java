@@ -82,7 +82,10 @@ public class PostController {
     @PostMapping("/{id}/favorite")
     public ResponseEntity<FavoriteDTO> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
 
-        FavoriteDTO favoriteDTO = favoriteService.favoriteToggle(principal.getId(), id);
+        log.info("toggleFavorite:{}", principal);
+        log.info("toggleFavorite:{}", principal.getId());
+
+        FavoriteDTO favoriteDTO = favoriteService.favoriteToggle(principal.getEmail(), id);
 
         return ResponseEntity.ok(favoriteDTO);
     }
@@ -90,7 +93,7 @@ public class PostController {
     @PostMapping("/{id}/like")
     public ResponseEntity<LikeDTO> toggleLike(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
 
-        LikeDTO likeDTO = likeService.likeToggle(principal.getId(), id);
+        LikeDTO likeDTO = likeService.likeToggle(principal.getEmail(), id);
 
         return ResponseEntity.ok(likeDTO);
     }

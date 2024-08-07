@@ -18,15 +18,16 @@ public class FavoriteService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    public FavoriteDTO favoriteToggle(Long userId, Long postId) {
-        User user = userRepository.findById(userId);
+    public FavoriteDTO favoriteToggle(String email, Long postId) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User not found"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
 
-        boolean existsByUserIdAndPostId = favoriteRepository.existsByUserIdAndPostId(userId, postId);
+        boolean existsByUserIdAndPostId = favoriteRepository.existsByUserIdAndPostId(user.getId(), postId);
 
         if (existsByUserIdAndPostId) {
 
-            favoriteRepository.deleteByUserIdAndPostId(userId, postId);
+            favoriteRepository.deleteByUserIdAndPostId(user.getId(), postId);
 
             return null; // return null if the favorite is removed
 

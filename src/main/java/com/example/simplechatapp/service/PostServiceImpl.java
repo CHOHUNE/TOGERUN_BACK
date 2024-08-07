@@ -39,7 +39,7 @@ public class PostServiceImpl implements PostService {
     @Override
         public Long register( UserDTO principal, PostDTO postDTO) {
 
-        User user = userRepository.findByEmail(principal.getEmail());
+        User user = userRepository.findByEmail(principal.getEmail()).orElseThrow(()->new RuntimeException("User Not Found"));
 
         postDTO.setLocalDate(LocalDate.now());
         postDTO.setUserId(user.getId());
@@ -114,7 +114,7 @@ public class PostServiceImpl implements PostService {
 
         Post post = PostService.super.dtoToEntity(postDTO);
 
-        post.setUser(userRepository.findById(postDTO.getUserId()));
+        post.setUser(userRepository.findById(postDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found")));
 
         return post;
     }

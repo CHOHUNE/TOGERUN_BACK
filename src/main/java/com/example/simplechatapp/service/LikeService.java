@@ -20,19 +20,21 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
-    public LikeDTO likeToggle(Long userId, Long postId) {
+    public LikeDTO likeToggle(String email, Long postId) {
 
-        User user = userRepository.findById(userId);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
 
-        boolean existsByUserIdAndPostId = likeRepository.existsByUserIdAndPostId(userId, postId);
+        boolean existsByUserIdAndPostId = likeRepository.existsByUserIdAndPostId(user.getId(), postId);
 
         if (existsByUserIdAndPostId) {
 
-            likeRepository.deleteByUserIdAndPostId(userId, postId);
+            likeRepository.deleteByUserIdAndPostId(user.getId(), postId);
 
             return null; // return null if the like is removed
+
         } else {
+
             Like like = Like.builder()
                     .user(user)
                     .post(post)
