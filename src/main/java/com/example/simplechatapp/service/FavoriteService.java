@@ -2,6 +2,7 @@ package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.FavoriteDTO;
 import com.example.simplechatapp.entity.Favorite;
+import com.example.simplechatapp.entity.Like;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.FavoriteRepository;
@@ -9,6 +10,8 @@ import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,26 +26,19 @@ public class FavoriteService {
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User not found"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
 
-        boolean existsByUserIdAndPostId = favoriteRepository.existsByUserIdAndPostId(user.getId(), postId);
-
-        if (existsByUserIdAndPostId) {
-
-            favoriteRepository.deleteByUserIdAndPostId(user.getId(), postId);
-
-            return null; // return null if the favorite is removed
-
-        } else {
-            Favorite favorite = Favorite.builder()
-                    .user(user)
-                    .post(post)
-                    .build();
-
-            return convertToDTO(favoriteRepository.save(favorite));
+        Favorite favorite  = favoriteRepository.findByUserIdAndPostId(user.getId(), post.getId())
+                .orElse(
+                        Favorite.builder()
+                                .user(user)
+                                .post(post)
+                                .isActive(false)
+                                .build()
+                );
 
 
-        }
+        favorite.setActive(!favorite.isActive());
 
-
+        return convertToDTO(favoriteRepository.save(favorite));
     }
 
     private FavoriteDTO convertToDTO(Favorite save) {

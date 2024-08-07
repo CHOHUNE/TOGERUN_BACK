@@ -29,4 +29,6 @@ public class Favorite {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    private boolean isActive;
+
 }

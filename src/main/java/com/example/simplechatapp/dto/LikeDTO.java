@@ -18,5 +18,6 @@ public class LikeDTO {
     private Long userId;
     private Long postId;
     private LocalDateTime createdAt;
+    private boolean isActive;
 
 }

@@ -33,5 +33,6 @@ public class Like {
     @CreationTimestamp // 생성 시간을 자동으로 입력
     private LocalDateTime createdAt;
 
+    private boolean isActive;
 
 }

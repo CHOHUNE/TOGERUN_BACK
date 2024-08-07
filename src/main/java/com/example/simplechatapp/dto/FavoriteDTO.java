@@ -19,5 +19,6 @@ public class FavoriteDTO {
     private Long userId;
     private Long postId;
     private LocalDateTime createdAt;
+    private boolean isActive;
 
 }

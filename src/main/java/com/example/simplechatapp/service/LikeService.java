@@ -25,24 +25,18 @@ public class LikeService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
 
-        boolean existsByUserIdAndPostId = likeRepository.existsByUserIdAndPostId(user.getId(), postId);
+        Like like = likeRepository.findByUserIdAndPostId(user.getId(), post.getId()).
+                orElse(
+                Like.builder()
+                        .user(user)
+                        .post(post)
+                        .isActive(false)
+                        .build()
+        );
 
-        if (existsByUserIdAndPostId) {
+        like.setActive(!like.isActive()); // 현재 상태를 반전 시킨다
 
-            likeRepository.deleteByUserIdAndPostId(user.getId(), postId);
-
-            return null; // return null if the like is removed
-
-        } else {
-
-            Like like = Like.builder()
-                    .user(user)
-                    .post(post)
-                    .build();
-
-            return convertToDTO(likeRepository.save(like));
-
-        }
+        return convertToDTO(likeRepository.save(like));
 
     }
 
