@@ -1,9 +1,8 @@
 package com.example.simplechatapp.controller;
 
+import com.example.simplechatapp.dto.NotifyDto;
 import com.example.simplechatapp.dto.UserDTO;
-import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.service.NotifyService;
-import com.example.simplechatapp.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -32,5 +29,19 @@ public class NotifyController {
 //        String email = (String) claims.get("email");
 
         return ResponseEntity.ok(notifyService.subscribe(principal.getEmail(), lastEventId));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<NotifyDto.Response>> getAllNotifications(@AuthenticationPrincipal UserDTO principal,
+                                                                        @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                       @RequestParam(value = "size", defaultValue = "7") int size){
+
+        return ResponseEntity.ok(notifyService.getAllNotifications(principal.getEmail(),page,size));
+    }
+
+    @PostMapping("/{notificationId}/read")
+    public ResponseEntity<Void> markAsRead(@AuthenticationPrincipal UserDTO principal, @PathVariable Long notificationId) {
+        notifyService.markAsRead(principal.getEmail(), notificationId);
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,7 +1,6 @@
 package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.NotifyDto;
-import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.NotificationType;
 import com.example.simplechatapp.entity.Notify;
 import com.example.simplechatapp.entity.User;
@@ -10,10 +9,14 @@ import com.example.simplechatapp.repository.NotifyRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import javax.management.Notification;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -70,6 +73,20 @@ public class NotifyService {
 
         return email+"_"+System.currentTimeMillis(); //고유한 아이디를 만들기 위해 이메일과 현재 시간을 합침
     }
+
+
+    public List<NotifyDto.Response> getAllNotifications(String userEmail, int page, int size) {
+
+        User user  = userRepository.findByEmail(userEmail).orElseThrow(()->new RuntimeException("User Not Found"));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<Notify> notifications= notifyRepository.findByReceiverOrderByCreatedAtDesc(user,pageable);
+
+        return notifications.stream().map(NotifyDto.Response::createResponse).toList();
+    }
+
+
 
     private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
 
@@ -144,4 +161,20 @@ public class NotifyService {
                 .build();
     }
 
+    @Transactional
+    public void markAsRead(String email, Long notificationId) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User Not Found"));
+
+        Notify notification = notifyRepository.findById(notificationId).orElseThrow(()->new RuntimeException("Notification Not Found"));
+
+        if (!notification.getReceiver().equals(user)) {
+            throw new RuntimeException("User is not authorized to mark this notification as read");
+        }
+
+        if (!notification.getIsRead()) {
+            notification.setIsRead(true);
+            notifyRepository.save(notification);
+        }
+    }
 }

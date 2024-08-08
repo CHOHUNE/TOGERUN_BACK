@@ -29,7 +29,8 @@ public class Notify {
     @Column(nullable = false)
     private NotificationType notificationType;
 
-    @ManyToOne@JoinColumn(name = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE) // User 가 삭제되면 같이 삭제
     private User receiver;
 

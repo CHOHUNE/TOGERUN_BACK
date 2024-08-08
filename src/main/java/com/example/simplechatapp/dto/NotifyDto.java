@@ -18,20 +18,23 @@ public class NotifyDto {
     @NoArgsConstructor
     @Data
     public static class Response{
-        String id;
+        Long id;
         String nickname;
         String content;
         String type;
-
+        String  goUrl;
+        Boolean isRead;
         LocalDateTime createdAt;
 
         public static Response createResponse(Notify notify) {
 
             return Response.builder()
-                    .id(notify.getId().toString())
+                    .id(notify.getId())
                     .nickname(notify.getReceiver().getNickname())
                     .content(notify.getContent())
                     .type(notify.getNotificationType().name())
+                    .goUrl(notify.getUrl())
+                    .isRead(notify.getIsRead())
                     .createdAt(notify.getCreatedAt())
                     .build();
         }
