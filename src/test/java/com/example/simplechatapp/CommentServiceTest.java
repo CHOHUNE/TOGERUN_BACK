@@ -66,8 +66,8 @@ public class CommentServiceTest {
 
         //when
         when(postRepository.findById(1L)).thenReturn(Optional.ofNullable(post));
+        UserDTO principal = new UserDTO(1L, "email", "password", "nickname", false, List.of());
 
-        UserDTO principal = new UserDTO("작성자", null, null, false, null);
 
         CommentResponseDto expectedDto = commentService.createComment(commentRequestDto, principal);
         Assertions.assertThat(expectedDto.getCreatedBy()).isEqualTo("작성자");
@@ -91,8 +91,9 @@ public class CommentServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
         // then
 
-        UserDTO principal = new UserDTO("작성자", null, null, false, null);
 
+
+        UserDTO principal = new UserDTO(1L, "email", "password", "nickname", false, List.of());
 
         assertThrows(CustomException.class, () -> {
             commentService.createComment(commentRequestDto, principal);

@@ -64,7 +64,7 @@ public class CommentControllerTest {
                 .createdBy("Lee")
                 .build();
 
-        UserDTO principal = new UserDTO("작성자", null, null, false, null);
+        UserDTO principal = new UserDTO(1L, "email", "password", "nickname", false, List.of());
 
 
         given(commentService.createComment(commentRequestDto, principal)).willReturn(snsCommentResponseDto);
@@ -133,7 +133,8 @@ public class CommentControllerTest {
 
         String stringJson = createStringJson(commentRequestDto);
 
-        UserDTO principal = new UserDTO("작성자", null, null, false, null);
+
+        UserDTO principal = new UserDTO(1L, "email", "password", "nickname", false, List.of());
 
 
         given(commentService.createComment(any(CommentRequestDto.class), principal))
