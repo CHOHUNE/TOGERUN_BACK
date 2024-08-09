@@ -60,7 +60,7 @@ public class CommentResponseDto implements NotifyInfo {
                 .receivers(comment.getPost().getUser().getEmail() ==comment.getCreatedBy() ? Set.of() : Set.of(comment.getPost().getUser().getEmail()))
                 // 포스트 작성자와 코멘트 게재자가 같을 경우에 알람이 가지 않는다.
                 // 단순히 포스트 작성자에게만 알람이 가게 해야 하나 아니면 댓글을 달은 당사자 전부에게 가야 하나 고민 중
-                .goUrlId("/api/post/"+comment.getPost().getId())
+                .goUrlId("/post/"+comment.getPost().getId())
                 .build();
     }
 

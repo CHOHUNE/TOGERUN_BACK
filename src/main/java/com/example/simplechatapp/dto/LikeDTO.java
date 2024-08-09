@@ -35,7 +35,7 @@ public class LikeDTO implements NotifyInfo {
                 .createdAt(like.getCreatedAt())
                 .isActive(like.isActive())
                 .receivers(Set.of(like.getPost().getUser().getEmail()))
-                .goUrlId("/api/post/"+like.getPost().getId())
+                .goUrlId("/post/"+like.getPost().getId())
                 .build();
     }
 
