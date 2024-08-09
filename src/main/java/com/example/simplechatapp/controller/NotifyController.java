@@ -32,11 +32,11 @@ public class NotifyController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<NotifyDto.Response>> getAllNotifications(@AuthenticationPrincipal UserDTO principal,
+    public ResponseEntity<NotifyDto.PageResponse> getAllNotifications(@AuthenticationPrincipal UserDTO principal,
                                                                         @RequestParam(value = "page", defaultValue = "0") int page,
                                                                        @RequestParam(value = "size", defaultValue = "7") int size){
 
-        return ResponseEntity.ok(notifyService.getAllNotifications(principal.getEmail(),page,size));
+        return ResponseEntity.ok(notifyService.getAllNotifications(principal.getEmail(), page, size));
     }
 
     @PostMapping("/{notificationId}/read")

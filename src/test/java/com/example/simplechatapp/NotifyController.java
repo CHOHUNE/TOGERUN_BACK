@@ -70,7 +70,7 @@ class NotifyControllerTest {
                 new NotifyDto.Response(2L, "User2", "Another test", "TEST", "/test2", true, LocalDateTime.now())
         );
 
-        when(notifyService.getAllNotifications(anyString(), anyInt(), anyInt())).thenReturn(notifications);
+        when(notifyService.getAllNotifications(anyString(), anyInt(), anyInt())).thenReturn((NotifyDto.PageResponse) notifications);
 
         mockMvc.perform(get("/api/notifications/all")
                         .with(user(userDTO))

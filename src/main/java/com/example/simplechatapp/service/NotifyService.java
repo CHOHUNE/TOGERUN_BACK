@@ -19,7 +19,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -49,13 +48,13 @@ public class NotifyService {
 
         //503 에러 방지를 위한 더미 이벤트 전송
 
-        String eventId =makeTimeIncludeId(userNickname);
+        String eventId = makeTimeIncludeId(userNickname);
         sendNotification(sseEmitter, eventId, emitterId, "EventStream Created. [userEmail=" + userNickname + "]");
 
         // 클라이언트가 미수신한 Event 목록이 존재할 경우 전송하여 Event 유실을 예방
 
-        if(hasLostData(lastEventId)){
-            sendLostData(lastEventId,userNickname,emitterId,sseEmitter);
+        if (hasLostData(lastEventId)) {
+            sendLostData(lastEventId, userNickname, emitterId, sseEmitter);
         }
 
         return sseEmitter;
@@ -71,20 +70,9 @@ public class NotifyService {
 
     private String makeTimeIncludeId(String email) {
 
-        return email+"_"+System.currentTimeMillis(); //고유한 아이디를 만들기 위해 이메일과 현재 시간을 합침
+        return email + "_" + System.currentTimeMillis(); //고유한 아이디를 만들기 위해 이메일과 현재 시간을 합침
     }
 
-
-    public List<NotifyDto.Response> getAllNotifications(String userEmail, int page, int size) {
-
-        User user  = userRepository.findByEmail(userEmail).orElseThrow(()->new RuntimeException("User Not Found"));
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
-        Page<Notify> notifications= notifyRepository.findByReceiverOrderByCreatedAtDesc(user,pageable);
-
-        return notifications.stream().map(NotifyDto.Response::createResponse).toList();
-    }
 
 
 
@@ -113,7 +101,7 @@ public class NotifyService {
     // lastEventId 가 비어있다 -> false
 
     private void sendLostData(String lastEventId, String userEmail, String emitterId, SseEmitter emitter) {
-        Map<String ,Object> eventCaches = emitterRepository.findAllEventCacheStartWithByUserNickname(userEmail);
+        Map<String, Object> eventCaches = emitterRepository.findAllEventCacheStartWithByUserNickname(userEmail);
 
         eventCaches.entrySet().stream()
                 .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
@@ -123,21 +111,19 @@ public class NotifyService {
 // 구독자의 이메일을 기반으로 이벤트 캐시를 가져와 마지막 이벤트 ID 와 비교하여 미수신한 데이터 전송
 
 
-
     public void send(String receiver, NotificationType notificationType, String content, String url) {
 
         Notify notification = notifyRepository.save(createNotification(receiver, notificationType, content, url));
 
 
-
         String eventId = receiver + "_" + System.currentTimeMillis();
 
-        Map<String,SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserNickname(receiver);
+        Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserNickname(receiver);
 
         emitters.forEach(
-                (key,emitter) ->{
-                    emitterRepository.saveEventCache(key,notification);
-                    sendNotification(emitter,eventId,key, NotifyDto.Response.createResponse(notification));
+                (key, emitter) -> {
+                    emitterRepository.saveEventCache(key, notification);
+                    sendNotification(emitter, eventId, key, NotifyDto.Response.createResponse(notification));
                 }
         );
     }
@@ -149,7 +135,7 @@ public class NotifyService {
 
     private Notify createNotification(String receiver, NotificationType notificationType, String content, String url) {
 
-        User user = userRepository.findByEmail(receiver).orElseThrow(()->new RuntimeException("User Not Found"));
+        User user = userRepository.findByEmail(receiver).orElseThrow(() -> new RuntimeException("User Not Found"));
 
         return Notify.builder()
                 .createdAt(LocalDateTime.now())
@@ -164,9 +150,9 @@ public class NotifyService {
     @Transactional
     public void markAsRead(String email, Long notificationId) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User Not Found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        Notify notification = notifyRepository.findById(notificationId).orElseThrow(()->new RuntimeException("Notification Not Found"));
+        Notify notification = notifyRepository.findById(notificationId).orElseThrow(() -> new RuntimeException("Notification Not Found"));
 
         if (!notification.getReceiver().equals(user)) {
             throw new RuntimeException("User is not authorized to mark this notification as read");
@@ -176,5 +162,24 @@ public class NotifyService {
             notification.setIsRead(true);
             notifyRepository.save(notification);
         }
+    }
+
+    public NotifyDto.PageResponse getAllNotifications(String userEmail, int page, int size) {
+
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Notify> notifications = notifyRepository.findByReceiverOrderByCreatedAtDesc(user, pageable);
+
+        int unreadCount = notifyRepository.countUnreadNotifications(user);
+
+
+        return NotifyDto.PageResponse.builder().
+                content(notifications.stream().map(NotifyDto.Response::createResponse).toList())
+                .totalPages(notifications.getTotalPages())
+                .totalElements(notifications.getTotalElements())
+                .currentPage(notifications.getNumber())
+                .unreadCount(unreadCount).
+                build();
     }
 }

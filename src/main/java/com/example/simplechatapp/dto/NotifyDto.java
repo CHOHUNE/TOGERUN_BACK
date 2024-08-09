@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class NotifyDto {
 
@@ -38,5 +39,17 @@ public class NotifyDto {
                     .createdAt(notify.getCreatedAt())
                     .build();
         }
+    }
+
+    @AllArgsConstructor
+    @Builder
+    @NoArgsConstructor
+    @Data
+    public static class PageResponse{
+        List<Response> content;
+        int totalPages;
+        long totalElements;
+        int currentPage;
+        int unreadCount;
     }
 }
