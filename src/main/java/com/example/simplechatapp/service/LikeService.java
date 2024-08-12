@@ -7,8 +7,10 @@ import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.LikeRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -20,23 +22,40 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
+
+    @Transactional // 여러 사람이 좋아요를 누를 때를 대비해 동시성 이슈를 피하기 위해 트랜잭션 처리를 한다.
     public LikeDTO likeToggle(String email, Long postId) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        boolean isFirstLike = false;
 
         Like like = likeRepository.findByUserIdAndPostId(user.getId(), post.getId()).
-                orElse(
-                Like.builder()
-                        .user(user)
-                        .post(post)
-                        .isActive(false)
-                        .build()
-        );
+                orElse(null);
 
-        like.setActive(!like.isActive()); // 현재 상태를 반전 시킨다
 
-        return LikeDTO.convertLikeToDto(likeRepository.save(like));
+
+
+        if (like == null) {
+
+            like = Like.builder()
+                    .user(user)
+                    .post(post)
+                    .isActive(true)
+                    .build();
+
+            isFirstLike = true;
+        }else{
+
+            like.setActive(!like.isActive());
+        }
+
+
+        Like saveLike = likeRepository.save(like);
+
+
+        return LikeDTO.convertLikeToDto(saveLike, isFirstLike && like.isActive());
 
     }
 

@@ -26,8 +26,9 @@ public class LikeDTO implements NotifyInfo {
     private boolean isActive;
     private Set<String> receivers;
     private String goUrlId;
+    private boolean isFirstActiveLike;
 
-    public static LikeDTO convertLikeToDto(Like like) {
+    public static LikeDTO convertLikeToDto(Like like,boolean isFirstActiveLike) {
         return LikeDTO.builder()
                 .id(like.getId())
                 .userId(like.getUser().getId())
@@ -36,26 +37,27 @@ public class LikeDTO implements NotifyInfo {
                 .isActive(like.isActive())
                 .receivers(Set.of(like.getPost().getUser().getEmail()))
                 .goUrlId("/post/"+like.getPost().getId())
+                .isFirstActiveLike(isFirstActiveLike)
                 .build();
     }
 
     @Override
     public Set<String> getReceiver() {
-        return receivers;
+        return isFirstActiveLike ? receivers : null;
     }
 
     @Override
     public String getGoUrlId() {
-        return goUrlId;
+        return isFirstActiveLike ?goUrlId:null;
     }
 
     @Override
     public NotificationType getNotificationType() {
-        return NotificationType.LIKE;
+        return isFirstActiveLike? NotificationType.LIKE:null;
     }
 
     @Override
     public NotifyMessage getNotifyMessage() {
-        return NotifyMessage.NEW_LIKE;
+        return isFirstActiveLike?NotifyMessage.NEW_LIKE:null;
     }
 }
