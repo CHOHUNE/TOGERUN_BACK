@@ -33,6 +33,10 @@ public class Post {
 
     private boolean delFlag;
 
+    private Double latitude;
+    private Double longitude;
+    private String placeName;
+
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name="chat_room_id")
     @JsonManagedReference

@@ -26,6 +26,10 @@ public class PostDTO {
         private String nickname;
         // User 객체를 직접 넣었다가 보안 & 필요한 데이터만 보내기 위해 id와 닉네임으로 변경
 
+        private String placeName;
+        private Double latitude;
+        private Double longitude;
+
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate localDate;
@@ -43,7 +47,7 @@ public class PostDTO {
         @Builder.Default
         private List<String> uploadFileName = new ArrayList<>();
 
-        public PostDTO(Long id, String title, String content, Long userId, String nickname, LocalDate localDate, boolean delFlag, boolean isFavorite, boolean isLike, Long likeCount) {
+        public PostDTO(Long id, String title, String content, Long userId, String nickname, LocalDate localDate, boolean delFlag, boolean isFavorite, boolean isLike, Long likeCount, String placeName, Double latitude, Double longitude) {
                 this.id = id;
                 this.title = title;
                 this.content = content;
@@ -54,7 +58,12 @@ public class PostDTO {
                 this.isFavorite = isFavorite;
                 this.isLike = isLike;
                 this.likeCount = likeCount;
+                this.placeName = placeName;
+                this.latitude = latitude;
+                this.longitude = longitude;
+
         }
+
 
 
 }

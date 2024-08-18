@@ -69,7 +69,11 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
                         qPost.delFlag,
                         qFavorite.isActive.coalesce(false),
                         qLike.isActive.coalesce(false),
-                        qLike.id.count()
+                        qLike.id.count(),
+                        qPost.placeName,
+                        qPost.latitude,
+                        qPost.longitude
+
                         ));
 
 
