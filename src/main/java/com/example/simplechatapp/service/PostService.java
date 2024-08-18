@@ -59,6 +59,9 @@ public interface PostService {
                 .localDate(postDTO.getLocalDate())
                 .user(null) //래퍼지토리 주입 관계로 impl 에서 따로 주입
                 .delFlag(postDTO.isDelFlag())
+                .longitude(postDTO.getLongitude())
+                .latitude(postDTO.getLatitude())
+                .placeName(postDTO.getPlaceName())
                 .build();
 
         List<String> uploadFileName = postDTO.getUploadFileName();
