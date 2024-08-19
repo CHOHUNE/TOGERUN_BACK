@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,11 @@ public class Post {
     @JoinColumn(name="user_id")
     private User user;
 
-    private LocalDate localDate;
+    private LocalDate localDate; //게시글 작성 시간
+
+
+    @JoinColumn(name="meeting_time")
+    private LocalDateTime meetingTime; //집결 시간
 
     private boolean delFlag;
 
@@ -74,6 +79,10 @@ public class Post {
 
     public void changeDelFlag(boolean delFlag) {
         this.delFlag = delFlag;
+    }
+
+    public void changeMeetingTime(LocalDateTime meetingTime) {
+        this.localDate = meetingTime.toLocalDate();
     }
 
     public void addImage(PostImage image) {

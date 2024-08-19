@@ -7,9 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +36,12 @@ public class PostDTO {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate localDate;
 
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+//        @DateTimeFormat(iso= DateTimeFormat.ISO.DATE_TIME)
+        private LocalDateTime meetingTime;
+
+
+
         private boolean delFlag;
 
         private Long likeCount;
@@ -47,7 +55,7 @@ public class PostDTO {
         @Builder.Default
         private List<String> uploadFileName = new ArrayList<>();
 
-        public PostDTO(Long id, String title, String content, Long userId, String nickname, LocalDate localDate, boolean delFlag, boolean isFavorite, boolean isLike, Long likeCount, String placeName, Double latitude, Double longitude) {
+        public PostDTO(Long id, String title, String content, Long userId, String nickname, LocalDate localDate, boolean delFlag, boolean isFavorite, boolean isLike, Long likeCount, String placeName, Double latitude, Double longitude,LocalDateTime meetingTime) {
                 this.id = id;
                 this.title = title;
                 this.content = content;
@@ -61,6 +69,7 @@ public class PostDTO {
                 this.placeName = placeName;
                 this.latitude = latitude;
                 this.longitude = longitude;
+                this.meetingTime=meetingTime;
 
         }
 

@@ -72,7 +72,9 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
                         qLike.id.count(),
                         qPost.placeName,
                         qPost.latitude,
-                        qPost.longitude
+                        qPost.longitude,
+                        qPost.meetingTime
+
 
                         ));
 

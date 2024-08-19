@@ -38,6 +38,10 @@ public interface PostService {
                 .nickname(post.getUser().getNickname())
                 .userId(post.getUser().getId())
                 .delFlag(post.isDelFlag())
+                .latitude(post.getLatitude())
+                .longitude(post.getLongitude())
+                .placeName(post.getPlaceName())
+                .meetingTime(post.getMeetingTime())
                 .build();
 
         List<PostImage> imageList = post.getImageList();
@@ -62,6 +66,7 @@ public interface PostService {
                 .longitude(postDTO.getLongitude())
                 .latitude(postDTO.getLatitude())
                 .placeName(postDTO.getPlaceName())
+                .meetingTime(postDTO.getMeetingTime())
                 .build();
 
         List<String> uploadFileName = postDTO.getUploadFileName();
