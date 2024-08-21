@@ -50,6 +50,6 @@ public class NotifyDto {
         int totalPages;
         long totalElements;
         int currentPage;
-        int unreadCount;
+//        int unreadCount;
     }
 }

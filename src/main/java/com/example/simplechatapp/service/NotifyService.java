@@ -179,7 +179,13 @@ public class NotifyService {
                 .totalPages(notifications.getTotalPages())
                 .totalElements(notifications.getTotalElements())
                 .currentPage(notifications.getNumber())
-                .unreadCount(unreadCount).
-                build();
+//                .unreadCount(unreadCount).
+                .build();
+    }
+
+    public Long getUnreadCount(String email) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
+        return (long) notifyRepository.countUnreadNotifications(user);
     }
 }

@@ -44,4 +44,9 @@ public class NotifyController {
         notifyService.markAsRead(principal.getEmail(), notificationId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/unread/count")
+    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal UserDTO principal) {
+        return ResponseEntity.ok(notifyService.getUnreadCount(principal.getEmail()));
+    }
 }
