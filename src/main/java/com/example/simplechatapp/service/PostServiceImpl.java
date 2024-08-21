@@ -60,6 +60,14 @@ public class PostServiceImpl implements PostService {
 
         post.changeTitle(postDTO.getTitle());
         post.changeContent(postDTO.getContent());
+        post.changeMeetingTime(postDTO.getMeetingTime());
+        post.changePlaceName(postDTO.getPlaceName());
+        post.changeLatitude(postDTO.getLatitude());
+        post.changeLongitude(postDTO.getLongitude());
+
+        // 고민.. 차라리 Builder 로 만들어서 변경하면?
+        // 코드 유지보수, 확장성은 좋으나 비효율적
+        // 현재의 change 는? 코드가 복잡해지나 성능은 나을 수 있다.
 
         List<String> uploadFileNames = postDTO.getUploadFileName();
 

@@ -81,6 +81,20 @@ public class Post {
         this.delFlag = delFlag;
     }
 
+    public void changePlaceName(String placeName) {
+        this.placeName = placeName;
+    }
+
+    public void changeLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public void changeLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+
+
     public void changeMeetingTime(LocalDateTime meetingTime) {
         this.localDate = meetingTime.toLocalDate();
     }
