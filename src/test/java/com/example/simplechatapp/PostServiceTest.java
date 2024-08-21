@@ -59,7 +59,7 @@ public class PostServiceTest {
     @Test@DisplayName("paging test")
     public void test4() {
 
-        PageRequestDTO pageRequestDTO = PageRequestDTO.builder().page(1).size(10).build();
+        PageRequestDTO pageRequestDTO = PageRequestDTO.builder().page(1).size(10).keyword("연세대").build();
 
         log.info("PagingResult{}",postService.getList(pageRequestDTO));
     }
