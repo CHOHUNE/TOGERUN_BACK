@@ -64,7 +64,7 @@ public List<Post> getAllPosts() {
     }
 
     @GetMapping("/list")
-    public PageResponseDTO<PostDTO> list(PageRequestDTO pageRequestDTO) {
+    public PageResponseDTO<PostListDTO> list(PageRequestDTO pageRequestDTO) {
 
         log.info("list:{}", pageRequestDTO);
 

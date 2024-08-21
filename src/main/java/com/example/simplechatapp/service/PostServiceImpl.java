@@ -1,10 +1,7 @@
 package com.example.simplechatapp.service;
 
 
-import com.example.simplechatapp.dto.PageRequestDTO;
-import com.example.simplechatapp.dto.PageResponseDTO;
-import com.example.simplechatapp.dto.PostDTO;
-import com.example.simplechatapp.dto.UserDTO;
+import com.example.simplechatapp.dto.*;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.PostRepository;
@@ -79,25 +76,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PageResponseDTO<PostDTO> getList(PageRequestDTO pageRequestDTO) {
-
+    public PageResponseDTO<PostListDTO> getList(PageRequestDTO pageRequestDTO) {
         Page<Post> result = postRepository.search1(pageRequestDTO);
+        List<PostListDTO> dtoList = result.getContent().stream()
+                .map(this::entityToListDTO)
+                .collect(Collectors.toList());
 
-        List<PostDTO> dtoList = result
-                .get()
-                .map(post -> entityToDTO(post)).collect(Collectors.toList());
-        // PageRequestDTO -> Post(Entity) -> PostDTO(List)
-
-        PageResponseDTO<PostDTO> responseDTO =
-                PageResponseDTO.<PostDTO>withAll()
-                        .dtoList(dtoList)
-                        .pageRequestDTO(pageRequestDTO)
-                        .total(result.getTotalElements())
-                        .build();
-        // dtoList(PostDTO) , PageRequestDTO,
-        // total 값을 가지고 PageResponseDTO  생성
-
-        return responseDTO;
+        return PageResponseDTO.<PostListDTO>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(pageRequestDTO)
+                .total(result.getTotalElements())
+                .build();
     }
 
     @Override
