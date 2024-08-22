@@ -53,13 +53,13 @@ public interface PostService {
                 .meetingTime(post.getMeetingTime())
                 .build();
 
-        List<PostImage> imageList = post.getImageList();
-
-        if (imageList == null || imageList.isEmpty()) return postDTO;
-
-        List<String> fileNameList = imageList.stream().map(postImage -> postImage.getFileName()).toList();
-
-        postDTO.setUploadFileName(fileNameList);
+//        List<PostImage> imageList = post.getImageList();
+//
+//        if (imageList == null || imageList.isEmpty()) return postDTO;
+//
+//        List<String> fileNameList = imageList.stream().map(postImage -> postImage.getFileName()).toList();
+//
+//        postDTO.setUploadFileName(fileNameList);
 
         return postDTO;
     }
@@ -78,13 +78,13 @@ public interface PostService {
                 .meetingTime(postDTO.getMeetingTime())
                 .build();
 
-        List<String> uploadFileName = postDTO.getUploadFileName();
-
-        if (uploadFileName == null || uploadFileName.isEmpty()) return post;
-
-        uploadFileName.forEach(fileName -> {
-            post.addImageString(fileName);
-        });
+//        List<String> uploadFileName = postDTO.getUploadFileName();
+//
+//        if (uploadFileName == null || uploadFileName.isEmpty()) return post;
+//
+//        uploadFileName.forEach(fileName -> {
+//            post.addImageString(fileName);
+//        });
 
         return post;
     }

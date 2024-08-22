@@ -69,16 +69,16 @@ public class PostServiceImpl implements PostService {
         // 코드 유지보수, 확장성은 좋으나 비효율적
         // 현재의 change 는? 코드가 복잡해지나 성능은 나을 수 있다.
 
-        List<String> uploadFileNames = postDTO.getUploadFileName();
-
-        post.clearList();
-
-        if (uploadFileNames != null && !uploadFileNames.isEmpty()) {
-
-            uploadFileNames.forEach(uploadFileName ->{
-                post.addImageString(uploadFileName);
-            });
-        }
+//        List<String> uploadFileNames = postDTO.getUploadFileName();
+//
+//        post.clearList();
+//
+//        if (uploadFileNames != null && !uploadFileNames.isEmpty()) {
+//
+//            uploadFileNames.forEach(uploadFileName ->{
+//                post.addImageString(uploadFileName);
+//            });
+//        }
 
         postRepository.save(post);
     }
@@ -99,9 +99,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void remove(Long id) {
-
         postRepository.deleteById(id);
 //        postRepository.updateToDelete(id,true);
+
 
     }
 

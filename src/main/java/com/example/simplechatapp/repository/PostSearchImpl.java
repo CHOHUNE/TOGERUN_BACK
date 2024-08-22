@@ -5,6 +5,7 @@ import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.*;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
@@ -22,11 +23,9 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
     public Page<Post> search1(PageRequestDTO pageRequestDTO) {
         QPost qPost = QPost.post;
         QUser qUser = QUser.user;
-        // List
 
         JPQLQuery<Post> query = from(qPost)
                 .leftJoin(qPost.user, qUser).fetchJoin()
-//                .leftJoin(qPost.imageList).fetchJoin() ElementCollection 은 fetchJoin 이 안된다.
                 .where(
                         containsKeyword(qPost, pageRequestDTO.getKeyword()),
                         qPost.delFlag.eq(false)
@@ -46,16 +45,14 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
         return new PageImpl<>(list, pageable, total);
     }
 
-    @Override
     public Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId) {
-
         QPost qPost = QPost.post;
         QUser qUser = QUser.user;
         QLike qLike = QLike.like;
         QFavorite qFavorite = QFavorite.favorite;
 
-        JPQLQuery<PostDTO> query = from(qPost)
-                .leftJoin(qPost.user,qUser)
+        PostDTO postDTO = from(qPost)
+                .leftJoin(qPost.user, qUser)
                 .leftJoin(qLike).on(qLike.post.eq(qPost).and(qLike.user.id.eq(userId)))
                 .leftJoin(qFavorite).on(qFavorite.post.eq(qPost).and(qFavorite.user.id.eq(userId)))
                 .where(qPost.id.eq(postId))
@@ -68,18 +65,18 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
                         qPost.localDate,
                         qPost.delFlag,
                         qFavorite.isActive.coalesce(false),
+                        JPAExpressions.select(qLike.count())
+                                .from(qLike)
+                                .where(qLike.post.eq(qPost).and(qLike.isActive.isTrue())),
                         qLike.isActive.coalesce(false),
-                        qLike.id.count(),
                         qPost.placeName,
                         qPost.latitude,
                         qPost.longitude,
                         qPost.meetingTime
+                ))
+                .fetchOne();
 
-
-                        ));
-
-
-        return Optional.ofNullable(query.fetchOne());
+        return Optional.ofNullable(postDTO);
     }
 
 

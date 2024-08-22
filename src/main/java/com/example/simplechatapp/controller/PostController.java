@@ -79,15 +79,15 @@ public List<Post> getAllPosts() {
         return Map.of("result","success");
     }
 
-    @DeleteMapping("/{id}")
-    public Map<String, String> remove(@PathVariable Long id) {
-
-        List<String> oldFileNames = postService.get(id).getUploadFileName();
-        customFileUtil.deleteFile(oldFileNames);
-        postService.remove(id);
-
-        return Map.of("result","success");
-    }
+//    @DeleteMapping("/{id}")
+//    public Map<String, String> remove(@PathVariable Long id) {
+//
+//        List<String> oldFileNames = postService.get(id).getUploadFileName();
+//        customFileUtil.deleteFile(oldFileNames);
+//        postService.remove(id);
+//
+//        return Map.of("result","success");
+//    }
 
     @PostMapping("/{id}/favorite")
     public ResponseEntity<FavoriteDTO> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
