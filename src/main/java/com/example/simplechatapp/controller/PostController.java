@@ -10,7 +10,6 @@ import com.example.simplechatapp.service.FavoriteService;
 import com.example.simplechatapp.service.LikeService;
 import com.example.simplechatapp.service.PostService;
 import com.example.simplechatapp.entity.Post;
-import com.example.simplechatapp.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,7 @@ import java.util.Optional;
 public class PostController {
 
     private final PostService postService;
-    private final CustomFileUtil customFileUtil;
+//    private final CustomFileUtil customFileUtil;
     private final LikeService likeService;
     private final FavoriteService favoriteService;
     private final UserRepository userRepository;

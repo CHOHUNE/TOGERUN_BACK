@@ -1,9 +1,6 @@
 package com.example.simplechatapp.entity;
 
-
-import com.example.simplechatapp.aop.proxy.NotifyInfo;
 import com.example.simplechatapp.dto.ChatMessageDTO;
-import com.example.simplechatapp.dto.UserDTO;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 
 @Entity
@@ -65,22 +61,4 @@ public class ChatMessage {
             chatRoom.getChatMessageList().add(this);
         }
     }
-
-
-//    @Override
-//    public Set<UserDTO> getReceiver() {
-//        return chatRoom.getParticipants();
-//    }
-//
-//    @Override
-//    public Long getGoUrlId() {
-//        return chatRoom.getId();
-//    }
-//
-//    @Override
-//    public NotificationType getNotificationType() {
-//        return NotificationType.CHAT;
-//    }
-//}
-
 }
