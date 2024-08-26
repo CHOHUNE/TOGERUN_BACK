@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @Table(name = "chat_messages")
 @Builder
-public class ChatMessage {
+public class ChatMessage implements Serializable { //Redis 에 저장하기 위한 Serializable 구현
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

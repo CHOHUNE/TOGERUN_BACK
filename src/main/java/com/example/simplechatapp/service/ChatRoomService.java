@@ -6,16 +6,20 @@ import com.example.simplechatapp.repository.ChatMessageRepository;
 import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,22 +32,65 @@ public class ChatRoomService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper; //Jackson 라이브러리를 사용하여 객체를 JSON으로 변환하거나 JSON을 객체로 변환하는데 사용
 
 
+    //ReactiveRedisTemplate vs RedisTemplate  : ReactiveRedisTemplate 은 비동기 방식, RedisTemplate 은 동기 방식
 
-//    public boolean isUserAllowedInChatRoom(Long chatRoomId, String email) {
-//        User user = userRepository.findByEmail(email);
-//
-//        return chatRoomRepository.isUserAllowedInChatRoom(chatRoomId, user.getEmail());
-//    }
-// 단체 채팅방으로 변경 하면서 사용자 검증은 필요 없어짐 -> 단순 참여 유무 확인 후 추가 과정으로 대체
+    @PostConstruct
+    public void setUp() {
+        objectMapper.registerModule(new JavaTimeModule()); //JavaTimeModule : Java 8의 날짜와 시간 API를 사용하여 시간을 직렬화하거나 역직렬화하는데 사용
+    }
 
     public List<ChatMessageDTO> getMessageByPostId(Long postId) {
 
+        String redisKey = "chat:messages:" + postId;
+        List<String> cachedMessages = redisTemplate.opsForList().range(redisKey, 0, -1);
+
+        if (cachedMessages != null && !cachedMessages.isEmpty()) {
+
+            log.info("Cache Hit!{} messages", cachedMessages.size());
+
+            return cachedMessages.stream()
+                    .map(this::desericalizableChatMessageDTO)
+                    .collect(Collectors.toList());
+
+        }
+
+
         List<ChatMessage> chatMessages = chatMessageRepository.findChatMessageByPostId(postId);
-        return chatMessages.stream()
+        List<ChatMessageDTO> messageDTOs = chatMessages.stream()
                 .map(ChatMessageDTO::ChatMessageEntityToDto)
                 .collect(Collectors.toList());
+
+        messageDTOs.forEach(dto ->
+                redisTemplate.opsForList().rightPush(redisKey, serializeChatMessageDTO(dto)));
+
+        redisTemplate.expire(redisKey, 1, TimeUnit.HOURS); //1시간 후 만료되게 캐싱 설정
+
+        return messageDTOs;
+    }
+
+    private String serializeChatMessageDTO(ChatMessageDTO dto) {
+        try {
+            return objectMapper.writeValueAsString(dto);
+        } catch (Exception e) {
+            log.error("Error serializing ChatMessagedDTO", e);
+            return null;
+        }
+    }
+
+    private ChatMessageDTO desericalizableChatMessageDTO(String json) {
+
+        try {
+            return objectMapper.readValue(json, ChatMessageDTO.class);
+        } catch (Exception e) {
+            log.error("Error deserializing ChatMessageDTO", e);
+            return null;
+
+        }
+
     }
 
     @Transactional
@@ -94,73 +141,24 @@ public class ChatRoomService {
 
             chatMessageRepository.save(joinMessage);
 
+            // Redis ---->
+
+            String redisKey = "chat:messages:" + postId;
+
+//            ChatMessageDTO joinMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(joinMessage);
+//            redisTemplate 변경에 따라 DTO 가 아닌 String 으로 전달
+
+            redisTemplate.opsForList().rightPush(redisKey, String.valueOf(joinMessage));
 
             // Websocket 통해 모든 클라이언트에게 입장 메시지 전송
-
             messagingTemplate.convertAndSend("/topic/chat/" + postId, joinMessage);
 
 
-        }
-//        else{
-//           throw new IllegalArgumentException("이미 참가한 사용자입니다.");
-//            예외처리시 메소드가 즉시 중단되므로 로그 처리 후 리턴
-//            log.info("이미 참가한 사용자입니다.");
-//        }
 
-        // addParticipant 에 검증과정
+
+        }
 
         return chatRoomRepository.save(chatRoom);
 
     }
-
-
-
-
-//    @Transactional
-//    public ChatRoom createChatRoom(Long postId) {
-//        Post post = postRepository.findById(postId).orElseThrow(()->new IllegalArgumentException("POST NOT FOUND"));
-//
-//        ChatRoom chatRoom = new ChatRoom();
-//        chatRoom.setPost(post);
-//        chatRoom.addParticipant(post.getUser()); // 작성자는 채팅 룸에 자동으로 추가
-//
-//        return chatRoomRepository.save(chatRoom);
-//
-//    }
-
-//    @Transactional
-//    public void addParticipantToChatRoom(Long chatRoomId, String email) {
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(
-//                ()->new EntityNotFoundException("Chat room not found"));
-//        User user = userRepository.findByEmail(email);
-//
-//        chatRoom.addParticipant(user);
-//
-//        chatRoomRepository.save(chatRoom);
-//
-//    }
-
-
-
-
-//    public boolean isUserAllowedInChatRoom(Long chatRoomId, String email) {
-//
-////        1. 채팅방 조회
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new EntityNotFoundException("Chat room not found"));
-//
-////        2.사용자 조회
-//        User user = userRepository.findByEmail(email);
-//
-//
-//        return isParticipant(chatRoom, user);
-//
-//    }
-//
-//    private boolean isParticipant(ChatRoom chatRoom, User user) {
-//        return user.getEmail().equals(chatRoom.getWriter().getEmail()) ||
-//               user.getEmail().equals(chatRoom.getSubscriber().getEmail());
-//
-//    }
-    // 객체 생성 대신 단일문의 쿼리를 대신하기로 결정 -> 불필요한 객체 생성 피하기, 데이터베이스 부하 줄이기
 }
