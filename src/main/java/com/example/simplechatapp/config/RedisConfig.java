@@ -1,5 +1,7 @@
 package com.example.simplechatapp.config;
 
+import com.example.simplechatapp.service.RedisSubscriber;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -7,8 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -20,25 +23,46 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
 
         //Json 직렬화 설정
-        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+//        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
         //key 는 String 직렬화
         template.setKeySerializer(new StringRedisSerializer());
 
         // value Json 으로 직렬화
-        template.setValueSerializer(serializer);
+        template.setValueSerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(serializer);
-
+        template.setHashValueSerializer(new StringRedisSerializer());
         template.afterPropertiesSet();
+
         return template;
     }
 
-    private ObjectMapper objectMapper() {
+
+
+    @Bean
+    public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
         return mapper;
+    }
+
+    @Bean
+    public MessageListenerAdapter messageListener(RedisSubscriber redisSubscriber) {
+        return new MessageListenerAdapter(redisSubscriber,"onMessage");
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory connectionFactory,
+                                                                       MessageListenerAdapter listenerAdapter) {
+
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(listenerAdapter, new ChannelTopic("chat.*"));
+
+        return container;
     }
 }
     //Redis 서버와 상호작용 하기 위한 RedisTemplate 관련 설정을 해준다. Redis 서버에서는 bytes 코드만이

@@ -4,6 +4,8 @@ import com.example.simplechatapp.annotation.NeedNotify;
 import com.example.simplechatapp.dto.ChatMessageDTO;
 import com.example.simplechatapp.service.ChatMessageService;
 import com.example.simplechatapp.service.ChatRoomService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,15 +23,18 @@ public class ChatController {
 
     private final ChatMessageService chatMessageService;
     private final RedisTemplate<String,Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
 
     @MessageMapping("/chat/{postId}/send")
     @SendTo("/topic/chat/{postId}")
     @NeedNotify
-    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO requestDTO, @DestinationVariable Long postId) {
+    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO requestDTO, @DestinationVariable Long postId) throws JsonProcessingException {
 
         ChatMessageDTO savedMessage = chatMessageService.createChatMessage(requestDTO, postId);
-        redisTemplate.convertAndSend("/topic/chat/"+postId,savedMessage);
+        String jsonMessage = objectMapper.writeValueAsString(requestDTO);
+
+        redisTemplate.convertAndSend("/topic/chat/"+postId,jsonMessage);
 
         return savedMessage;
 

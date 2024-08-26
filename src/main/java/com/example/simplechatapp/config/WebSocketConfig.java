@@ -1,34 +1,27 @@
 package com.example.simplechatapp.config;
 
 
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-@Log4j2
+//@Log4j2
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     // WebSocketMessageBorkerConfigurer 인터페이스를 구현하여 WebSocket 관련 설정을 할 수 있다.
-
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
-
-    @Value("${spring.data.redis.database}")
-    private int redisDatabase;
+//
+//    @Value("${spring.data.redis.host}")
+//    private String redisHost;
+//
+//    @Value("${spring.data.redis.port}")
+//    private int redisPort;
+//
+//    @Value("${spring.data.redis.database}")
+//    private int redisDatabase;
 
 
     @Override
@@ -46,7 +39,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) { // 메시지를 중간에 라우팅 하는 역할 -브로커
 
 
-        log.info("Configuring message broker{}", registry);
 
         registry.enableSimpleBroker("/topic");
 //                .setRelayHost(redisHost)
@@ -67,9 +59,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     }
 
-    @Bean
-    public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
-        return new LettuceConnectionFactory(redisHost, redisPort);
-    }
+//    @Bean
+//    public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
+//        return new LettuceConnectionFactory(redisHost, redisPort);
+//    }
 
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 @Entity
 @Data
 @Table(name = "chat_rooms")
-@ToString(exclude = {"participants","chatMessageList"})
+@ToString(exclude = {"participants", "chatMessageList"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

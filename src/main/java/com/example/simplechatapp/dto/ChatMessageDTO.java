@@ -5,8 +5,10 @@ import com.example.simplechatapp.entity.ChatMessage;
 import com.example.simplechatapp.entity.NotificationType;
 import com.example.simplechatapp.entity.NotifyMessage;
 import com.example.simplechatapp.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessageDTO implements NotifyInfo {
 
     private Long id;

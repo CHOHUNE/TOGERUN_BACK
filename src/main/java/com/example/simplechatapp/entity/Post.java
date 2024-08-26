@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="post")
-@ToString(exclude = {"imageList","user"})
+@ToString(exclude = {"imageList", "user", "chatRoom", "comments", "favorites", "likes"})
 public class Post {
 
     @Id
@@ -117,6 +117,28 @@ public class Post {
         if (chatRoom != null && chatRoom.getPost() != this) {
             chatRoom.setPost(this);
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", user=" + user +
+                ", localDate=" + localDate +
+                ", meetingTime=" + meetingTime +
+                ", delFlag=" + delFlag +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", placeName='" + placeName + '\'' +
+                ", chatRoom=" + chatRoom +
+                ", imageList=" + imageList +
+                ", comments=" + comments +
+                ", favorites=" + favorites +
+                ", likes=" + likes +
+                '}';
     }
 
     public void clearList() {
