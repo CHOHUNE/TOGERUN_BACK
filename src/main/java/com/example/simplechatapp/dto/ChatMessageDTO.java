@@ -48,7 +48,7 @@ public class ChatMessageDTO implements NotifyInfo {
                         .receivers(chatMessage.getChatRoom().getParticipants().parallelStream()
                                 .map(User::getEmail)
                                 .collect(Collectors.toSet())) //participants 에서 email 만 추출
-                        .goUrlId("/post/"+chatMessage.getChatRoom().getId()+"/chat/")
+                        .goUrlId("/post/"+chatMessage.getChatRoom().getPost().getId()+"/chat/")
 //                        .notificationType(NotificationType.CHAT)
                         .build();
     }
