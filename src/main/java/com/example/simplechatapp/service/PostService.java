@@ -2,9 +2,6 @@ package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.*;
 import com.example.simplechatapp.entity.Post;
-import com.example.simplechatapp.entity.PostImage;
-import com.example.simplechatapp.repository.UserRepository;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

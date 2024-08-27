@@ -1,6 +1,7 @@
 package com.example.simplechatapp.security.handler;
 
 import com.example.simplechatapp.dto.oauth2.CustomOAuth2User;
+import com.example.simplechatapp.repository.RefreshTokenRepository;
 import com.example.simplechatapp.util.JWTUtil;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -24,8 +25,9 @@ import java.util.Map;
 @Log4j2
 @RequiredArgsConstructor
 public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    private final RefreshTokenRepository refreshTokenRepository;
 
-//    private final JWTUtil jwtUtil;
+    private final JWTUtil jwtUtil;
 
 
     @Override
@@ -36,11 +38,16 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         Map<String, Object> claims = customUserDetails.getClaim();
 
 
-        String accessToken = JWTUtil.generateToken(claims, 1);
-        String refreshToken = JWTUtil.generateToken(claims, 60 * 24);
+        log.info("oauth claims : {}", claims);
+
+        String accessToken = jwtUtil.generateAccessToken(claims, 10);
+        String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
 
         claims.put("accessToken", accessToken);
-        claims.put("refreshToken", refreshToken);
+//        claims.put("refreshToken", refreshToken);
+
+        String email = claims.get("email").toString();
+        refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
 
         Gson gson = new Gson();
 
@@ -58,7 +65,6 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         response.addCookie(cookie);
 
         response.sendRedirect("http://localhost:3000/");
-
         request.getSession().invalidate();
 
         PrintWriter printWriter = response.getWriter(); // response 에 json 형태로 claims 를 담아 보낸다.
@@ -67,7 +73,4 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
 
     }
-
-
-
 }
