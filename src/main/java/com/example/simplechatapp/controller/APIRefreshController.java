@@ -81,7 +81,8 @@ public class APIRefreshController {
     private boolean shouldRefreshToken(String token) {
         try {
             Map<String, Object> claims = jwtUtil.validToken(token);
-            Long exp = (Long) claims.get("exp");
+            Number expNumber = (Number) claims.get("exp");
+            long exp = expNumber.longValue();
             long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
             return (exp - currentTimeInSeconds) < (12 * 60 * 60);
