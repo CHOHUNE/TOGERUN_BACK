@@ -3,9 +3,7 @@ package com.example.simplechatapp.repository;
 import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.*;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
@@ -45,38 +43,62 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
         return new PageImpl<>(list, pageable, total);
     }
 
+    @Override
     public Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId) {
         QPost qPost = QPost.post;
         QUser qUser = QUser.user;
         QLike qLike = QLike.like;
         QFavorite qFavorite = QFavorite.favorite;
 
-        PostDTO postDTO = from(qPost)
-                .leftJoin(qPost.user, qUser)
+        Post post = from(qPost)
+                .leftJoin(qPost.user, qUser).fetchJoin()
+                .leftJoin(qPost.imageList).fetchJoin()  // Fetch join for imageList
                 .leftJoin(qLike).on(qLike.post.eq(qPost).and(qLike.user.id.eq(userId)))
                 .leftJoin(qFavorite).on(qFavorite.post.eq(qPost).and(qFavorite.user.id.eq(userId)))
                 .where(qPost.id.eq(postId))
-                .select(Projections.constructor(PostDTO.class,
-                        qPost.id,
-                        qPost.title,
-                        qPost.content,
-                        qUser.id,
-                        qUser.nickname,
-                        qPost.localDate,
-                        qPost.delFlag,
-                        qFavorite.isActive.coalesce(false),
-                        JPAExpressions.select(qLike.count())
-                                .from(qLike)
-                                .where(qLike.post.eq(qPost).and(qLike.isActive.isTrue())),
-                        qLike.isActive.coalesce(false),
-                        qPost.placeName,
-                        qPost.latitude,
-                        qPost.longitude,
-                        qPost.meetingTime
-                ))
+                .select(qPost)
                 .fetchOne();
 
-        return Optional.ofNullable(postDTO);
+        if (post != null) {
+            Long likeCount = from(qLike)
+                    .where(qLike.post.eq(post).and(qLike.isActive.isTrue()))
+                    .select(qLike.count())
+                    .fetchOne();
+
+            Boolean isFavorite = from(qFavorite)
+                    .where(qFavorite.post.eq(post).and(qFavorite.user.id.eq(userId)))
+                    .select(qFavorite.isActive)
+                    .fetchOne();
+
+            Boolean isLike = from(qLike)
+                    .where(qLike.post.eq(post).and(qLike.user.id.eq(userId)))
+                    .select(qLike.isActive)
+                    .fetchOne();
+
+            return Optional.of(convertToDTO(post, likeCount, isFavorite, isLike));
+        }
+
+        return Optional.empty();
+    }
+
+    private PostDTO convertToDTO(Post post, Long likeCount, Boolean isFavorite, Boolean isLike) {
+        return PostDTO.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .userId(post.getUser().getId())
+                .nickname(post.getUser().getNickname())
+                .localDate(post.getLocalDate())
+                .delFlag(post.isDelFlag())
+                .isFavorite(isFavorite != null ? isFavorite : false)
+                .likeCount(likeCount != null ? likeCount : 0L)
+                .isLike(isLike != null ? isLike : false)
+                .placeName(post.getPlaceName())
+                .latitude(post.getLatitude())
+                .longitude(post.getLongitude())
+                .meetingTime(post.getMeetingTime())
+                .imageList(post.getImageList().stream().map(PostImage::getFileName).toList())
+                .build();
     }
 
 

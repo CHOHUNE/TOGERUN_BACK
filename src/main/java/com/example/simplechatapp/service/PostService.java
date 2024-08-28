@@ -2,10 +2,13 @@ package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.*;
 import com.example.simplechatapp.entity.Post;
+import com.example.simplechatapp.entity.PostImage;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 public interface PostService {
@@ -15,9 +18,10 @@ public interface PostService {
 
     Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId);
 
-    Long register(UserDTO principal, PostDTO postDTO);
+    Long register(UserDTO principal, PostDTO postDTO, List<MultipartFile> files);
 
-    void modify(PostDTO postDTO);
+
+    void modify(PostDTO postDTO, List<MultipartFile> newFiles);
 
     PageResponseDTO<PostListDTO> getList(PageRequestDTO pageRequestDTO);
 
@@ -48,19 +52,13 @@ public interface PostService {
                 .longitude(post.getLongitude())
                 .placeName(post.getPlaceName())
                 .meetingTime(post.getMeetingTime())
+                .imageList(post.getImageList().stream()
+                        .map(PostImage::getFileName)
+                        .collect(Collectors.toList()))
                 .build();
-
-//        List<PostImage> imageList = post.getImageList();
-//
-//        if (imageList == null || imageList.isEmpty()) return postDTO;
-//
-//        List<String> fileNameList = imageList.stream().map(postImage -> postImage.getFileName()).toList();
-//
-//        postDTO.setUploadFileName(fileNameList);
 
         return postDTO;
     }
-
     default Post dtoToEntity(PostDTO postDTO) {
         Post post = Post.builder()
                 .id(postDTO.getId())
@@ -75,13 +73,11 @@ public interface PostService {
                 .meetingTime(postDTO.getMeetingTime())
                 .build();
 
-//        List<String> uploadFileName = postDTO.getUploadFileName();
-//
-//        if (uploadFileName == null || uploadFileName.isEmpty()) return post;
-//
-//        uploadFileName.forEach(fileName -> {
-//            post.addImageString(fileName);
-//        });
+        // PostImage 객체 생성 및 추가
+        postDTO.getImageList().forEach(fileName -> {
+            PostImage postImage = PostImage.builder().fileName(fileName).build();
+            post.addImage(postImage);
+        });
 
         return post;
     }

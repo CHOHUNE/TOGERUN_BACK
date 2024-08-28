@@ -3,22 +3,21 @@ package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.annotation.NeedNotify;
 import com.example.simplechatapp.dto.*;
+import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
-import com.example.simplechatapp.repository.PostSearch;
 import com.example.simplechatapp.repository.UserRepository;
 import com.example.simplechatapp.service.FavoriteService;
 import com.example.simplechatapp.service.LikeService;
 import com.example.simplechatapp.service.PostService;
-import com.example.simplechatapp.entity.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/post")
@@ -31,6 +30,8 @@ public class PostController {
     private final LikeService likeService;
     private final FavoriteService favoriteService;
     private final UserRepository userRepository;
+
+
 
 @GetMapping
 public List<Post> getAllPosts() {
@@ -47,9 +48,12 @@ public List<Post> getAllPosts() {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+
     //    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     @PostMapping
     public Map<String,Long> createPost( @AuthenticationPrincipal UserDTO principal,
+            @RequestParam(value = "uploadFiles",required = false) List<MultipartFile> files,
             PostDTO postDTO) {
 
         // MultiPart-Data-Form 양식으로 보낼 경우 : @RequestBody 사용하지 않음
@@ -57,7 +61,8 @@ public List<Post> getAllPosts() {
 
         log.info("postDTO{}", postDTO);
 
-        Long id = postService.register(principal,postDTO);
+        Long id = postService.register(principal,postDTO,files);
+
 
         return Map.of("id", id);
     }
@@ -71,22 +76,26 @@ public List<Post> getAllPosts() {
     }
 
     @PutMapping("/{id}")
-    public Map<String, String> modify (@PathVariable Long id,  PostDTO postDTO) {
+    public Map<String, String> modify (@PathVariable Long id,  PostDTO postDTO, @RequestParam(value = "uploadFiles",required = false) List<MultipartFile> files) {
         postDTO.setId(id);
-        postService.modify(postDTO);
+        postService.modify(postDTO, files);
 
         return Map.of("result","success");
     }
 
-//    @DeleteMapping("/{id}")
-//    public Map<String, String> remove(@PathVariable Long id) {
-//
-//        List<String> oldFileNames = postService.get(id).getUploadFileName();
-//        customFileUtil.deleteFile(oldFileNames);
-//        postService.remove(id);
-//
-//        return Map.of("result","success");
-//    }
+    @DeleteMapping("/{id}")
+    public Map<String, String> remove(@PathVariable Long id) {
+
+        List<String> oldFileNames = postService.get(id).getImageList();
+
+        if (oldFileNames != null && !oldFileNames.isEmpty()) {
+            // customFileUtil.deleteFiles(oldFileNames);
+        }
+
+        postService.remove(id);
+
+        return Map.of("result","success");
+    }
 
     @PostMapping("/{id}/favorite")
     public ResponseEntity<FavoriteDTO> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {

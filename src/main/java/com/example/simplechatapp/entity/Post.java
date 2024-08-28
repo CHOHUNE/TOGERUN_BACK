@@ -3,6 +3,7 @@ package com.example.simplechatapp.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,6 +50,9 @@ public class Post {
 
 
     @ElementCollection // 생명주기 관리 자체가 게시물 = 게시물 이미지 이므로 ManyToOne 과 Cascade 를 안쓴다.
+    @CollectionTable(name="post_images", joinColumns = @JoinColumn(name="post_id"))
+    @OrderColumn(name="ord")
+    @Column(name="file_name")
     @Builder.Default
     private List<PostImage> imageList = new ArrayList<>();
 
@@ -101,7 +105,6 @@ public class Post {
 
     public void addImage(PostImage image) {
 
-        image.setOrd(imageList.size());
         imageList.add(image);
 
     }

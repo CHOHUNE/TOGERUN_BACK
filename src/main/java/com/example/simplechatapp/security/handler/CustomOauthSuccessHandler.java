@@ -40,7 +40,7 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         log.info("oauth claims : {}", claims);
 
-        String accessToken = jwtUtil.generateAccessToken(claims, 10);
+        String accessToken = jwtUtil.generateAccessToken(claims, 1);
         String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
 
         claims.put("accessToken", accessToken);

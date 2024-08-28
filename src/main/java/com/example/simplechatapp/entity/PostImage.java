@@ -13,7 +13,7 @@ public class PostImage {
 
     private String fileName;
 
-    @Setter
-    private int ord;
+//    @Setter
+//    private int ord;
 
 }

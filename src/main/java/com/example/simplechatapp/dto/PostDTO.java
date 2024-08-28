@@ -1,7 +1,9 @@
 package com.example.simplechatapp.dto;
 
-import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Builder
+@AllArgsConstructor
 public class PostDTO {
         private Long id;
         private String title;
@@ -31,13 +34,25 @@ public class PostDTO {
 //        @Builder.Default // Builder.Default 를 사용하면 초기화한 상태를 직접 설정할 수 있다.
 //        // 가령 List 를 초기화 하지 않으면 null 값이 들어가고, nullPointException 등이 발생될 수 있다.
 //        private List<MultipartFile> file = new ArrayList<>();
-//        @Builder.Default
-//        private List<String> uploadFileName = new ArrayList<>();
 
+        @Builder.Default
+        private List<String> imageList = new ArrayList<>();
+
+
+        // Querydsl용 생성자 (imageList 제외)
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
                        LocalDateTime meetingTime) {
+                this(id, title, content, userId, nickname, localDate, delFlag, isFavorite, likeCount,
+                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>());
+        }
+
+        // 모든 필드를 포함하는 생성자
+        public PostDTO(Long id, String title, String content, Long userId, String nickname,
+                       LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
+                       Boolean isLike, String placeName, Double latitude, Double longitude,
+                       LocalDateTime meetingTime, List<String> imageList) {
                 this.id = id;
                 this.title = title;
                 this.content = content;
@@ -52,6 +67,7 @@ public class PostDTO {
                 this.latitude = latitude;
                 this.longitude = longitude;
                 this.meetingTime = meetingTime;
-        }
+                this.imageList = imageList != null ? imageList : new ArrayList<>();
 
+        }
 }
