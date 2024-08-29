@@ -1,5 +1,6 @@
 package com.example.simplechatapp.dto;
 
+import com.example.simplechatapp.entity.ActivityType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,8 @@ public class PostDTO {
         private Double latitude;
         private Double longitude;
         private LocalDateTime meetingTime;
+        private ActivityType activityType;
+        private Integer capacity;
 
 
 //        @Builder.Default // Builder.Default 를 사용하면 초기화한 상태를 직접 설정할 수 있다.
@@ -38,21 +41,26 @@ public class PostDTO {
         @Builder.Default
         private List<String> imageList = new ArrayList<>();
 
+        @Builder.Default
+        private List<String> existingImageUrls = new ArrayList<>();
 
-        // Querydsl용 생성자 (imageList 제외)
+
+
+        // Querydsl용 생성자
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
-                       LocalDateTime meetingTime) {
+                       LocalDateTime meetingTime, ActivityType activityType, Integer capacity) {
                 this(id, title, content, userId, nickname, localDate, delFlag, isFavorite, likeCount,
-                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>());
+                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>(), activityType, capacity);
+                this.existingImageUrls = new ArrayList<>();
         }
 
         // 모든 필드를 포함하는 생성자
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
-                       LocalDateTime meetingTime, List<String> imageList) {
+                       LocalDateTime meetingTime, List<String> imageList, ActivityType activityType, Integer capacity) {
                 this.id = id;
                 this.title = title;
                 this.content = content;
@@ -68,6 +76,8 @@ public class PostDTO {
                 this.longitude = longitude;
                 this.meetingTime = meetingTime;
                 this.imageList = imageList != null ? imageList : new ArrayList<>();
-
+                this.activityType = activityType;
+                this.capacity = capacity;
+                this.existingImageUrls = new ArrayList<>(this.imageList);
         }
 }

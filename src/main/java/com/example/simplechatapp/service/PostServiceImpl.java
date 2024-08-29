@@ -62,13 +62,14 @@ public class PostServiceImpl implements PostService {
         postDTO.setLocalDate(LocalDate.now());
         postDTO.setUserId(user.getId());
 
-        if (files != null && !files.isEmpty()) {
-            List<String> uploadFileUrls = uploadFiles(files);
-            postDTO.setImageList(uploadFileUrls);
-        }
-
         Post post = dtoToEntity(postDTO);
         Post savedPost = postRepository.save(post);
+
+        if (files != null && !files.isEmpty()) {
+            List<String> uploadFileUrls = uploadFiles(files, savedPost.getId());
+            uploadFileUrls.forEach(savedPost::addImageString);
+        }
+
 
         return savedPost.getId();
     }
@@ -81,12 +82,7 @@ public class PostServiceImpl implements PostService {
 
         updatePostFields(post, postDTO);
 
-        if (newFiles != null && !newFiles.isEmpty()) {
-            deleteFiles(post.getImageList());
-            List<String> newFileUrls = uploadFiles(newFiles);
-            post.clearList();
-            newFileUrls.forEach(post::addImageString);
-        }
+        updatePostImages(post, postDTO.getExistingImageUrls(), newFiles);
 
         postRepository.save(post);
     }
@@ -119,7 +115,7 @@ public class PostServiceImpl implements PostService {
         Post post = PostService.super.dtoToEntity(postDTO);
         User user = userRepository.findById(postDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        post.setUser(user);
+        post.changeUser(user);
         return post;
     }
 
@@ -143,8 +139,27 @@ public class PostServiceImpl implements PostService {
         post.changeLongitude(postDTO.getLongitude());
     }
 
-    private String convertFileName(String originalFileName) {
-        return UUID.randomUUID().toString() + "_" + originalFileName;
+
+    private void updatePostImages(Post post, List<String> existingImageUrls, List<MultipartFile> newFiles) {
+
+        //1.기존 이미지 리스트 가져오기
+        List<PostImage> currentImages = post.getImageList();
+
+        //2.삭제 이미지 처리 :
+        List<PostImage> imagesToDelete = currentImages.stream()
+                .filter(image -> !existingImageUrls.contains(image.getFileName()))
+                .toList();
+
+        deleteFiles(imagesToDelete);
+
+        // 3.새 이미지 업로드
+        List<String> newImageUrls = uploadFiles(newFiles,post.getId());
+
+        // 4. 기존 이미지 삭제 후 최종 이미지 리스트 업데이트
+        post.clearList();
+        existingImageUrls.forEach(post::addImageString);
+        newImageUrls.forEach(post::addImageString);
+
     }
 
     private void deleteFiles(List<PostImage> postImages) {
@@ -160,21 +175,31 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    private List<String> uploadFiles(List<MultipartFile> files) {
+    private List<String> uploadFiles(List<MultipartFile> files, Long postId) {
+
+        if (files == null || files.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         List<CompletableFuture<String>> futures = new ArrayList<>();
 
         for (MultipartFile file : files) {
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-                String fileName = convertFileName(file.getOriginalFilename());
+
+                String originalFileName = file.getOriginalFilename();
+                String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String fileName = UUID.randomUUID().toString() + fileExtension;
+                String fileKey = String.format("chatApp/post/%d/%s", postId, fileName);
+
                 try {
                     PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                             .bucket(bucketName)
-                            .key(fileName)
+                            .key(fileKey)
                             .build();
 
                     s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-                    return urlPrefix + fileName;
+                    return urlPrefix + fileKey;
                 } catch (IOException e) {
                     throw new RuntimeException("Failed to Upload file", e);
                 }

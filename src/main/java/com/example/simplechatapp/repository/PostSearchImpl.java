@@ -82,6 +82,9 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
     }
 
     private PostDTO convertToDTO(Post post, Long likeCount, Boolean isFavorite, Boolean isLike) {
+
+        List<String> imageUrls = post.getImageList().stream().map(PostImage::getFileName).toList();
+
         return PostDTO.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -97,7 +100,10 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
                 .latitude(post.getLatitude())
                 .longitude(post.getLongitude())
                 .meetingTime(post.getMeetingTime())
-                .imageList(post.getImageList().stream().map(PostImage::getFileName).toList())
+                .imageList(imageUrls)
+//                .existingImageUrls(imageUrls)
+                .activityType(post.getActivityType())
+                .capacity(post.getCapacity())
                 .build();
     }
 

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
+//@Setter
 @Entity
 @Builder
 @NoArgsConstructor
@@ -43,6 +43,13 @@ public class Post {
     private Double longitude;
     private String placeName;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ActivityType activityType;
+
+    @Column(nullable = false)
+    private Integer capacity;
+
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name="chat_room_id")
     @JsonManagedReference
@@ -72,6 +79,9 @@ public class Post {
     // 즉 관계의 주인이 아니란 것 -> 데이터베이스 외래 키를 가지고 있지 않음
     // mappedBy 가 없는 쪽이 관계의 주인이다. -> 데이터베이스 외래 키를 가지고 있음
 
+    public void changeUser(User user) {
+        this.user = user;
+    }
 
     public void changeTitle(String title) {
         this.title = title;
@@ -109,9 +119,16 @@ public class Post {
 
     }
 
+    public void changeActivityType(ActivityType activityType) {
+        this.activityType = activityType;
+    }
+
+    public void changeCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
     public void addImageString(String fileName) {
         PostImage postImage = PostImage.builder().fileName(fileName).build();
-
         addImage(postImage);
     }
 

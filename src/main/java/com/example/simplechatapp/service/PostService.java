@@ -55,6 +55,8 @@ public interface PostService {
                 .imageList(post.getImageList().stream()
                         .map(PostImage::getFileName)
                         .collect(Collectors.toList()))
+                .capacity(post.getCapacity())
+                .activityType(post.getActivityType())
                 .build();
 
         return postDTO;
@@ -71,6 +73,8 @@ public interface PostService {
                 .latitude(postDTO.getLatitude())
                 .placeName(postDTO.getPlaceName())
                 .meetingTime(postDTO.getMeetingTime())
+                .activityType(postDTO.getActivityType())
+                .capacity(postDTO.getCapacity())
                 .build();
 
         // PostImage 객체 생성 및 추가
