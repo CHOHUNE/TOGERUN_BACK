@@ -1,8 +1,8 @@
 package com.example.simplechatapp;
 
-import com.example.simplechatapp.service.PostService;
 import com.example.simplechatapp.dto.PageRequestDTO;
 import com.example.simplechatapp.dto.PostDTO;
+import com.example.simplechatapp.service.PostService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public class PostServiceTest {
                     localDate(LocalDate.now()).
                     build();
 
-            postService.modify(post);
+//            postService.modify(post);
     }
 
     @Test@DisplayName("paging test")

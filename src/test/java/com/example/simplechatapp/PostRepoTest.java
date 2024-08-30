@@ -2,7 +2,6 @@ package com.example.simplechatapp;
 
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.repository.PostRepository;
-import com.example.simplechatapp.util.CustomFileUtil;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -30,8 +29,8 @@ class PostRepoTest {
 
     @Autowired
     private  PostRepository postRepository;
-    @Autowired
-    private CustomFileUtil customFileUtil;
+//    @Autowired
+//    private CustomFileUtil customFileUtil;
     // test 환겨에서는 주로 필드 주입을 사용한다.
 
     @Test
