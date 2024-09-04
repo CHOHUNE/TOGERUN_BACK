@@ -6,8 +6,13 @@ import com.example.simplechatapp.entity.PostImage;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final S3Client s3Client;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
@@ -48,10 +54,14 @@ public class PostServiceImpl implements PostService {
         return entityToDTO(post);
     }
 
+
     @Override
-    public Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId) {
+    @Cacheable(value = "post", key = "#postId")
+    public Optional<?> findPostWithLikeAndFavorite(Long postId, Long userId) {
         return postRepository.findPostWithLikeAndFavorite(postId, userId);
     }
+
+
 
     @Override
     @Transactional
@@ -75,6 +85,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @CacheEvict(value = {"post"})
+    @CachePut(value = "post", key = "#postId")
     @Transactional
     public void modify(PostDTO postDTO, List<MultipartFile> newFiles) {
         Post post = postRepository.findById(postDTO.getId())
@@ -88,11 +100,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "post", key = "#id"),
+            @CacheEvict(value = "postComments", key = "#id")
+    })
     @Transactional
     public void remove(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         deleteFiles(post.getImageList());
+
         postRepository.deleteById(id);
     }
 
@@ -153,7 +170,7 @@ public class PostServiceImpl implements PostService {
         deleteFiles(imagesToDelete);
 
         // 3.새 이미지 업로드
-        List<String> newImageUrls = uploadFiles(newFiles,post.getId());
+        List<String> newImageUrls = uploadFiles(newFiles, post.getId());
 
         // 4. 기존 이미지 삭제 후 최종 이미지 리스트 업데이트
         post.clearList();

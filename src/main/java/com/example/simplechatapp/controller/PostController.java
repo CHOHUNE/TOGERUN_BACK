@@ -26,7 +26,6 @@ import java.util.Map;
 public class PostController {
 
     private final PostService postService;
-//    private final CustomFileUtil customFileUtil;
     private final LikeService likeService;
     private final FavoriteService favoriteService;
     private final UserRepository userRepository;
@@ -39,10 +38,11 @@ public List<Post> getAllPosts() {
     return postService.findAll();
 }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PostDTO> getPostById(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
 
-        User user = userRepository.findByEmail(principal.getEmail()).orElseThrow(() -> new RuntimeException("User Not Found"));
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPostById(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
+        User user = userRepository.findByEmail(principal.getEmail())
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
         return postService.findPostWithLikeAndFavorite(id, user.getId())
                 .map(ResponseEntity::ok)
@@ -67,6 +67,7 @@ public List<Post> getAllPosts() {
         return Map.of("id", id);
     }
 
+//    @Cacheable(value = "postList", key = "#pageRequestDTO.toString()")
     @GetMapping("/list")
     public PageResponseDTO<PostListDTO> list(PageRequestDTO pageRequestDTO) {
 
@@ -75,6 +76,7 @@ public List<Post> getAllPosts() {
         return postService.getList(pageRequestDTO);
     }
 
+
     @PutMapping("/{id}")
     public Map<String, String> modify (@PathVariable Long id,  PostDTO postDTO, @RequestParam(value = "uploadFiles",required = false) List<MultipartFile> files) {
         postDTO.setId(id);
@@ -82,6 +84,7 @@ public List<Post> getAllPosts() {
 
         return Map.of("result","success");
     }
+
 
     @DeleteMapping("/{id}")
     public Map<String, String> remove(@PathVariable Long id) {

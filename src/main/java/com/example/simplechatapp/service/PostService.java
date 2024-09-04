@@ -16,7 +16,7 @@ public interface PostService {
 
     PostDTO get(Long id);
 
-    Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId);
+    Optional<?> findPostWithLikeAndFavorite(Long postId, Long userId);
 
     Long register(UserDTO principal, PostDTO postDTO, List<MultipartFile> files);
 

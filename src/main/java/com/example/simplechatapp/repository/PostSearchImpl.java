@@ -44,7 +44,7 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
     }
 
     @Override
-    public Optional<PostDTO> findPostWithLikeAndFavorite(Long postId, Long userId) {
+    public Optional<?> findPostWithLikeAndFavorite(Long postId, Long userId) {
         QPost qPost = QPost.post;
         QUser qUser = QUser.user;
         QLike qLike = QLike.like;
