@@ -32,7 +32,8 @@ public class ChatMessageDTO implements NotifyInfo {
     //  Hibernate 는 지연로딩을 위해 프록시 객체를 사용하는데 이 Jackson 라이브러리는 프록시 객체를 처리하지 못한다.
     // Jackson 라이브러리란 ? : 자바 객체를 JSON으로 변환하거나 JSON을 자바 객체로 변환하는데 사용하는 라이브러리
     private String goUrlId;
-//    private NotificationType notificationType;
+    private NotificationType notificationType;
+    private NotifyMessage notifyMessage;
 
     public static ChatMessageDTO ChatMessageEntityToDto(ChatMessage chatMessage) {
 
@@ -49,8 +50,10 @@ public class ChatMessageDTO implements NotifyInfo {
                                 .map(User::getEmail)
                                 .collect(Collectors.toSet())) //participants 에서 email 만 추출
                         .goUrlId("/post/"+chatMessage.getChatRoom().getPost().getId()+"/chat/")
-//                        .notificationType(NotificationType.CHAT)
+                        .notificationType(NotificationType.CHAT)
+                        .notifyMessage(NotifyMessage.CHAT_APP_ALERT)
                         .build();
+
     }
 
     @Override
