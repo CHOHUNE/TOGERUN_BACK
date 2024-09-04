@@ -48,7 +48,9 @@ public class APIRefreshController {
 
         String email = claims.get("email").toString();
 
+        // Redis 에서 Refresh Token 가져오기
         String storeRefreshToken = refreshTokenRepository.getRefreshToken(email);
+
         if (storeRefreshToken == null) {
             throw new CustomJWTException("INVALID_REFRESH_TOKEN");
         }

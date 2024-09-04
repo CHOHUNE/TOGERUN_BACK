@@ -2,19 +2,20 @@ package com.example.simplechatapp.repository;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.TimeUnit;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class RefreshTokenRepository {
 
-    private final RedisTemplate<String, String> redisTemplate;
 
-    public void saveRefreshToken(String email, String refreshToken,long expirationTime) {
-        redisTemplate.opsForValue().set(
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public void saveRefreshToken(String email, String refreshToken, long expirationTime) {
+        stringRedisTemplate.opsForValue().set(
                 "refresh_token:"+email,
                 refreshToken,
                 expirationTime,
@@ -24,11 +25,11 @@ public class RefreshTokenRepository {
 
 
     public String getRefreshToken(String email) {
-        return redisTemplate.opsForValue().get("refresh_token:"+email);
+        return stringRedisTemplate.opsForValue().get("refresh_token:" + email);
     }
 
     public void deleteRefreshToken(String email) {
-        redisTemplate.delete("refresh_token" + email);
+        stringRedisTemplate.delete("refresh_token:" + email);
     }
 
 }
