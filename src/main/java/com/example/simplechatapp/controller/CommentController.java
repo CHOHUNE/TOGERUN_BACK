@@ -4,7 +4,6 @@ import com.example.simplechatapp.annotation.NeedNotify;
 import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
 import com.example.simplechatapp.dto.UserDTO;
-import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +26,6 @@ public class CommentController {
 
         CommentResponseDto commentResponseDto = commentService.createComment(commentRequestDto, principal);
         return ResponseEntity.ok().body(commentResponseDto);
-
-//        return commentService.createComment(commentRequestDto, principal);
-
     }
 
     @PutMapping
@@ -45,8 +41,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public void deleteSnsComment(@PathVariable Long commentId) {
+    public Long deleteSnsComment(@PathVariable Long commentId) {
 
-        commentService.deleteComment(commentId);
+        return commentService.deleteComment(commentId);
     }
 }

@@ -10,6 +10,9 @@ import com.example.simplechatapp.repository.CommentRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +26,9 @@ public class CommentService {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final RedisCacheManager cacheManager;
 
+    @CacheEvict(value="postComments", key="#commentRequestDto.post_id")
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, UserDTO principal) {
 
@@ -44,6 +49,7 @@ public class CommentService {
         return CommentResponseDto.convertCommentToDto(comment);
     }
 
+    @CacheEvict(value="postComments", key="#commentRequestDto.post_id")
     public CommentResponseDto modifyComment(CommentRequestDto commentRequestDto,UserDTO principal) {
 
         //댓글 조회 : RequestDto 에 있는 id 로 조회
@@ -64,7 +70,7 @@ public class CommentService {
 
 
     }
-
+    @Cacheable(value="postComments", key="#postId")
     public List<CommentResponseDto> findCommentListByPostId(Long postId) {
 
         List<Comment> commentLIst = commentRepository.findCommentByPostId(postId);
@@ -79,9 +85,19 @@ public class CommentService {
     }
 
 
-    public void deleteComment(Long commentId) {
+//    @CacheEvict(value="postComments",key="#result")
+    public Long deleteComment(Long commentId) {
+
+
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment NOT FOUND"));
+
         commentRepository.deleteById(commentId);
 
+
+
+        cacheManager.getCache("postComments").evict(comment.getPost().getId());
+
+         return commentId;
     }
 
     @Transactional
