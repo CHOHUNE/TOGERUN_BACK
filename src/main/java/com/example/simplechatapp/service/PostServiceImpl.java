@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
@@ -85,8 +84,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @CacheEvict(value = {"post"})
-    @CachePut(value = "post", key = "#postId")
+    @CacheEvict(value = {"post"}, key="#postDTO.id")
     @Transactional
     public void modify(PostDTO postDTO, List<MultipartFile> newFiles) {
         Post post = postRepository.findById(postDTO.getId())

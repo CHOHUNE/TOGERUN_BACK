@@ -70,7 +70,7 @@ public class CommentService {
 
 
     }
-    @Cacheable(value="postComments", key="#postId")
+    @Cacheable(value = "postComments", key = "#postId")
     public List<CommentResponseDto> findCommentListByPostId(Long postId) {
 
         List<Comment> commentLIst = commentRepository.findCommentByPostId(postId);
@@ -79,6 +79,8 @@ public class CommentService {
         List<CommentResponseDto> commentResponseDtoList = commentLIst.stream()
                 .map(comment -> CommentResponseDto.convertCommentToDto(comment))
                 .collect(Collectors.toList());
+
+
 
         return convertNestedStructure(commentResponseDtoList);
 
