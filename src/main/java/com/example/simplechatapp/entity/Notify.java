@@ -1,7 +1,9 @@
 package com.example.simplechatapp.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -36,14 +38,19 @@ public class Notify {
 
     private LocalDateTime createdAt;
 
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post post;
+
     @Builder
-    public Notify (User receiver, NotificationType notificationType, String content, String url, Boolean isRead, LocalDateTime createdAt) {
+    public Notify (User receiver, NotificationType notificationType, String content, String url, Boolean isRead, LocalDateTime createdAt,Post post) {
         this.receiver = receiver;
         this.notificationType = notificationType;
         this.content = content;
         this.createdAt = createdAt;
         this.url = url;
         this.isRead = isRead;
+        this.post = post;
     }
 
     public Notify() {

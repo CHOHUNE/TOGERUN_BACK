@@ -1,6 +1,5 @@
 package com.example.simplechatapp.aop.proxy;
 
-import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.NotificationType;
 import com.example.simplechatapp.entity.NotifyMessage;
 
@@ -11,5 +10,6 @@ public interface NotifyInfo {
     String getGoUrlId();
     NotificationType getNotificationType();
     NotifyMessage getNotifyMessage();
+    Long getPostId();
 
 }

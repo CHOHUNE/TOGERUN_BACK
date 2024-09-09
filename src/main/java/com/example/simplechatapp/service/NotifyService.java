@@ -3,9 +3,11 @@ package com.example.simplechatapp.service;
 import com.example.simplechatapp.dto.NotifyDto;
 import com.example.simplechatapp.entity.NotificationType;
 import com.example.simplechatapp.entity.Notify;
+import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.EmitterRepository;
 import com.example.simplechatapp.repository.NotifyRepository;
+import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +34,7 @@ public class NotifyService {
     private final EmitterRepository emitterRepository;
     private final NotifyRepository notifyRepository;
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
 
 //    public List<Notification> getNotificationList(String userEmail) {
 //        return notifyRepository.findAllByReceiverEmail(userEmail);
@@ -111,9 +114,9 @@ public class NotifyService {
 // 구독자의 이메일을 기반으로 이벤트 캐시를 가져와 마지막 이벤트 ID 와 비교하여 미수신한 데이터 전송
 
 
-    public void send(String receiver, NotificationType notificationType, String content, String url) {
+    public void send(String receiver, NotificationType notificationType, String content, String url,Long postId) {
 
-        Notify notification = notifyRepository.save(createNotification(receiver, notificationType, content, url));
+        Notify notification = notifyRepository.save(createNotification(receiver, notificationType, content, url,postId));
 
 
         String eventId = receiver + "_" + System.currentTimeMillis();
@@ -133,9 +136,10 @@ public class NotifyService {
     // 각 Ssemitter 에 대해 이벤트 캐시에 key 와 생성한 Notify 객체를 저장하고,
     // SendNotification 메서드를 호출해 알림과 관련된 데이터 (eventId, key, ResponseNotifyDto) 를 emitter 로 전송
 
-    private Notify createNotification(String receiver, NotificationType notificationType, String content, String url) {
+    private Notify createNotification(String receiver, NotificationType notificationType, String content, String url,Long postId) {
 
         User user = userRepository.findByEmail(receiver).orElseThrow(() -> new RuntimeException("User Not Found"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post Not Found"));
 
         return Notify.builder()
                 .createdAt(LocalDateTime.now())
@@ -144,6 +148,7 @@ public class NotifyService {
                 .content(content)
                 .url(url)
                 .isRead(false)
+                .post(post)
                 .build();
     }
 

@@ -23,7 +23,7 @@ import java.util.Set;
 public class CommentResponseDto implements NotifyInfo {
 
     private Long id;
-    private Long post_id;
+    private Long postId;
 
     @NotNull
     private String content;
@@ -31,7 +31,7 @@ public class CommentResponseDto implements NotifyInfo {
     @NotNull
     private String createdBy;
 
-    private Long parent_id;
+    private Long parentId;
 
     private Set<String> receivers;
     private String goUrlId;
@@ -39,6 +39,7 @@ public class CommentResponseDto implements NotifyInfo {
     @Builder.Default
     private List<CommentResponseDto> children = new ArrayList<>();
     private LocalDateTime createdAt;
+
 
 //    public CommentResponseDto(Long id, Long postId, String content, String createdBy, Long parentId, LocalDateTime createdAt) {
 //        this.id = id;
@@ -52,10 +53,10 @@ public class CommentResponseDto implements NotifyInfo {
     public static CommentResponseDto convertCommentToDto(Comment comment) {
         return CommentResponseDto.builder()
                 .id(comment.getId())
-                .post_id(comment.getPost().getId())
+                .postId(comment.getPost().getId())
                 .content(comment.getContent())
                 .createdBy(comment.getCreatedBy())
-                .parent_id(comment.getParent() == null ? null : comment.getParent().getId())
+                .parentId(comment.getParent() == null ? null : comment.getParent().getId())
                 .createdAt(comment.getCreatedAt())
                 .receivers(comment.getPost().getUser().getEmail() ==comment.getCreatedBy() ? Set.of() : Set.of(comment.getPost().getUser().getEmail()))
                 // 포스트 작성자와 코멘트 게재자가 같을 경우에 알람이 가지 않는다.
@@ -85,5 +86,10 @@ public class CommentResponseDto implements NotifyInfo {
     @Override
     public NotifyMessage getNotifyMessage() {
         return NotifyMessage.NEW_COMMENT;
+    }
+
+    @Override
+    public Long getPostId() {
+        return postId;
     }
 }

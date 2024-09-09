@@ -34,6 +34,7 @@ public class ChatMessageDTO implements NotifyInfo {
     private String goUrlId;
     private NotificationType notificationType;
     private NotifyMessage notifyMessage;
+    private Long postId;
 
     public static ChatMessageDTO ChatMessageEntityToDto(ChatMessage chatMessage) {
 
@@ -52,6 +53,7 @@ public class ChatMessageDTO implements NotifyInfo {
                         .goUrlId("/post/"+chatMessage.getChatRoom().getPost().getId()+"/chat/")
                         .notificationType(NotificationType.CHAT)
                         .notifyMessage(NotifyMessage.CHAT_APP_ALERT)
+                        .postId(chatMessage.getChatRoom().getPost().getId())
                         .build();
 
     }
@@ -74,5 +76,10 @@ public class ChatMessageDTO implements NotifyInfo {
     @Override
     public NotifyMessage getNotifyMessage() {
         return NotifyMessage.CHAT_APP_ALERT;
+    }
+
+    @Override
+    public Long getPostId() {
+        return postId;
     }
 }
