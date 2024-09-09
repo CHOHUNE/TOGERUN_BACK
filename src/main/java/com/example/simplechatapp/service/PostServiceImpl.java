@@ -6,7 +6,6 @@ import com.example.simplechatapp.entity.PostImage;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -38,7 +37,6 @@ public class PostServiceImpl implements PostService {
     private final S3Client s3Client;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper;
 
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
@@ -110,6 +108,8 @@ public class PostServiceImpl implements PostService {
 
         postRepository.deleteById(id);
     }
+
+
 
     @Override
     public PageResponseDTO<PostListDTO> getList(PageRequestDTO pageRequestDTO) {

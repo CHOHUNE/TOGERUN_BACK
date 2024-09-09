@@ -132,9 +132,9 @@ public class CommentService {
 
             map.put(comment.getId(), comment);
 
-            if (comment.getParent_id() != null) { // 댓글이 부모 댓글을 가지고 있는 경우
+            if (comment.getParentId() != null) { // 댓글이 부모 댓글을 가지고 있는 경우
 
-                map.get(comment.getParent_id()).getChildren().add(comment); // 부모 댓글의 자식 리스트에 추가
+                map.get(comment.getParentId()).getChildren().add(comment); // 부모 댓글의 자식 리스트에 추가
 
             } else {
 

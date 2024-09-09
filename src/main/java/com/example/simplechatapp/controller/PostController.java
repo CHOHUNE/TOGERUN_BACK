@@ -103,8 +103,8 @@ public List<Post> getAllPosts() {
     @PostMapping("/{id}/favorite")
     public ResponseEntity<FavoriteDTO> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
 
-        log.info("toggleFavorite:{}", principal);
-        log.info("toggleFavorite:{}", principal.getId());
+
+        log.info("toggleFavoriteEmail:{}", principal.getEmail());
 
         FavoriteDTO favoriteDTO = favoriteService.favoriteToggle(principal.getEmail(), id);
 

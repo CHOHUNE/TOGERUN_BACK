@@ -6,7 +6,6 @@ import com.example.simplechatapp.dto.CommentRequestDto;
 import com.example.simplechatapp.dto.CommentResponseDto;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.service.CommentService;
-
 import com.example.simplechatapp.util.CustomException;
 import com.example.simplechatapp.util.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,11 +23,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.BDDMockito.*;
 
 
 @WebMvcTest(CommentController.class)
@@ -91,14 +91,14 @@ public class CommentControllerTest {
 
         CommentResponseDto parentComment = CommentResponseDto.builder()
                 .id(1L)
-                .post_id(1L)
+                .postId(1L)
                 .content("댓글 작성 테스트")
                 .createdBy("Lee")
                 .build();
 
         CommentResponseDto childComment = CommentResponseDto.builder()
                 .id(2L)
-                .post_id(1L)
+                .postId(1L)
                 .content("대댓글 작성 테스트2")
                 .createdBy("Lee")
                 .build();
