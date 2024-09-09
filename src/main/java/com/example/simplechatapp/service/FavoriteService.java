@@ -2,16 +2,14 @@ package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.FavoriteDTO;
 import com.example.simplechatapp.entity.Favorite;
-import com.example.simplechatapp.entity.Like;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.repository.FavoriteRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +19,7 @@ public class FavoriteService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    @CacheEvict(value = "post", key = "#postId")
     public FavoriteDTO favoriteToggle(String email, Long postId) {
 
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User not found"));

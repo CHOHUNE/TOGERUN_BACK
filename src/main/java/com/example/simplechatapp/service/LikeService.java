@@ -9,10 +9,9 @@ import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +23,7 @@ public class LikeService {
 
 
     @Transactional // 여러 사람이 좋아요를 누를 때를 대비해 동시성 이슈를 피하기 위해 트랜잭션 처리를 한다.
+    @CacheEvict(value = "post", key = "#postId")
     public LikeDTO likeToggle(String email, Long postId) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -33,9 +33,6 @@ public class LikeService {
 
         Like like = likeRepository.findByUserIdAndPostId(user.getId(), post.getId()).
                 orElse(null);
-
-
-
 
         if (like == null) {
 
