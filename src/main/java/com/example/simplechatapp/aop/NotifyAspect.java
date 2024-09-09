@@ -1,9 +1,6 @@
 package com.example.simplechatapp.aop;
 
 import com.example.simplechatapp.aop.proxy.NotifyInfo;
-import com.example.simplechatapp.dto.UserDTO;
-import com.example.simplechatapp.entity.NotifyMessage;
-import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.service.NotifyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-@Aspect
+@Aspect // 애너테이션을 붙여서 AOP 설정을 하겠다는 뜻
 @Slf4j
 @Component
 @EnableAsync // 애너테이션을 비동기적으로 처리하겟다는 뜻 - 클래스 단위에 붙인다.
@@ -56,10 +53,13 @@ public class NotifyAspect {
 
             for (String receiver : receivers) {
                 notifyService.send(
+
                         receiver,
                         notifyInfo.getNotificationType(),
                         notifyInfo.getNotifyMessage().getMessage(),
-                        notifyInfo.getGoUrlId()
+                        notifyInfo.getGoUrlId(),
+                        notifyInfo.getPostId()
+
                 );
             }
 
