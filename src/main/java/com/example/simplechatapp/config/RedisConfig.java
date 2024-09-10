@@ -65,6 +65,8 @@ public class RedisConfig {
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultCacheConfig)
                 .withCacheConfiguration("post", defaultCacheConfig.entryTtl(Duration.ofHours(1)))
+                .withCacheConfiguration("postComments", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)))
+
                 .build();
     }
 
