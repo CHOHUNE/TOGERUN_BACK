@@ -18,4 +18,7 @@ public class PostListDTO {
     private LocalDate localDate;
     private Long likeCount;
     private String placeName;
+    private Long viewCount;
+    private Boolean participateFlag;
+
 }

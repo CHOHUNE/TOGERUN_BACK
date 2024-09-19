@@ -75,6 +75,8 @@ public interface PostService {
                 .meetingTime(postDTO.getMeetingTime())
                 .activityType(postDTO.getActivityType())
                 .capacity(postDTO.getCapacity())
+                .participateFlag(postDTO.getParticipateFlag())
+                .viewCount(postDTO.getViewCount())
                 .build();
 
         // PostImage 객체 생성 및 추가
@@ -89,4 +91,6 @@ public interface PostService {
     Post save(PostDTO postDTO);
 
     List<Post> findAll();
+
+    void incrementViewCount(Long postId, String ipAddress);
 }

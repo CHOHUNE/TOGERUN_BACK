@@ -9,6 +9,8 @@ import com.example.simplechatapp.repository.UserRepository;
 import com.example.simplechatapp.service.FavoriteService;
 import com.example.simplechatapp.service.LikeService;
 import com.example.simplechatapp.service.PostService;
+import com.example.simplechatapp.service.PostServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +31,10 @@ public class PostController {
     private final LikeService likeService;
     private final FavoriteService favoriteService;
     private final UserRepository userRepository;
+    private final PostServiceImpl postServiceImpl;
 
 
-
-@GetMapping
+    @GetMapping
 public List<Post> getAllPosts() {
 
     return postService.findAll();
@@ -40,9 +42,16 @@ public List<Post> getAllPosts() {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPostById(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
+    public ResponseEntity<?> getPostById(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal, HttpServletRequest request) {
+
         User user = userRepository.findByEmail(principal.getEmail())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        String ipAddress= request.getRemoteAddr();
+
+
+        postService.incrementViewCount(id, ipAddress);
+
 
         return postService.findPostWithLikeAndFavorite(id, user.getId())
                 .map(ResponseEntity::ok)

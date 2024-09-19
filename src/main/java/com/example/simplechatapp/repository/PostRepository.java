@@ -27,7 +27,7 @@ public interface PostRepository extends JpaRepository<Post,Long>,PostSearch {
     void updateToDelete(@Param("id") Long id, @Param("delFlag") boolean delFlag);
 
 
-
-
-
+    @Modifying
+    @Query("UPDATE Post p SET p.viewCount = p.viewCount +1 WHERE p.id = :postId")
+    void incrementViewCount(Long postId);
 }

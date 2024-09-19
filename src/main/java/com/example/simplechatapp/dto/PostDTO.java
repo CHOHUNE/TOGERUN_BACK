@@ -32,6 +32,8 @@ public class PostDTO {
         private LocalDateTime meetingTime;
         private ActivityType activityType;
         private Integer capacity;
+        private Long viewCount;
+        private Boolean participateFlag;
 
 
 //        @Builder.Default // Builder.Default 를 사용하면 초기화한 상태를 직접 설정할 수 있다.
@@ -50,9 +52,9 @@ public class PostDTO {
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
-                       LocalDateTime meetingTime, ActivityType activityType, Integer capacity) {
+                       LocalDateTime meetingTime, ActivityType activityType, Integer capacity, Long viewCount, Boolean participateFlag) {
                 this(id, title, content, userId, nickname, localDate, delFlag, isFavorite, likeCount,
-                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>(), activityType, capacity);
+                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>(), activityType, capacity, viewCount, participateFlag);
                 this.existingImageUrls = new ArrayList<>();
         }
 
@@ -60,7 +62,7 @@ public class PostDTO {
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
-                       LocalDateTime meetingTime, List<String> imageList, ActivityType activityType, Integer capacity) {
+                       LocalDateTime meetingTime, List<String> imageList, ActivityType activityType, Integer capacity, Long viewCount, Boolean participateFlag) {
                 this.id = id;
                 this.title = title;
                 this.content = content;
@@ -78,6 +80,8 @@ public class PostDTO {
                 this.imageList = imageList != null ? imageList : new ArrayList<>();
                 this.activityType = activityType;
                 this.capacity = capacity;
+                this.viewCount = viewCount;
+                this.participateFlag = participateFlag;
                 this.existingImageUrls = new ArrayList<>(this.imageList);
         }
 }

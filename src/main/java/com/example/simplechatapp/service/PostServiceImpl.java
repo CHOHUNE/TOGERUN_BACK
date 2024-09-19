@@ -12,6 +12,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +23,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +40,12 @@ public class PostServiceImpl implements PostService {
     private final S3Client s3Client;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+
+    private final StringRedisTemplate stringRedisTemplate;
+
+    private static final String VIEW_COUNT_PREFIX = "view:";
+    private static final Duration VIEW_COUNT_EXPIRATION = Duration.ofHours(24);
+
 
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
@@ -58,6 +67,18 @@ public class PostServiceImpl implements PostService {
         return postRepository.findPostWithLikeAndFavorite(postId, userId);
     }
 
+
+
+    @Async
+    @Override
+    public void incrementViewCount(Long postId, String ipAddress) {
+        String key = VIEW_COUNT_PREFIX + postId + ":" + ipAddress;
+        Boolean keyAbsent = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", VIEW_COUNT_EXPIRATION);
+
+        if(Boolean.TRUE.equals(keyAbsent)) {
+            postRepository.incrementViewCount(postId);
+        }
+    }
 
 
     @Override
@@ -144,6 +165,8 @@ public class PostServiceImpl implements PostService {
     public List<Post> findAll() {
         return postRepository.findAll();
     }
+
+
 
     private void updatePostFields(Post post, PostDTO postDTO) {
         post.changeTitle(postDTO.getTitle());

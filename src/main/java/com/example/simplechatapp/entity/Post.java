@@ -79,6 +79,12 @@ public class Post {
     // 즉 관계의 주인이 아니란 것 -> 데이터베이스 외래 키를 가지고 있지 않음
     // mappedBy 가 없는 쪽이 관계의 주인이다. -> 데이터베이스 외래 키를 가지고 있음
 
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private Long viewCount;
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private Boolean participateFlag;
+
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Notify> notifications = new ArrayList<>();
@@ -137,6 +143,14 @@ public class Post {
         this.capacity = capacity;
     }
 
+    public void changeViewCount(Long viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public void changeParticipateFlag(Boolean participateFlag) {
+        this.participateFlag = participateFlag;
+    }
+
     public void addImageString(String fileName) {
         PostImage postImage = PostImage.builder().fileName(fileName).build();
         addImage(postImage);
@@ -168,6 +182,8 @@ public class Post {
                 ", comments=" + comments +
                 ", favorites=" + favorites +
                 ", likes=" + likes +
+                ", viewCount=" + viewCount +
+                ", participateFlag=" + participateFlag +
                 '}';
     }
 
