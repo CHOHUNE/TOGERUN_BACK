@@ -75,6 +75,9 @@ public class PostServiceImpl implements PostService {
         String key = VIEW_COUNT_PREFIX + postId + ":" + ipAddress;
         Boolean keyAbsent = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", VIEW_COUNT_EXPIRATION);
 
+        //keyAbsent : true -> key가 없어서 새로 생성됨
+        //keyAbsent : false -> key가 이미 존재함
+
         if(Boolean.TRUE.equals(keyAbsent)) {
             postRepository.incrementViewCount(postId);
         }
