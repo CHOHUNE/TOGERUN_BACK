@@ -104,6 +104,9 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
 //                .existingImageUrls(imageUrls)
                 .activityType(post.getActivityType())
                 .capacity(post.getCapacity())
+                .viewCount(post.getViewCount())
+                .participateFlag(post.getParticipateFlag())
+                .roadName(post.getRoadName())
                 .build();
     }
 
@@ -113,6 +116,8 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
             return null;
         }
         return qPost.title.containsIgnoreCase(keyword)
-                .or(qPost.content.containsIgnoreCase(keyword));
+                .or(qPost.content.containsIgnoreCase(keyword))
+                .or(qPost.roadName.containsIgnoreCase(keyword))
+                .or(qPost.placeName.containsIgnoreCase(keyword));
     }
 }

@@ -27,6 +27,7 @@ public class PostDTO {
         private Long likeCount;
         private boolean isLike;
         private String placeName;
+        private String roadName;
         private Double latitude;
         private Double longitude;
         private LocalDateTime meetingTime;
@@ -52,9 +53,9 @@ public class PostDTO {
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
-                       LocalDateTime meetingTime, ActivityType activityType, Integer capacity, Long viewCount, Boolean participateFlag) {
+                       LocalDateTime meetingTime, ActivityType activityType, Integer capacity, Long viewCount, Boolean participateFlag, String roadName) {
                 this(id, title, content, userId, nickname, localDate, delFlag, isFavorite, likeCount,
-                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>(), activityType, capacity, viewCount, participateFlag);
+                        isLike, placeName, latitude, longitude, meetingTime, new ArrayList<>(), activityType, capacity, viewCount, participateFlag, roadName);
                 this.existingImageUrls = new ArrayList<>();
         }
 
@@ -62,7 +63,7 @@ public class PostDTO {
         public PostDTO(Long id, String title, String content, Long userId, String nickname,
                        LocalDate localDate, Boolean delFlag, Boolean isFavorite, Long likeCount,
                        Boolean isLike, String placeName, Double latitude, Double longitude,
-                       LocalDateTime meetingTime, List<String> imageList, ActivityType activityType, Integer capacity, Long viewCount, Boolean participateFlag) {
+                       LocalDateTime meetingTime, List<String> imageList, ActivityType activityType, Integer capacity, Long viewCount, Boolean participateFlag, String roadName) {
                 this.id = id;
                 this.title = title;
                 this.content = content;
@@ -83,5 +84,6 @@ public class PostDTO {
                 this.viewCount = viewCount;
                 this.participateFlag = participateFlag;
                 this.existingImageUrls = new ArrayList<>(this.imageList);
+                this.roadName=roadName;
         }
 }

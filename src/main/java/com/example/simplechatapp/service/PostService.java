@@ -35,6 +35,9 @@ public interface PostService {
                 .localDate(post.getLocalDate())
                 .likeCount((long) post.getLikes().size())
                 .placeName(post.getPlaceName())
+                .participateFlag(post.getParticipateFlag())
+                .viewCount(post.getViewCount())
+                .roadName(post.getRoadName())
                 .build();
 
     }
@@ -57,6 +60,9 @@ public interface PostService {
                         .collect(Collectors.toList()))
                 .capacity(post.getCapacity())
                 .activityType(post.getActivityType())
+                .participateFlag(post.getParticipateFlag())
+                .viewCount(post.getViewCount())
+                .roadName(post.getRoadName())
                 .build();
 
         return postDTO;
@@ -77,6 +83,7 @@ public interface PostService {
                 .capacity(postDTO.getCapacity())
                 .participateFlag(postDTO.getParticipateFlag())
                 .viewCount(postDTO.getViewCount())
+                .roadName(postDTO.getRoadName())
                 .build();
 
         // PostImage 객체 생성 및 추가

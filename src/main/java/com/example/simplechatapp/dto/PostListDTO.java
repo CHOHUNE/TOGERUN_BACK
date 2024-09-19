@@ -20,5 +20,6 @@ public class PostListDTO {
     private String placeName;
     private Long viewCount;
     private Boolean participateFlag;
+    private String roadName;
 
 }

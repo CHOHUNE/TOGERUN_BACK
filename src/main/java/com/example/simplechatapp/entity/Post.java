@@ -42,6 +42,8 @@ public class Post {
     private Double latitude;
     private Double longitude;
     private String placeName;
+    private String roadName;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -66,7 +68,6 @@ public class Post {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
-
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Favorite> favorites = new ArrayList<>(); // Favorite 가 주인
@@ -83,6 +84,7 @@ public class Post {
     private Long viewCount;
     @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean participateFlag;
+
 
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
