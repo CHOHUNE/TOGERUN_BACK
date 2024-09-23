@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -20,9 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -88,6 +85,7 @@ public class ChatRoomService {
                 .orElseGet(() -> {
                     ChatRoom newChatRoom = new ChatRoom();
                     newChatRoom.setPost(post);
+                    newChatRoom.setParticipantCount(0); // 기본 0으로 세팅 -> 참여자가 추가될 때마다 증가
                     return chatRoomRepository.save(newChatRoom);
                 });
 
@@ -96,6 +94,13 @@ public class ChatRoomService {
 
         if (!chatRoom.hasParticipant(user)) {
             chatRoom.addParticipant(user);
+            chatRoom.setParticipantCount(chatRoom.getParticipantCount() + 1 ); // 참여자 추가
+
+            if (chatRoom.getParticipantCount() >= post.getCapacity()) {
+
+                post.changeParticipateFlag(false);
+                postRepository.save(post);
+            }
 
             ChatMessage joinMessage = ChatMessage.builder()
                     .chatRoom(chatRoom)
@@ -131,5 +136,54 @@ public class ChatRoomService {
         }
 
         return chatRoomRepository.save(chatRoom);
+    }
+
+    @Transactional
+    public void leaveChatRoom(Long postId, String userEmail) throws  JsonProcessingException {
+
+        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
+                .orElseThrow(() -> new IllegalArgumentException("ChatRoom Not Found"));
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        if (chatRoom.hasParticipant(user)) {
+            chatRoom.removeParticipant(user);
+            chatRoom.setParticipantCount(chatRoom.getParticipantCount() - 1); // 참여자 제거
+
+            Post post = chatRoom.getPost();
+            post.changeParticipateFlag(true);
+            postRepository.save(post);
+
+            ChatMessage leaveMessage = ChatMessage.builder()
+                    .chatRoom(chatRoom)
+                    .content(user.getNickname() + "님이 퇴장하셨습니다.")
+                    .user(user)
+                    .createdAt(LocalDateTime.now())
+                    .chatMessageType(ChatMessageType.SYSTEM)
+                    .build();
+
+            ChatMessage savedLeaveMessage = chatMessageRepository.save(leaveMessage);
+            ChatMessageDTO leaveMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedLeaveMessage);
+
+            //Redis 에 메세지 저장
+
+            String redisKey = "chat:messages:" + postId;
+            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
+
+            List<ChatMessageDTO> messages = cachedMessages != null ?
+                    objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {}) :
+                    new ArrayList<>();
+
+            messages.add(leaveMessageDTO);
+            String updatedMessages = objectMapper.writeValueAsString(messages);
+            redisTemplate.opsForValue().set(redisKey, updatedMessages);
+
+            String jsonMessage = objectMapper.writeValueAsString(leaveMessageDTO);
+            redisTemplate.convertAndSend("chat." + postId, jsonMessage);
+
+
+        }
+        chatRoomRepository.save(chatRoom);
     }
 }
