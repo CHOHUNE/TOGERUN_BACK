@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,9 @@ public class ChatMessageDTO implements NotifyInfo {
                         .chatRoomId(chatMessage.getChatRoom().getId())
                         .nickname(chatMessage.getUser().getNickname())
                         .email(chatMessage.getUser().getEmail())
-                        .createdAt(chatMessage.getCreatedAt())
+                        .createdAt(chatMessage.getCreatedAt().atZone(ZoneId.of("UTC"))
+                                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
+                                .toLocalDateTime())
                         .chatMessageType(chatMessage.getChatMessageType().name())
                         .receivers(chatMessage.getChatRoom().getParticipants().parallelStream()
                                 .map(User::getEmail)
