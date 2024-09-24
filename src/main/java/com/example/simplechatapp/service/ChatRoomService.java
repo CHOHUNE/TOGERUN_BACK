@@ -1,6 +1,8 @@
 package com.example.simplechatapp.service;
 
 import com.example.simplechatapp.dto.ChatMessageDTO;
+import com.example.simplechatapp.dto.ChatRoomDTO;
+import com.example.simplechatapp.dto.UserChatRoomDTO;
 import com.example.simplechatapp.entity.*;
 import com.example.simplechatapp.repository.ChatMessageRepository;
 import com.example.simplechatapp.repository.ChatRoomRepository;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +51,8 @@ public class ChatRoomService {
 
         if (cachedMessages != null && !cachedMessages.isEmpty()) {
             try {
-                List<ChatMessageDTO> messages = objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {});
+                List<ChatMessageDTO> messages = objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
+                });
                 log.info("Cache Hit! {} messages", messages.size());
                 return messages;
             } catch (Exception e) {
@@ -57,9 +61,7 @@ public class ChatRoomService {
         }
 
         List<ChatMessage> chatMessages = chatMessageRepository.findChatMessageByPostId(postId);
-        List<ChatMessageDTO> messageDTOs = chatMessages.stream()
-                .map(ChatMessageDTO::ChatMessageEntityToDto)
-                .toList();
+        List<ChatMessageDTO> messageDTOs = chatMessages.stream().map(ChatMessageDTO::ChatMessageEntityToDto).toList();
 
         if (!messageDTOs.isEmpty()) {
             try {
@@ -75,26 +77,32 @@ public class ChatRoomService {
     }
 
 
-
     @Transactional
-    public ChatRoom joinChatRoom(Long postId, String userEmail) throws JsonProcessingException {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("POST NOT FOUND"));
+    public ChatRoomDTO joinChatRoom(Long postId, String userEmail) throws JsonProcessingException {
 
-        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
-                .orElseGet(() -> {
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("POST NOT FOUND"));
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId).
+                orElseGet(() -> {
                     ChatRoom newChatRoom = new ChatRoom();
                     newChatRoom.setPost(post);
                     newChatRoom.setParticipantCount(0); // 기본 0으로 세팅 -> 참여자가 추가될 때마다 증가
                     return chatRoomRepository.save(newChatRoom);
                 });
 
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        boolean isParticipant = chatRoom.hasParticipant(user);
+        boolean isFull = chatRoom.getParticipantCount() >= post.getCapacity();
+        boolean canJoin = !isFull || isParticipant;
 
-        if (!chatRoom.hasParticipant(user)) {
+        if (!canJoin) {
+            throw new RuntimeException("채팅방에 참여하실 수 없습니다.");
+        }
+
+        if (canJoin && !isParticipant) {
             chatRoom.addParticipant(user);
-            chatRoom.setParticipantCount(chatRoom.getParticipantCount() + 1 ); // 참여자 추가
+            chatRoom.setParticipantCount(chatRoom.getParticipantCount() + 1); // 참여자 추가
 
             if (chatRoom.getParticipantCount() >= post.getCapacity()) {
 
@@ -111,15 +119,13 @@ public class ChatRoomService {
                     .build();
 
             ChatMessage savedJoinMessage = chatMessageRepository.save(joinMessage);
-
             ChatMessageDTO joinMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedJoinMessage);
 
             // Redis에 메시지 저장
             String redisKey = "chat:messages:" + postId;
             String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-            List<ChatMessageDTO> messages = cachedMessages != null ?
-                    objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {}) :
-                    new ArrayList<>();
+            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
+            }) : new ArrayList<>();
 
             messages.add(joinMessageDTO);
             String updatedMessages = objectMapper.writeValueAsString(messages);
@@ -135,17 +141,17 @@ public class ChatRoomService {
 //            messagingTemplate.convertAndSend("/topic/chat." + postId, joinMessageDTO);
         }
 
-        return chatRoomRepository.save(chatRoom);
+        chatRoomRepository.save(chatRoom);
+
+        return new ChatRoomDTO(chatRoom.getId(), post.getId(), chatRoom.getParticipants(), chatRoom.getParticipantCount(), isParticipant, canJoin);
     }
 
     @Transactional
-    public void leaveChatRoom(Long postId, String userEmail) throws  JsonProcessingException {
+    public void leaveChatRoom(Long postId, String userEmail) throws JsonProcessingException {
 
-        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
-                .orElseThrow(() -> new IllegalArgumentException("ChatRoom Not Found"));
+        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId).orElseThrow(() -> new IllegalArgumentException("ChatRoom Not Found"));
 
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
 
         if (chatRoom.hasParticipant(user)) {
             chatRoom.removeParticipant(user);
@@ -155,13 +161,7 @@ public class ChatRoomService {
             post.changeParticipateFlag(true);
             postRepository.save(post);
 
-            ChatMessage leaveMessage = ChatMessage.builder()
-                    .chatRoom(chatRoom)
-                    .content(user.getNickname() + "님이 퇴장하셨습니다.")
-                    .user(user)
-                    .createdAt(LocalDateTime.now())
-                    .chatMessageType(ChatMessageType.SYSTEM)
-                    .build();
+            ChatMessage leaveMessage = ChatMessage.builder().chatRoom(chatRoom).content(user.getNickname() + "님이 퇴장하셨습니다.").user(user).createdAt(LocalDateTime.now()).chatMessageType(ChatMessageType.SYSTEM).build();
 
             ChatMessage savedLeaveMessage = chatMessageRepository.save(leaveMessage);
             ChatMessageDTO leaveMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedLeaveMessage);
@@ -171,9 +171,8 @@ public class ChatRoomService {
             String redisKey = "chat:messages:" + postId;
             String cachedMessages = redisTemplate.opsForValue().get(redisKey);
 
-            List<ChatMessageDTO> messages = cachedMessages != null ?
-                    objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {}) :
-                    new ArrayList<>();
+            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
+            }) : new ArrayList<>();
 
             messages.add(leaveMessageDTO);
             String updatedMessages = objectMapper.writeValueAsString(messages);
@@ -186,4 +185,59 @@ public class ChatRoomService {
         }
         chatRoomRepository.save(chatRoom);
     }
-}
+
+
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션 : 데이터베이스에서 데이터를 읽기만 하고 수정하지 않는 경우 사용
+    public ChatRoomDTO getChatRoomStatus(Long postId, String email) {
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("POST NOT FOUND"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+
+        return chatRoomRepository.findByPostId(postId)
+                .map(chatRoom -> {
+                    boolean isParticipant = chatRoom.hasParticipant(user);
+                    boolean isFull = chatRoom.getParticipantCount() >= post.getCapacity();
+                    boolean canJoin = !isFull || isParticipant;
+                    return new ChatRoomDTO(chatRoom.getId(), post.getId(), chatRoom.getParticipants(), chatRoom.getParticipantCount(), isParticipant, canJoin);
+                }).orElseGet(() -> {
+                    boolean canJoin = post.getCapacity() > 0;
+                    return new ChatRoomDTO(null, post.getId(), new HashSet<>(), 0, false, canJoin);
+
+                });
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserChatRoomDTO> getUserChatRoom(String userEmail) {
+
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        return user.getJoinedChatRoom().stream()
+                .map(this::convertTouserChatRoomDTO)
+                .toList();
+
+    }
+
+    private UserChatRoomDTO convertTouserChatRoomDTO(ChatRoom chatRoom) {
+
+        UserChatRoomDTO dto = new UserChatRoomDTO();
+
+        dto.setChatRoomId(chatRoom.getId());
+        dto.setPostId(chatRoom.getPost().getId());
+        dto.setPostTitle(chatRoom.getPost().getTitle());
+        dto.setParticipantCount(chatRoom.getParticipantCount());
+        dto.setMeetingTime(chatRoom.getPost().getMeetingTime());
+        dto.setCapacity(chatRoom.getPost().getCapacity());
+
+        // 마지막 메시지 정보 설정
+        chatRoom.getChatMessageList().stream()
+                .reduce((first, second) -> second) // 가장 최근 메시지 가져오기
+                .ifPresent(lastMessage -> {
+                    dto.setLastMessageTime(lastMessage.getCreatedAt());
+                    dto.setLastMessagePreview(lastMessage.getContent().substring(0, Math.min(lastMessage.getContent().length(), 30)));
+                });
+
+        return dto;
+    }}
+
+

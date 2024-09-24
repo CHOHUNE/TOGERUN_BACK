@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
@@ -22,5 +21,11 @@ interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByEmail(String email);
 
 
+    @Query("SELECT u FROM User u " +
+           "LEFT JOIN FETCH u.joinedChatRoom cr " +
+           "LEFT JOIN FETCH cr.post " +
+           "LEFT JOIN FETCH cr.chatMessageList " +
+           "WHERE u.email = :email")
+    Optional<User> findByEmailWithChatRooms(@Param("email") String email);
 
 }

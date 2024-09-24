@@ -42,6 +42,9 @@ public class ChatRoom {
     // ManyToMany 로 엔티티 변경 -> OneToMany 로 변경
 
     private int participantCount;
+    private boolean isParticipant;
+    private boolean canJoin;
+
 
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

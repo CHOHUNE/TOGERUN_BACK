@@ -1,6 +1,5 @@
 package com.example.simplechatapp.dto;
 
-import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,23 +14,11 @@ import java.util.Set;
 public class ChatRoomDTO {
 
     private Long id;
-    private Post post;
-
+    private Long postId;
     private Set<User> participants = new HashSet<>();
     private int participantCount; // 새로 추가된 필드
 
-    public void addParticipant(User user) {
-        participants.add(user);
-        participantCount = participants.size();
-    }
-
-    public void removeParticipant(User user) {
-        participants.remove(user);
-        participantCount = participants.size();
-    }
-
-    public boolean isFull() {
-        return participantCount >= post.getCapacity();
-    }
+    private boolean isParticipant;
+    private boolean canJoin;
 
 }
