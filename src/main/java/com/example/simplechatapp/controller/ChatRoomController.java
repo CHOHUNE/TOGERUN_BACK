@@ -1,15 +1,18 @@
 package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.dto.ChatMessageDTO;
+import com.example.simplechatapp.dto.ChatRoomDTO;
 import com.example.simplechatapp.dto.UserDTO;
-import com.example.simplechatapp.entity.ChatRoom;
 import com.example.simplechatapp.service.ChatRoomService;
+import com.example.simplechatapp.util.ChatRoomFullException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.List;
 
@@ -24,10 +27,19 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     @PostMapping("/chat/join")
-    public ChatRoom joinChatRoom(@PathVariable Long postId,  @AuthenticationPrincipal UserDTO principal) throws JsonProcessingException {
+    public ResponseEntity<ChatRoomDTO> joinChatRoom(@PathVariable Long postId, @AuthenticationPrincipal UserDTO principal) throws JsonProcessingException {
 
-        String email = principal.getEmail();
-        return chatRoomService.joinChatRoom(postId, email);
+        try {
+            ChatRoomDTO chatRoomDTO = chatRoomService.joinChatRoom(postId, principal.getEmail());
+            return ResponseEntity.ok(chatRoomDTO);
+        } catch (ChatRoomFullException e) {
+            // 채팅방이 가득 찼을 때의 처리
+            // 여기서는 400 Bad Request를 반환하지만, 실제로는 클라이언트에 적절한 메시지를 전달해야 합니다.
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            // 기타 예외 처리
+            return ResponseEntity.internalServerError().body(null);
+        }
 
     }
 
@@ -49,18 +61,21 @@ public class ChatRoomController {
         return chatRoomService.getMessageByPostId(postId);
     }
 
-//    @GetMapping("/{postId}") // post={postId} 가 아니다.
-//    public ResponseEntity<Map<String,Long>> getChatRoomId(
-//            @RequestParam Long postId,
-//            @RequestParam Long writerId,
-//            @RequestParam Long subscriberId){
-//
-//        Long chatRoomId = chatRoomService.getChatRoomId(postId, writerId, subscriberId);
-//        Map<String, Long> response = new HashMap<>();
-//
-//        response.put("chatRoomId", chatRoomId);
-//
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("/chat/status")
+    public ChatRoomDTO getChatRoomStatus(@PathVariable Long postId, @AuthenticationPrincipal UserDTO principal) {
+        return chatRoomService.getChatRoomStatus(postId, principal.getEmail());
+
+    }
+
+    @ExceptionHandler(ChatRoomFullException.class)
+    public RedirectView handleChatRoomFullException(ChatRoomFullException e, RedirectAttributes redirectAttributes) {
+
+        redirectAttributes.addFlashAttribute("error", "채팅 방이 가득 찼습니다");
+
+        return new RedirectView("/post");
+
+    }
+
+
 
 }
