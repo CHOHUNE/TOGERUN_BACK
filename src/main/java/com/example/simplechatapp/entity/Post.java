@@ -83,7 +83,7 @@ public class Post {
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long viewCount;
     @Column(nullable = false, columnDefinition = "boolean default true")
-    private Boolean participateFlag;
+    private boolean participateFlag;
 
 
 

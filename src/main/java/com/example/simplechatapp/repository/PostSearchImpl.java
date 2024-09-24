@@ -105,7 +105,7 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
                 .activityType(post.getActivityType())
                 .capacity(post.getCapacity())
                 .viewCount(post.getViewCount())
-                .participateFlag(post.getParticipateFlag())
+                .participateFlag(post.isParticipateFlag())
                 .roadName(post.getRoadName())
                 .build();
     }

@@ -35,7 +35,7 @@ public interface PostService {
                 .localDate(post.getLocalDate())
                 .likeCount((long) post.getLikes().size())
                 .placeName(post.getPlaceName())
-                .participateFlag(post.getParticipateFlag())
+                .participateFlag(post.isParticipateFlag())
                 .viewCount(post.getViewCount())
                 .roadName(post.getRoadName())
                 .build();
@@ -60,7 +60,7 @@ public interface PostService {
                         .collect(Collectors.toList()))
                 .capacity(post.getCapacity())
                 .activityType(post.getActivityType())
-                .participateFlag(post.getParticipateFlag())
+                .participateFlag(post.isParticipateFlag())
                 .viewCount(post.getViewCount())
                 .roadName(post.getRoadName())
                 .build();
@@ -81,7 +81,7 @@ public interface PostService {
                 .meetingTime(postDTO.getMeetingTime())
                 .activityType(postDTO.getActivityType())
                 .capacity(postDTO.getCapacity())
-                .participateFlag(postDTO.getParticipateFlag())
+                .participateFlag(postDTO.isParticipateFlag())
                 .viewCount(postDTO.getViewCount())
                 .roadName(postDTO.getRoadName())
                 .build();

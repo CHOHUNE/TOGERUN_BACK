@@ -34,7 +34,8 @@ public class PostDTO {
         private ActivityType activityType;
         private Integer capacity;
         private Long viewCount;
-        private Boolean participateFlag;
+        private boolean participateFlag;
+
 
 
 //        @Builder.Default // Builder.Default 를 사용하면 초기화한 상태를 직접 설정할 수 있다.
@@ -86,4 +87,5 @@ public class PostDTO {
                 this.existingImageUrls = new ArrayList<>(this.imageList);
                 this.roadName=roadName;
         }
+
 }

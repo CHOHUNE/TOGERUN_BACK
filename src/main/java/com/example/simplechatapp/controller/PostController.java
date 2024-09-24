@@ -9,7 +9,6 @@ import com.example.simplechatapp.repository.UserRepository;
 import com.example.simplechatapp.service.FavoriteService;
 import com.example.simplechatapp.service.LikeService;
 import com.example.simplechatapp.service.PostService;
-import com.example.simplechatapp.service.PostServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +30,7 @@ public class PostController {
     private final LikeService likeService;
     private final FavoriteService favoriteService;
     private final UserRepository userRepository;
-    private final PostServiceImpl postServiceImpl;
+
 
 
     @GetMapping
