@@ -2,7 +2,6 @@ package com.example.simplechatapp.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +26,12 @@ public class User {
     private String nickname;
     private String password;
     private boolean social;
+
+    private String mobile;
+    private String img;
+    private String age;
+    private String name;
+    private String gender;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING) // 번호로 사용시 추후 오류 발생을 미연에 방지

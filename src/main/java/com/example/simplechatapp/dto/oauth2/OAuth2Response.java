@@ -6,4 +6,14 @@ public interface OAuth2Response {
     String getProviderId();
     String getEmail();
     String getName();
+
+    String getNickname();
+    String getGender();
+    String getAge();
+    String getMobile();
+    String getImg();
+
+
+
+
 }

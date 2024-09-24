@@ -61,9 +61,16 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             String pw = (String) claims.get("pw");
             String nickname = (String) claims.get("nickname");
             Boolean social = (Boolean) claims.get("social");
+            String name= (String) claims.get("name");
+            String mobile = (String) claims.get("mobile");
+            String gender = (String) claims.get("gender");
+            String age = (String) claims.get("age");
+            String img = (String) claims.get("img");
+
             List<String> roleNames = (List<String>) claims.get("roleNames");
 
-            UserDTO userDTO = new UserDTO(id, email, pw, nickname, social.booleanValue(), roleNames);
+            UserDTO userDTO = new UserDTO(id, email, pw, name,nickname,social.booleanValue(), gender,age,mobile,img,roleNames);
+            // JWT claims 를 바탕으로 UserDTO 생성
 
             log.info(".....JWT Check Success.....");
             log.info("userDTO{}", userDTO);

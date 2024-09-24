@@ -40,8 +40,13 @@ public class CustomUserDetailService implements UserDetailsService {
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getName(),
                 user.getNickname(),
                 user.isSocial(),
+                user.getGender(),
+                user.getAge(),
+                user.getMobile(),
+                user.getImg(),
                 user.getUserRoleList().stream().map(Enum::name).toList());
 
                // user.getMemberRoleList().stream().map(memberRole -> memberRole.name()).collect(Collectors.toUnmodifiableList()));

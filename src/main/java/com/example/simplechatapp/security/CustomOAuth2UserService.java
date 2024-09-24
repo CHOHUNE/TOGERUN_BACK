@@ -7,7 +7,6 @@ import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -41,9 +40,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
 
-//        } else if(registrationId.equals("kakao")){
-//
-//            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+        } else if(registrationId.equals("kakao")){
+            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
 
         }else{
             return null;
@@ -51,14 +49,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 
         String username = oAuth2Response.getEmail();
-
         User existData = userRepository.getWithRole(username);
 
         if (existData == null) {
 
             existData = new User();
-            existData.setNickname(oAuth2Response.getName());
+            existData.setNickname(oAuth2Response.getNickname());
+            existData.setName(oAuth2Response.getName());
             existData.setEmail(oAuth2Response.getEmail());
+            existData.setImg(oAuth2Response.getImg());
+            existData.setMobile(oAuth2Response.getMobile());
+            existData.setAge(oAuth2Response.getAge());
+            existData.setGender(oAuth2Response.getGender());
+
             existData.setSocial(true);
             existData.setUserRoleList(List.of(UserRole.USER));
 
@@ -66,7 +69,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         }else {
 
-            existData.setNickname(oAuth2Response.getName());
+            existData.setNickname(oAuth2Response.getNickname());
             existData.setEmail(oAuth2Response.getEmail());
 
             userRepository.save(existData);
@@ -74,12 +77,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         UserDTO userDTO = new UserDTO(
-                existData.getId()
-                ,
+                existData.getId(),
                 existData.getEmail(),
                 "Temp",
+                existData.getName(),
                 existData.getNickname(),
                 true,
+                existData.getGender(),
+                existData.getAge(),
+                existData.getMobile(),
+                existData.getImg(),
                 List.of("ROLE_USER"));
 
         return new CustomOAuth2User(userDTO);

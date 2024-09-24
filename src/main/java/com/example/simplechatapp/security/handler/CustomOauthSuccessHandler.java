@@ -25,10 +25,9 @@ import java.util.Map;
 @Log4j2
 @RequiredArgsConstructor
 public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
     private final RefreshTokenRepository refreshTokenRepository;
-
     private final JWTUtil jwtUtil;
-
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -37,25 +36,21 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         Map<String, Object> claims = customUserDetails.getClaim();
 
-
         log.info("oauth claims : {}", claims);
 
         String accessToken = jwtUtil.generateAccessToken(claims, 1);
         String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
 
         claims.put("accessToken", accessToken);
-//        claims.put("refreshToken", refreshToken);
 
         String email = claims.get("email").toString();
         refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
 
+
         Gson gson = new Gson();
 
         String jsonStr = gson.toJson(claims);
-
-
         response.setContentType("application/json;charset=UTF-8");
-
 
         String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
         Cookie cookie = new Cookie("member", encodedJsonStr);
