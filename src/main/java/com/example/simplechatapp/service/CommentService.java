@@ -38,6 +38,8 @@ public class CommentService {
                 .post(post.orElseThrow())
                 .content(commentRequestDto.getContent())
                 .createdBy(principal.getEmail()) //
+                .name(principal.getName())
+                .img(principal.getImg())
                 .parent(commentRequestDto.getParent_id() != null ?
                         commentRepository.findById(commentRequestDto.getParent_id()).orElseThrow() : null)
                 .build();
@@ -90,12 +92,8 @@ public class CommentService {
 //    @CacheEvict(value="postComments",key="#result")
     public Long deleteComment(Long commentId) {
 
-
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment NOT FOUND"));
-
         commentRepository.deleteById(commentId);
-
-
 
         cacheManager.getCache("postComments").evict(comment.getPost().getId());
 
@@ -115,6 +113,7 @@ public class CommentService {
         for (Long commentId : commentIdList) {
             commentRepository.deleteById(commentId);
         }
+
 
     }
 
