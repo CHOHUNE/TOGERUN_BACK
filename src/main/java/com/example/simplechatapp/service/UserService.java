@@ -13,6 +13,7 @@ public interface UserService {
 
     void modifyMember(UserModifyDTO userModifyDTO);
 
+    UserDTO getMember(String email);
 
     default UserDTO entityToDTO(User user){
 

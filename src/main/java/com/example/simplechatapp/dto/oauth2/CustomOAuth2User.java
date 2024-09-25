@@ -39,7 +39,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return userDTO.getUsername();
+        return userDTO.getName();
     }
 
     public String getEmail() {
@@ -66,7 +66,7 @@ public class CustomOAuth2User implements OAuth2User {
         dataMap.put("nickname", getNickname());
         dataMap.put("social", isSocial());
         dataMap.put("roleNames", getRoleNames());
-        dataMap.put("username", getName());
+        dataMap.put("name", getName());
 
 //        dataMap.put("mobile", userDTO.getMobile());
 //        dataMap.put("gender", userDTO.getGender());
