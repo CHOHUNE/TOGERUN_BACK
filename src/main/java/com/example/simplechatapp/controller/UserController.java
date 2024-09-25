@@ -42,7 +42,7 @@ public class UserController {
         return member;
     }
 
-    @PutMapping("/api/member/modify")
+    @PutMapping("/modify")
     public Map<String, String> modify (@RequestBody UserModifyDTO userModifyDTO) {
         log.info("userModifyDTO{}", userModifyDTO);
         userService.modifyMember(userModifyDTO);
