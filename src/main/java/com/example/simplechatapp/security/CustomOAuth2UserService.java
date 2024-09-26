@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }else{
             return null;
         }
-
 
         String username = oAuth2Response.getEmail();
         User existData = userRepository.getWithRole(username);
@@ -87,7 +87,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 existData.getAge(),
                 existData.getMobile(),
                 existData.getImg(),
-                List.of("ROLE_USER"));
+                existData.getUserRoleList().stream().map(UserRole::name).collect(Collectors.toList()),
+                false,
+                null
+                );
 
         return new CustomOAuth2User(userDTO);
 

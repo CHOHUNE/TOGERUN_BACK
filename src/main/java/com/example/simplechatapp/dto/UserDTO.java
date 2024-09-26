@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,10 @@ public class UserDTO extends User implements OAuth2User {
     private final String img;
     private List<String> roleNames = new ArrayList<>();
 
-    public UserDTO(Long id, String email, String password, String name, String nickname, boolean social, String gender, String age, String mobile, String img, List<String> roleNames) {
+    private boolean isDeleted;
+    private LocalDateTime deletedAt;
+
+    public UserDTO(Long id, String email, String password, String name, String nickname, boolean social, String gender, String age, String mobile, String img, List<String> roleNames, boolean isDeleted, LocalDateTime deletedAt) {
         super(
                 email != null && !email.isEmpty() ? email : "defaultEmail@example.com",
                 password != null && !password.isEmpty() ? password : "defaultPassword123!",
@@ -47,6 +51,8 @@ public class UserDTO extends User implements OAuth2User {
         this.mobile = mobile != null && !mobile.isEmpty() ? mobile : "000-0000-0000";
         this.img = img != null && !img.isEmpty() ? img : "default_profile.jpg";
         this.roleNames = roleNames != null ? roleNames : new ArrayList<>();
+        this.isDeleted = isDeleted;
+        this.deletedAt = deletedAt;
     }
 
     @JsonIgnore
@@ -63,6 +69,9 @@ public class UserDTO extends User implements OAuth2User {
         dataMap.put("img", img);
         dataMap.put("gender", gender);
         dataMap.put("roleNames", roleNames);
+        dataMap.put("isDeleted", isDeleted);
+        dataMap.put("deletedAt", deletedAt);
+
         return dataMap;
     }
 

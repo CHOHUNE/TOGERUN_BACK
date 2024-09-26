@@ -6,6 +6,8 @@ import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional
 public interface UserService {
 
@@ -14,6 +16,12 @@ public interface UserService {
     void modifyMember(UserModifyDTO userModifyDTO);
 
     UserDTO getMember(String email);
+
+    void softDeleteUser(Long userId);
+
+    UserDTO restoreUser(Long userId);
+
+    List<UserDTO> getAllActiveUsers();
 
     default UserDTO entityToDTO(User user){
 
@@ -28,9 +36,12 @@ public interface UserService {
                     user.getAge(),
                     user.getMobile(),
                     user.getImg(),
-                    user.getUserRoleList().stream().map(Enum::name).toList()
-            );
-    }
+                    user.getUserRoleList().stream().map(Enum::name).toList(),
+                    user.isDeleted(),
+                    user.getDeletedAt()
+
+            );}
+
 
 
 

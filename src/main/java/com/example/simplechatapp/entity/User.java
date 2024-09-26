@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,18 +21,18 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String email;
-
     private String nickname;
     private String password;
     private boolean social;
-
     private String mobile;
     private String img;
     private String age;
     private String name;
     private String gender;
+
+    private boolean isDeleted;
+    private LocalDateTime deletedAt;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING) // 번호로 사용시 추후 오류 발생을 미연에 방지
@@ -68,8 +69,19 @@ public class User {
     }
 
 
-// 편의관계 메서드는 ChatRoom 쪽에만 쓸 예정 -> 굳이 살려둔다면 아래 방식으로 중간 테이블만 변경해서 관리 해준다.
+    public void softDelete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 
+    public void restore() {
+        this.isDeleted = false;
+        this.deletedAt = null;
+    }
+
+
+
+// 편의관계 메서드는 ChatRoom 쪽에만 쓸 예정 -> 굳이 살려둔다면 아래 방식으로 중간 테이블만 변경해서 관리 해준다.
     public void joinChatRoom(ChatRoom chatRoom) {
         if (!this.joinedChatRoom.contains(chatRoom)) {
 //            this.joinedChatRoom.add(chatRoom);

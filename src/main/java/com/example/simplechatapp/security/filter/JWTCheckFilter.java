@@ -32,9 +32,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 //        String query = request.getQueryString();
 
         log.info("..... Check URI ..... " + path);
-
         if (path.startsWith("/api/member") || path.startsWith("/chat")) return true;
-
         return false;
 
     }
@@ -69,7 +67,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             List<String> roleNames = (List<String>) claims.get("roleNames");
 
-            UserDTO userDTO = new UserDTO(id, email, pw, name,nickname,social.booleanValue(), gender,age,mobile,img,roleNames);
+            UserDTO userDTO = new UserDTO(id, email, pw, name,nickname,social.booleanValue(), gender,age,mobile,img,roleNames,false,null);
             // JWT claims 를 바탕으로 UserDTO 생성
 
             log.info(".....JWT Check Success.....");
@@ -102,6 +100,5 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             printWriter.close();
 
         }
-
     }
 }
