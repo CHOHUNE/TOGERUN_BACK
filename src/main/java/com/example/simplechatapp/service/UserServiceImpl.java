@@ -9,6 +9,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 @Log4j2
@@ -38,7 +40,32 @@ public class UserServiceImpl implements UserService{
     public UserDTO getMember(String email) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
-
         return entityToDTO(user);
+    }
+
+
+
+    @Override
+    public void softDeleteUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        user.softDelete();
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserDTO restoreUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        user.restore();
+
+        return entityToDTO(userRepository.save(user));
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAllUsers().stream()
+                .map(this::entityToDTO)
+                .toList();
     }
 }

@@ -19,17 +19,9 @@ interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(String email);
 
-    @Query(
-            "SELECT DISTINCT u FROM User u " +
-           "LEFT JOIN FETCH u.userRoleList " +
-           "WHERE u.id = :id AND u.isDeleted=false")
-    Optional<User> findByIdANdIsDeletedFalse(@Param("id") Long id);
-
-
     @Query("" +
            "SELECT DISTINCT u FROM User u " +
-           "LEFT JOIN FETCH u.userRoleList " +
-           "WHERE u.isDeleted=false")
-    List<User> findAllActiveUsers();
+           "LEFT JOIN FETCH u.userRoleList ")
+    List<User> findAllUsers();
 
 }

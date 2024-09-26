@@ -21,7 +21,7 @@ public interface UserService {
 
     UserDTO restoreUser(Long userId);
 
-    List<UserDTO> getAllActiveUsers();
+    List<UserDTO> getAllUsers();
 
     default UserDTO entityToDTO(User user){
 
