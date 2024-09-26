@@ -24,7 +24,7 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY,mappedBy = "chatRoom")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "chatRoom")
     @JsonBackReference
     private Post post;
 
@@ -74,7 +74,7 @@ public class ChatRoom {
     }
 
     public void setPost(Post post) {
-        this.post=post;
+        this.post = post;
         if (post != null && post.getChatRoom() != this) {
             post.setChatRoom(this);
         }
@@ -85,21 +85,6 @@ public class ChatRoom {
 
         //있으면 true 없으면 false
     }
-
-
-
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name="writer_id")
-//    private User writer;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name="subscriber_id")
-//    private User subscriber;
-
-//    @ManyToOne
-//    private ExerciseEvent exerciseEvent;
-
 }
 
 
