@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,17 +32,9 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final SimpMessagingTemplate messagingTemplate;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper; //Jackson 라이브러리를 사용하여 객체를 JSON으로 변환하거나 JSON을 객체로 변환하는데 사용
 
-
-    //ReactiveRedisTemplate vs RedisTemplate  : ReactiveRedisTemplate 은 비동기 방식, RedisTemplate 은 동기 방식
-
-//    @PostConstruct
-//    public void setUp() {
-//        objectMapper.registerModule(new JavaTimeModule()); //JavaTimeModule : Java 8의 날짜와 시간 API를 사용하여 시간을 직렬화하거나 역직렬화하는데 사용
-//    }
 
     public List<ChatMessageDTO> getMessageByPostId(Long postId) {
         String redisKey = "chat:messages:" + postId;
