@@ -69,11 +69,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         }else {
 
-            existData.setNickname(oAuth2Response.getNickname());
+//            existData.setNickname(oAuth2Response.getNickname());
             existData.setEmail(oAuth2Response.getEmail());
 
             userRepository.save(existData);
-
         }
 
         UserDTO userDTO = new UserDTO(
@@ -82,14 +81,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 "Temp",
                 existData.getName(),
                 existData.getNickname(),
-                true,
+                existData.isSocial(),
                 existData.getGender(),
                 existData.getAge(),
                 existData.getMobile(),
                 existData.getImg(),
                 existData.getUserRoleList().stream().map(UserRole::name).collect(Collectors.toList()),
-                false,
-                null
+                existData.isDeleted(),
+                existData.getDeletedAt()
                 );
 
         return new CustomOAuth2User(userDTO);

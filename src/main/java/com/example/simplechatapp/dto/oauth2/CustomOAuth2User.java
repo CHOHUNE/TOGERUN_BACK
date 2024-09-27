@@ -61,6 +61,7 @@ public class CustomOAuth2User implements OAuth2User {
     public Map<String,Object> getClaim() {
         Map<String, Object> dataMap = new HashMap<>();
 
+        dataMap.put("id", userDTO.getId());
         dataMap.put("email", getEmail());
         dataMap.put("pw", userDTO.getPassword());
         dataMap.put("nickname", getNickname());
@@ -68,7 +69,9 @@ public class CustomOAuth2User implements OAuth2User {
         dataMap.put("roleNames", getRoleNames());
         dataMap.put("name", getName());
         dataMap.put("img", userDTO.getImg());
+        dataMap.put("isDeleted", userDTO.isDeleted());
 
+//        dataMap.put("deletedAt", userDTO.getDeletedAt());
 //        dataMap.put("mobile", userDTO.getMobile());
 //        dataMap.put("gender", userDTO.getGender());
 //        dataMap.put("age", userDTO.getAge());
@@ -77,5 +80,4 @@ public class CustomOAuth2User implements OAuth2User {
         return dataMap;
 
     }
-
 }

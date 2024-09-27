@@ -33,19 +33,17 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
-
         Map<String, Object> claims = customUserDetails.getClaim();
 
         log.info("oauth claims : {}", claims);
 
-        String accessToken = jwtUtil.generateAccessToken(claims, 1);
+        String accessToken = jwtUtil.generateAccessToken(claims, 10);
         String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
 
         claims.put("accessToken", accessToken);
 
         String email = claims.get("email").toString();
         refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
-
 
         Gson gson = new Gson();
 
@@ -56,16 +54,24 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         Cookie cookie = new Cookie("member", encodedJsonStr);
         cookie.setMaxAge(60 * 60 * 60);
         cookie.setPath("/");
-//        cookie.setHttpOnly(true);
         response.addCookie(cookie);
 
-        response.sendRedirect("http://localhost:3000/");
+        // Determine the redirect URL based on the claims
+        String redirectUrl = "http://localhost:3000/";
+
+        if (Boolean.TRUE.equals(claims.get("social"))) {
+            redirectUrl = "http://localhost:3000/member/modify/";
+
+        } else if (Boolean.TRUE.equals(claims.get("isDeleted"))) {
+            String id = claims.get("id").toString();
+            redirectUrl = "http://localhost:3000/member/restore/" + id;
+        }
+
+        response.sendRedirect(redirectUrl);
         request.getSession().invalidate();
 
-        PrintWriter printWriter = response.getWriter(); // response 에 json 형태로 claims 를 담아 보낸다.
+        PrintWriter printWriter = response.getWriter();
         printWriter.println(jsonStr);
         printWriter.close();
-
-
     }
 }

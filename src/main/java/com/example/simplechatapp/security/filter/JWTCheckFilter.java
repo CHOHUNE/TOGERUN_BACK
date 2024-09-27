@@ -54,7 +54,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             log.info("JWT claims{}", claims);
 
-            Long id = (Long) claims.get("id");
+//            Long id = (Long) claims.get("id");
+            Long id = Long.valueOf(((Number) claims.get("id")).longValue());
             String email = (String) claims.get("email");
             String pw = (String) claims.get("pw");
             String nickname = (String) claims.get("nickname");
@@ -73,8 +74,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             log.info(".....JWT Check Success.....");
             log.info("userDTO{}", userDTO);
             log.info(userDTO.getAuthorities());
-
-
             log.info(".....JWT Login Start.....");
 
             UsernamePasswordAuthenticationToken authenticationToken =
@@ -89,7 +88,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             log.error(".....JWT Check ERROR .....");
             log.error(e.getMessage());
-
 
             Gson gson = new Gson();
             String msg = gson.toJson(Map.of("error", "ERROR_ACCESS_TOKEN"));
