@@ -1,5 +1,6 @@
 package com.example.simplechatapp.dto;
 
+import com.example.simplechatapp.entity.ActivityType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,5 +22,6 @@ public class PostListDTO {
     private Long viewCount;
     private Boolean participateFlag;
     private String roadName;
+    private ActivityType activityType;
 
 }

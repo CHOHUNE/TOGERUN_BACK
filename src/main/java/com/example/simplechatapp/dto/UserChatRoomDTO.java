@@ -1,6 +1,7 @@
 package com.example.simplechatapp.dto;
 
 
+import com.example.simplechatapp.entity.ActivityType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class UserChatRoomDTO {
     private int capacity;
     private LocalDateTime lastMessageTime;
     private String lastMessagePreview;
+    private ActivityType activityType;
 
 
 }

@@ -38,6 +38,7 @@ public interface PostService {
                 .participateFlag(post.isParticipateFlag())
                 .viewCount(post.getViewCount())
                 .roadName(post.getRoadName())
+                .activityType(post.getActivityType())
                 .build();
 
     }

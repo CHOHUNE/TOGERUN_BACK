@@ -44,6 +44,8 @@ public class ChatRoom {
     private int participantCount;
     private boolean isParticipant;
     private boolean canJoin;
+    private ActivityType activityType;
+
 
 
     @Builder.Default

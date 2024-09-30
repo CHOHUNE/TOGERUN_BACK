@@ -79,6 +79,7 @@ public class ChatRoomService {
                 orElseGet(() -> {
                     ChatRoom newChatRoom = new ChatRoom();
                     newChatRoom.setPost(post);
+                    newChatRoom.setActivityType(post.getActivityType());
                     newChatRoom.setParticipantCount(0); // 기본 0으로 세팅 -> 참여자가 추가될 때마다 증가
                     return chatRoomRepository.save(newChatRoom);
                 });
@@ -219,6 +220,7 @@ public class ChatRoomService {
         dto.setParticipantCount(chatRoom.getParticipantCount());
         dto.setMeetingTime(chatRoom.getPost().getMeetingTime());
         dto.setCapacity(chatRoom.getPost().getCapacity());
+        dto.setActivityType(chatRoom.getActivityType());
 
         // 마지막 메시지 정보 설정
         chatRoom.getChatMessageList().stream()
