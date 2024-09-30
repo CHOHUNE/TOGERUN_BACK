@@ -20,4 +20,6 @@ public class PageRequestDTO {
     private int size = 10;
 
     private String keyword; // 추후에 검색을 위한 키워드 생성
+    private String region;
+    private String activityType;
 }

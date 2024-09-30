@@ -25,7 +25,8 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
         JPQLQuery<Post> query = from(qPost)
                 .leftJoin(qPost.user, qUser).fetchJoin()
                 .where(
-                        containsKeyword(qPost, pageRequestDTO.getKeyword()),
+//                        containsKeyword(qPost, pageRequestDTO.getKeyword()),
+                        searchConditions(qPost, pageRequestDTO),
                         qPost.delFlag.eq(false)
                 )
                 .distinct();
@@ -117,7 +118,44 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
         }
         return qPost.title.containsIgnoreCase(keyword)
                 .or(qPost.content.containsIgnoreCase(keyword))
+                .or(qPost.content.containsIgnoreCase(keyword))
+                .or(qPost.activityType.eq(ActivityType.valueOf(keyword)))
                 .or(qPost.roadName.containsIgnoreCase(keyword))
                 .or(qPost.placeName.containsIgnoreCase(keyword));
+
     }
-}
+
+    private BooleanExpression searchConditions(QPost qPost, PageRequestDTO pageRequestDTO) {
+        BooleanExpression expression = null;
+
+        String keyword = pageRequestDTO.getKeyword();
+        if (keyword != null && !keyword.isEmpty()) {
+            expression = qPost.title.containsIgnoreCase(keyword)
+                    .or(qPost.content.containsIgnoreCase(keyword))
+                    .or(qPost.placeName.containsIgnoreCase(keyword))
+                    .or(qPost.roadName.containsIgnoreCase(keyword));
+        }
+
+        String region = pageRequestDTO.getRegion();
+        if (region != null && !region.isEmpty()) {
+            BooleanExpression regionCondition =
+                    qPost.roadName.containsIgnoreCase(region)
+                            .or(qPost.placeName.containsIgnoreCase(region));
+
+            expression = (expression == null) ? regionCondition : expression.and(regionCondition);
+        }
+
+        String activity = pageRequestDTO.getActivityType();
+        if (activity != null && !activity.isEmpty()) {
+            try {
+                ActivityType activityType = ActivityType.valueOf(activity.toUpperCase());
+                BooleanExpression activityCondition = qPost.activityType.eq(activityType);
+                expression = (expression == null) ? activityCondition : expression.and(activityCondition);
+            } catch (IllegalArgumentException e) {
+                // 유효하지 않은 ActivityType일 경우 무시
+            }
+        }
+
+        // 모든 조건이 null일 경우 항상 true를 반환
+        return expression != null ? expression : qPost.isNotNull();
+    }}
