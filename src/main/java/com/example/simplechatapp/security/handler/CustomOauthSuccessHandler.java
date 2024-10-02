@@ -48,43 +48,6 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String redirectUrl = determineRedirectUrl(claims);
         response.sendRedirect(redirectUrl);
 
-
-////
-////
-////
-////        log.info("oauth claims : {}", claims);
-////
-////        String accessToken = jwtUtil.generateAccessToken(claims, 10);
-////        String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
-////
-////        claims.put("accessToken", accessToken);
-////
-////        String email = claims.get("email").toString();
-////        refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
-////
-////        Gson gson = new Gson();
-////
-////        String jsonStr = gson.toJson(claims);
-////        response.setContentType("application/json;charset=UTF-8");
-////
-////        String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
-////        Cookie cookie = new Cookie("member", encodedJsonStr);
-////        cookie.setMaxAge(60 * 60 * 60);
-////        cookie.setPath("/");
-////        response.addCookie(cookie);
-////
-////        // Determine the redirect URL based on the claims
-////        String redirectUrl = "http://localhost:3000/";
-////
-////        if (Boolean.TRUE.equals(claims.get("social"))) {
-////            redirectUrl = "http://localhost:3000/member/modify/";
-////
-////        } else if (Boolean.TRUE.equals(claims.get("isDeleted"))) {
-////            String id = claims.get("id").toString();
-////            redirectUrl = "http://localhost:3000/member/restore/" + id;
-////        }
-////
-////        response.sendRedirect(redirectUrl);
 //        request.getSession().invalidate();
 //
 //        PrintWriter printWriter = response.getWriter();
