@@ -2,5 +2,7 @@ package com.example.simplechatapp.entity;
 
 public enum UserRole {
 
-        USER,ADMIN,SYSTEM
+        ROLE_SILVER,ROLE_ADMIN, ROLE_BRONZE, ROLE_SYSTEM
+
+
 }

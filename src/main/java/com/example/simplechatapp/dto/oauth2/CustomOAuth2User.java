@@ -37,9 +37,14 @@ public class CustomOAuth2User implements OAuth2User {
     //Authorities : 해당 사용자가 가지고 있는 권한 목록을 리턴
 
 
+
     @Override
     public String getName() {
         return userDTO.getName();
+    }
+
+    public UserDTO getUserDTO() {
+        return userDTO;
     }
 
     public String getEmail() {

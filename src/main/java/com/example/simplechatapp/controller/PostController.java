@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,7 @@ import java.util.Map;
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
 @Log4j2
+@PreAuthorize("hasRole('ROLE_SILVER')") //SpringSecurity 5.0 이후에서는 ROLE_ 접두사를 사용하지 않아도 무방 ( 오히려 생략이 권장 )
 public class PostController {
 
     private final PostService postService;
@@ -32,12 +34,11 @@ public class PostController {
     private final UserRepository userRepository;
 
 
-
     @GetMapping
-public List<Post> getAllPosts() {
+    public List<Post> getAllPosts() {
 
-    return postService.findAll();
-}
+        return postService.findAll();
+    }
 
 
     @GetMapping("/{id}")
@@ -46,7 +47,7 @@ public List<Post> getAllPosts() {
         User user = userRepository.findByEmail(principal.getEmail())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        String ipAddress= request.getRemoteAddr();
+        String ipAddress = request.getRemoteAddr();
 
 
         postService.incrementViewCount(id, ipAddress);
@@ -60,22 +61,22 @@ public List<Post> getAllPosts() {
 
     //    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     @PostMapping
-    public Map<String,Long> createPost( @AuthenticationPrincipal UserDTO principal,
-            @RequestParam(value = "uploadFiles",required = false) List<MultipartFile> files,
-            PostDTO postDTO) {
+    public Map<String, Long> createPost(@AuthenticationPrincipal UserDTO principal,
+                                        @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files,
+                                        PostDTO postDTO) {
 
         // MultiPart-Data-Form 양식으로 보낼 경우 : @RequestBody 사용하지 않음
         // @RequestBody 사용시 JSON 형태로 보내야함
 
         log.info("postDTO{}", postDTO);
 
-        Long id = postService.register(principal,postDTO,files);
+        Long id = postService.register(principal, postDTO, files);
 
 
         return Map.of("id", id);
     }
 
-//    @Cacheable(value = "postList", key = "#pageRequestDTO.toString()")
+    //    @Cacheable(value = "postList", key = "#pageRequestDTO.toString()")
     @GetMapping("/list")
     public PageResponseDTO<PostListDTO> list(PageRequestDTO pageRequestDTO) {
 
@@ -86,11 +87,11 @@ public List<Post> getAllPosts() {
 
 
     @PutMapping("/{id}")
-    public Map<String, String> modify (@PathVariable Long id,  PostDTO postDTO, @RequestParam(value = "uploadFiles",required = false) List<MultipartFile> files) {
+    public Map<String, String> modify(@PathVariable Long id, PostDTO postDTO, @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files) {
         postDTO.setId(id);
         postService.modify(postDTO, files);
 
-        return Map.of("result","success");
+        return Map.of("result", "success");
     }
 
 
@@ -105,7 +106,7 @@ public List<Post> getAllPosts() {
 
         postService.remove(id);
 
-        return Map.of("result","success");
+        return Map.of("result", "success");
     }
 
     @PostMapping("/{id}/favorite")

@@ -1,11 +1,11 @@
 package com.example.simplechatapp.security.handler;
 
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.dto.oauth2.CustomOAuth2User;
 import com.example.simplechatapp.repository.RefreshTokenRepository;
+import com.example.simplechatapp.service.AuthenticationService;
 import com.example.simplechatapp.util.JWTUtil;
-import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +15,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 
@@ -28,50 +25,86 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JWTUtil jwtUtil;
+    private final AuthenticationService authenticationService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
-        Map<String, Object> claims = customUserDetails.getClaim();
+        UserDTO userDTO;
 
-        log.info("oauth claims : {}", claims);
+        if (authentication.getPrincipal() instanceof CustomOAuth2User) {
 
-        String accessToken = jwtUtil.generateAccessToken(claims, 10);
-        String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
+            CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-        claims.put("accessToken", accessToken);
-
-        String email = claims.get("email").toString();
-        refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
-
-        Gson gson = new Gson();
-
-        String jsonStr = gson.toJson(claims);
-        response.setContentType("application/json;charset=UTF-8");
-
-        String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
-        Cookie cookie = new Cookie("member", encodedJsonStr);
-        cookie.setMaxAge(60 * 60 * 60);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-
-        // Determine the redirect URL based on the claims
-        String redirectUrl = "http://localhost:3000/";
-
-        if (Boolean.TRUE.equals(claims.get("social"))) {
-            redirectUrl = "http://localhost:3000/member/modify/";
-
-        } else if (Boolean.TRUE.equals(claims.get("isDeleted"))) {
-            String id = claims.get("id").toString();
-            redirectUrl = "http://localhost:3000/member/restore/" + id;
+            userDTO = oAuth2User.getUserDTO();
+        }else{
+            userDTO = (UserDTO) authentication.getPrincipal();
         }
 
-        response.sendRedirect(redirectUrl);
-        request.getSession().invalidate();
+        Map<String, Object> claims = userDTO.getClaim();
 
-        PrintWriter printWriter = response.getWriter();
-        printWriter.println(jsonStr);
-        printWriter.close();
+        authenticationService.setAuthenticationTokens(claims, response);
+
+        String redirectUrl = determineRedirectUrl(claims);
+        response.sendRedirect(redirectUrl);
+
+
+////
+////
+////
+////        log.info("oauth claims : {}", claims);
+////
+////        String accessToken = jwtUtil.generateAccessToken(claims, 10);
+////        String refreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
+////
+////        claims.put("accessToken", accessToken);
+////
+////        String email = claims.get("email").toString();
+////        refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
+////
+////        Gson gson = new Gson();
+////
+////        String jsonStr = gson.toJson(claims);
+////        response.setContentType("application/json;charset=UTF-8");
+////
+////        String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
+////        Cookie cookie = new Cookie("member", encodedJsonStr);
+////        cookie.setMaxAge(60 * 60 * 60);
+////        cookie.setPath("/");
+////        response.addCookie(cookie);
+////
+////        // Determine the redirect URL based on the claims
+////        String redirectUrl = "http://localhost:3000/";
+////
+////        if (Boolean.TRUE.equals(claims.get("social"))) {
+////            redirectUrl = "http://localhost:3000/member/modify/";
+////
+////        } else if (Boolean.TRUE.equals(claims.get("isDeleted"))) {
+////            String id = claims.get("id").toString();
+////            redirectUrl = "http://localhost:3000/member/restore/" + id;
+////        }
+////
+////        response.sendRedirect(redirectUrl);
+//        request.getSession().invalidate();
+//
+//        PrintWriter printWriter = response.getWriter();
+//        printWriter.println(jsonStr);
+//        printWriter.close();
+    }
+
+    private String determineRedirectUrl(Map<String, Object>claims) {
+
+        Boolean isSocial = (Boolean) claims.get("social");
+        Boolean isDeleted =(Boolean) claims.get("isDeleted");
+
+        if (Boolean.TRUE.equals(isSocial)) {
+            return "http://localhost:3000/member/modify/";
+
+        } else if (Boolean.TRUE.equals(isDeleted)) {
+            return "http://localhost:3000/member/restore/" + claims.get("id");
+
+        } else {
+            return "http://localhost:3000/";
+        }
     }
 }

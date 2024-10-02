@@ -13,7 +13,7 @@ public interface UserService {
 
 //    UserDTO getKakaoMember(String accessToken);
 
-    void modifyMember(UserModifyDTO userModifyDTO);
+    UserDTO modifyMember(UserDTO userDTO,UserModifyDTO userModifyDTO);
 
     UserDTO getMember(String email);
 

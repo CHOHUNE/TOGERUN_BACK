@@ -31,8 +31,13 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 //        String query = request.getQueryString();
 
-        log.info("..... Check URI ..... " + path);
-        if (path.startsWith("/api/member") || path.startsWith("/chat")) return true;
+        log.info(".....CHECK URI:{}....." , path);
+        if (path.startsWith("/api/member") || path.startsWith("/chat")){
+
+            log.info(".....JWT Check Filter Skip shouldnFilter.....");
+            return true;
+        }
+
         return false;
 
     }
@@ -42,11 +47,9 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
 
         log.info(".....JWT Check Filter Start.....");
-
         String authHeaderStr = request.getHeader("Authorization");
 
         try {
-
             String accessToken = authHeaderStr.substring(7);
             Map<String, Object> claims = jwtUtil.validToken(accessToken);
             //accessToken 을 바탕으로 Jwt 토큰을 parserBuilder 실패시 catch 예외 처리

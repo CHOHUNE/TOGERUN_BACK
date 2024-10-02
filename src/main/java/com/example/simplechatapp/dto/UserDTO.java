@@ -44,11 +44,11 @@ public class UserDTO extends User implements OAuth2User {
         this.email = email != null && !email.isEmpty() ? email : "defaultEmail@example.com";
         this.password = password != null && !password.isEmpty() ? password : "defaultPassword123!";
         this.name = name != null && !name.isEmpty() ? name : "Default Name";
-        this.nickname = nickname != null && !nickname.isEmpty() ? nickname : "DefaultUser";
+        this.nickname = nickname != null && !nickname.isEmpty() ? nickname : "";
         this.social = social;
         this.gender = gender != null && !gender.isEmpty() ? gender : "Unspecified";
         this.age = age != null && !age.isEmpty() ? age : "0";
-        this.mobile = mobile != null && !mobile.isEmpty() ? mobile : "000-0000-0000";
+        this.mobile = mobile != null && !mobile.isEmpty() ? mobile : "010-0000-0000";
         this.img = img != null && !img.isEmpty() ? img : "default_profile.jpg";
         this.roleNames = roleNames != null ? roleNames : new ArrayList<>();
         this.isDeleted = isDeleted;

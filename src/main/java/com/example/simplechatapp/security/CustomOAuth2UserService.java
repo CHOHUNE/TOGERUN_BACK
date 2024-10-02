@@ -63,7 +63,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             existData.setGender(oAuth2Response.getGender());
 
             existData.setSocial(true);
-            existData.setUserRoleList(List.of(UserRole.USER));
+            existData.setUserRoleList(List.of(UserRole.ROLE_BRONZE));
 
             userRepository.save(existData);
 
