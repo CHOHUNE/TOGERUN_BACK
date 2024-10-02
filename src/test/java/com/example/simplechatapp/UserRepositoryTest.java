@@ -1,7 +1,7 @@
 package com.example.simplechatapp;
 
-import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.entity.User;
+import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +38,7 @@ public class UserRepositoryTest {
 
 
         if(i>7) user.addRole(UserRole.ADMIN);
-        if(i>0) user.addRole(UserRole.USER);
+//        if(i>0) user.addRole(UserRole.USER);
 
         userRepository.save(user);
 
