@@ -24,4 +24,6 @@ interface UserRepository extends JpaRepository<User, Long> {
            "LEFT JOIN FETCH u.userRoleList ")
     List<User> findAllUsers();
 
+    Optional<User> findByNickname(String nickname);
+
 }

@@ -23,6 +23,8 @@ public interface UserService {
 
     List<UserDTO> getAllUsers();
 
+    boolean isNicknameAvailable(String nickname);
+
     default UserDTO entityToDTO(User user){
 
         return new UserDTO(

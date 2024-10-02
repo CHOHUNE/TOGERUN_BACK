@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +71,21 @@ public class UserController {
             return Map.of("result", "failed");
         }
 
+    }
+
+    @GetMapping("/check/{nickname}")
+    public ResponseEntity<?> checkNickNameAvailable(@PathVariable String nickname) {
+
+        boolean isAvailable = userService.isNicknameAvailable(nickname);
+
+        Map<String, Boolean> response = new HashMap<>();
+
+        response.put("available", isAvailable);
+
+        log.info("checkNickNameAvailable:{}", nickname);
+        log.info("isAvailable:{}", isAvailable);
+
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -11,10 +11,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -22,8 +24,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
-    private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+
+    private static final int MIN_NICKNAME_LENGTH = 3;
+    private static final int MAX_NICKNAME_LENGTH = 20;
+    private static final Pattern VALID_NICKNAME_REGEX = Pattern.compile("^[a-zA-Z0-9가-힣_-]+$");
+    private static final List<String> FORBIDDEN_NICKNAMES = Arrays.asList("admin", "root", "system");
 
     @Override
     public UserDTO modifyMember(UserDTO currentUser,UserModifyDTO userModifyDTO) {
@@ -53,6 +60,8 @@ public class UserServiceImpl implements UserService{
 
         return entityToDTO(savedUser);
     }
+
+
 
     @Override
     public UserDTO getMember(String email) {
@@ -85,6 +94,34 @@ public class UserServiceImpl implements UserService{
         return userRepository.findAllUsers().stream()
                 .map(this::entityToDTO)
                 .toList();
+    }
+
+    public boolean isNicknameAvailable(String nickname) {
+
+        if (nickname == null || nickname.trim().isEmpty()) {
+            return false;
+        }
+
+        // 길이 검사
+        if (nickname.length() < MIN_NICKNAME_LENGTH || nickname.length() > MAX_NICKNAME_LENGTH) {
+            return false;
+        }
+
+        // 문자 유효성 검사
+        if (!VALID_NICKNAME_REGEX.matcher(nickname).matches()) {
+            return false;
+        }
+
+        // 금지된 닉네임 검사
+        if (FORBIDDEN_NICKNAMES.contains(nickname.toLowerCase())) {
+            return false;
+        }
+
+        // 중복 검사
+        Optional<User> existingUser = userRepository.findByNickname(nickname);
+
+        return existingUser.isEmpty();
+
     }
 
     private void updateSecurityContext(User user) {
