@@ -37,7 +37,7 @@ public class UserRepositoryTest {
                 .build();
 
 
-        if(i>7) user.addRole(UserRole.ADMIN);
+        if(i>7) user.addRole(UserRole.ROLE_ADMIN);
 //        if(i>0) user.addRole(UserRole.USER);
 
         userRepository.save(user);
