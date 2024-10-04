@@ -1,10 +1,12 @@
 package com.example.simplechatapp.controller;
 
+import com.example.simplechatapp.dto.FavoriteDTO;
 import com.example.simplechatapp.dto.UserChatRoomDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.service.AuthenticationService;
 import com.example.simplechatapp.service.ChatRoomService;
+import com.example.simplechatapp.service.FavoriteService;
 import com.example.simplechatapp.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class UserController {
     private final ChatRoomService chatRoomService;
     private final UserService userService;
     private final AuthenticationService authenticationService;
+    private final FavoriteService favoriteService;
 
     @GetMapping("/joined")
     public ResponseEntity<List<UserChatRoomDTO>> getUserChatRooms(@AuthenticationPrincipal UserDTO principal) {
@@ -86,6 +89,12 @@ public class UserController {
         log.info("isAvailable:{}", isAvailable);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/favorites")
+    public List<FavoriteDTO> getFavoriteUser(@AuthenticationPrincipal UserDTO principal) {
+
+        return favoriteService.getAllFavorites(principal.getEmail());
     }
 
 }
