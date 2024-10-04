@@ -8,9 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -48,5 +47,17 @@ public class NotifyController {
     @GetMapping("/unread/count")
     public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal UserDTO principal) {
         return ResponseEntity.ok(notifyService.getUnreadCount(principal.getEmail()));
+    }
+
+    @PostMapping("/clear")
+    public ResponseEntity<Void> clearAll(@AuthenticationPrincipal UserDTO principal) {
+        try {
+            notifyService.markAsReadAll(principal.getEmail());
+            return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
+
+
     }
 }

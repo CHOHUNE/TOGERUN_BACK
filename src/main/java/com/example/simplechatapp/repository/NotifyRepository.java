@@ -15,4 +15,8 @@ public interface NotifyRepository extends JpaRepository<Notify, Long>{
 
     @Query("SELECT COUNT(n) FROM Notify n WHERE n.receiver = :user AND n.isRead = false")
     int countUnreadNotifications(User user);
+
+    @Query("SELECT n FROM Notify n WHERE n.receiver = :receiver AND n.isRead = false")
+    List<Notify> findAllByReceiverAndIsReadFalse(User receiver);
+
 }

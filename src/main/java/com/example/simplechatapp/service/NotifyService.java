@@ -15,12 +15,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -169,13 +172,22 @@ public class NotifyService {
         }
     }
 
+    @Transactional
+    public void markAsReadAll(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
+        List<Notify> allByReceiverAndIsReadFalse = notifyRepository.findAllByReceiverAndIsReadFalse(user);
+
+        allByReceiverAndIsReadFalse.forEach(notify -> notify.setIsRead(true));
+        notifyRepository.saveAll(allByReceiverAndIsReadFalse);
+    }
+
+
     public NotifyDto.PageResponse getAllNotifications(String userEmail, int page, int size) {
 
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Notify> notifications = notifyRepository.findByReceiverOrderByCreatedAtDesc(user, pageable);
-
         int unreadCount = notifyRepository.countUnreadNotifications(user);
 
 
