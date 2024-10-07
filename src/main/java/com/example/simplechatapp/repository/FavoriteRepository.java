@@ -10,10 +10,6 @@ import java.util.Optional;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
-    void deleteByUserIdAndPostId(Long userId, Long postId);
-    boolean existsByUserIdAndPostId(Long userId, Long postId);
-    int countByPostId(Long postId);
-
 
     @Query("SELECT f FROm Favorite  f JOIN FETCH  f.post WHERE f.user.email = :email AND f.isActive =true ")
     List<Favorite> findAllByEmail(String email);

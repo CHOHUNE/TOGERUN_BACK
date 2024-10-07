@@ -33,7 +33,7 @@ public class NotifyController {
     @GetMapping("/all")
     public ResponseEntity<NotifyDto.PageResponse> getAllNotifications(@AuthenticationPrincipal UserDTO principal,
                                                                         @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                       @RequestParam(value = "size", defaultValue = "7") int size){
+                                                                       @RequestParam(value = "size", defaultValue = "5") int size){
 
         return ResponseEntity.ok(notifyService.getAllNotifications(principal.getEmail(), page, size));
     }
