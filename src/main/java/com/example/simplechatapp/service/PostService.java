@@ -101,4 +101,6 @@ public interface PostService {
     List<Post> findAll();
 
     void incrementViewCount(Long postId, String ipAddress);
+
+    void updatedParticipateFlag();
 }

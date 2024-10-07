@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,8 +57,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDTO get(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
         return entityToDTO(post);
     }
 
@@ -68,7 +69,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-
     @Async
     @Override
     public void incrementViewCount(Long postId, String ipAddress) {
@@ -78,7 +78,7 @@ public class PostServiceImpl implements PostService {
         //keyAbsent : true -> key 가 없어서 새로 생성됨
         //keyAbsent : false -> key 가 이미 존재함
 
-        if(Boolean.TRUE.equals(keyAbsent)) {
+        if (Boolean.TRUE.equals(keyAbsent)) {
             postRepository.incrementViewCount(postId);
         }
     }
@@ -87,8 +87,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Long register(UserDTO principal, PostDTO postDTO, List<MultipartFile> files) {
-        User user = userRepository.findByEmail(principal.getEmail())
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        User user = userRepository.findByEmail(principal.getEmail()).orElseThrow(() -> new RuntimeException("User Not Found"));
 
         postDTO.setLocalDate(LocalDate.now());
         postDTO.setUserId(user.getId());
@@ -106,11 +105,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @CacheEvict(value = {"post"}, key="#postDTO.id")
+    @CacheEvict(value = {"post"}, key = "#postDTO.id")
     @Transactional
     public void modify(PostDTO postDTO, List<MultipartFile> newFiles) {
-        Post post = postRepository.findById(postDTO.getId())
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Post post = postRepository.findById(postDTO.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
 
         updatePostFields(post, postDTO);
 
@@ -120,40 +118,28 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "post", key = "#id"),
-            @CacheEvict(value = "postComments", key = "#id")
-    })
+    @Caching(evict = {@CacheEvict(value = "post", key = "#id"), @CacheEvict(value = "postComments", key = "#id")})
     @Transactional
     public void remove(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
         deleteFiles(post.getImageList());
 
         postRepository.deleteById(id);
     }
 
 
-
     @Override
     public PageResponseDTO<PostListDTO> getList(PageRequestDTO pageRequestDTO) {
         Page<Post> result = postRepository.search1(pageRequestDTO);
-        List<PostListDTO> dtoList = result.getContent().stream()
-                .map(this::entityToListDTO)
-                .collect(Collectors.toList());
+        List<PostListDTO> dtoList = result.getContent().stream().map(this::entityToListDTO).collect(Collectors.toList());
 
-        return PageResponseDTO.<PostListDTO>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(pageRequestDTO)
-                .total(result.getTotalElements())
-                .build();
+        return PageResponseDTO.<PostListDTO>withAll().dtoList(dtoList).pageRequestDTO(pageRequestDTO).total(result.getTotalElements()).build();
     }
 
     @Override
     public Post dtoToEntity(PostDTO postDTO) {
         Post post = PostService.super.dtoToEntity(postDTO);
-        User user = userRepository.findById(postDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(postDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         post.changeUser(user);
         return post;
     }
@@ -168,7 +154,6 @@ public class PostServiceImpl implements PostService {
     public List<Post> findAll() {
         return postRepository.findAll();
     }
-
 
 
     private void updatePostFields(Post post, PostDTO postDTO) {
@@ -187,9 +172,7 @@ public class PostServiceImpl implements PostService {
         List<PostImage> currentImages = post.getImageList();
 
         //2.삭제 이미지 처리 :
-        List<PostImage> imagesToDelete = currentImages.stream()
-                .filter(image -> !existingImageUrls.contains(image.getFileName()))
-                .toList();
+        List<PostImage> imagesToDelete = currentImages.stream().filter(image -> !existingImageUrls.contains(image.getFileName())).toList();
 
         deleteFiles(imagesToDelete);
 
@@ -207,10 +190,7 @@ public class PostServiceImpl implements PostService {
         for (PostImage postImage : postImages) {
             String fileUrl = postImage.getFileName();
             String fileName = fileUrl.substring(urlPrefix.length());
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileName)
-                    .build();
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(fileName).build();
 
             s3Client.deleteObject(deleteObjectRequest);
         }
@@ -233,10 +213,7 @@ public class PostServiceImpl implements PostService {
                 String fileKey = String.format("chatApp/post/%d/%s", postId, fileName);
 
                 try {
-                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(fileKey)
-                            .build();
+                    PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(fileKey).build();
 
                     s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
@@ -253,4 +230,20 @@ public class PostServiceImpl implements PostService {
 
         return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
     }
+
+
+    @Override
+    @Scheduled(cron = "0 0 0/15 * * *")
+    public void updatedParticipateFlag() {
+
+        LocalDateTime now = LocalDateTime.now();
+        List<Post> posts = postRepository.findByMeetingTimeBefore(now);
+
+        for (Post post : posts) {
+            post.changeParticipateFlag(false);
+            postRepository.save(post);
+        }
+    }
+
+
 }
