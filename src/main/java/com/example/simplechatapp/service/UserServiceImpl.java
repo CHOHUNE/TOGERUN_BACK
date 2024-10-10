@@ -22,9 +22,9 @@ import java.util.regex.Pattern;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
-//    private final PasswordEncoder passwordEncoder;
+    //    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
     private static final int MIN_NICKNAME_LENGTH = 3;
@@ -33,16 +33,19 @@ public class UserServiceImpl implements UserService{
     private static final List<String> FORBIDDEN_NICKNAMES = Arrays.asList("admin", "root", "system");
 
     @Override
-    public UserDTO modifyMember(UserDTO currentUser,UserModifyDTO userModifyDTO) {
+    public UserDTO modifyMember(UserDTO currentUser, UserModifyDTO userModifyDTO) {
 
         User user = userRepository.findByEmail(currentUser.getEmail())
-                .orElseThrow(()->new RuntimeException("User Not Found"));
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
         user.changeNickname(userModifyDTO.getNickname());
         user.setAge(userModifyDTO.getAge());
         user.setGender(userModifyDTO.getGender());
         user.setMobile(userModifyDTO.getMobile());
+        user.setDeleted(false);
+        user.setDeletedAt(null);
         user.changeSocial(false);
+
 //        user.changePw(passwordEncoder.encode(userModifyDTO.getPw()));
 //       일반 로그인 기능 폐기로 인한 주석 처리
 
@@ -62,14 +65,12 @@ public class UserServiceImpl implements UserService{
     }
 
 
-
     @Override
     public UserDTO getMember(String email) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
         return entityToDTO(user);
     }
-
 
 
     @Override
@@ -121,7 +122,6 @@ public class UserServiceImpl implements UserService{
         Optional<User> existingUser = userRepository.findByNickname(nickname);
 
         return existingUser.isEmpty();
-
     }
 
     private void updateSecurityContext(User user) {
@@ -130,12 +130,13 @@ public class UserServiceImpl implements UserService{
         UserDTO updatedPrincipal = entityToDTO(user);
 
         List<SimpleGrantedAuthority> updatedAuthorities = user.getUserRoleList().stream()
-                .map(role ->new SimpleGrantedAuthority(role.name()))
+                .map(role -> new SimpleGrantedAuthority(role.name()))
                 .toList();
 
         Authentication newAuth = new UsernamePasswordAuthenticationToken(updatedPrincipal, auth.getCredentials(), updatedAuthorities);
         SecurityContextHolder.getContext().setAuthentication(newAuth);
 
-log.info("Security Context Updated:{}", newAuth);
+        log.info("Security Context Updated:{}", newAuth);
     }
+
 }

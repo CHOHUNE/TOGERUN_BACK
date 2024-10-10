@@ -50,31 +50,27 @@ public class UserController {
     }
 
     @PutMapping("/modify")
-    public Map<String, Object> modify (@RequestBody UserModifyDTO userModifyDTO, HttpServletResponse response,@AuthenticationPrincipal UserDTO currentUser) {
+    public ResponseEntity<?> modify(@RequestBody UserModifyDTO userModifyDTO,
+                                    HttpServletResponse response,
+                                    @AuthenticationPrincipal UserDTO currentUser) {
+        log.info("Modifying user. UserModifyDTO: {}, CurrentUser: {}", userModifyDTO, currentUser);
 
-        log.info("userModifyDTO{}", userModifyDTO);
-        log.info("currentUser{}", currentUser);
 
+        UserDTO updatedUser = userService.modifyMember(currentUser, userModifyDTO);
 
+        // 새로운 토큰 생성 및 쿠키 설정
+        authenticationService.setAuthenticationTokens(updatedUser, response);
 
-        UserDTO updatedUser = userService.modifyMember(currentUser,userModifyDTO);
+        Map<String, Object> result = new HashMap<>();
 
-        if (updatedUser != null) {
-            authenticationService.setAuthenticationTokens(updatedUser,response);
+        result.put("result", "modified");
+        result.put("updatedUser", updatedUser);
+        // 클라이언트에게 토큰이 갱신되었음을 알림
+        result.put("tokenRefreshed", true);
 
-            Map<String,Object> result = Map.of(
-                    "result", "modified",
-                    "updatedUser", updatedUser
-            );
-
-            return result;
-
-        }else{
-
-            return Map.of("result", "failed");
-        }
-
+        return ResponseEntity.ok(result);
     }
+
 
     @GetMapping("/check/{nickname}")
     public ResponseEntity<?> checkNickNameAvailable(@PathVariable String nickname) {

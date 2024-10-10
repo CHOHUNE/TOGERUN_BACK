@@ -1,40 +1,63 @@
 package com.example.simplechatapp.security.handler;
 
-import com.google.gson.Gson;
+import com.example.simplechatapp.entity.User;
+import com.example.simplechatapp.entity.UserRole;
+import com.example.simplechatapp.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
 
+@RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(CustomAccessDeniedHandler.class);
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
+
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response,
-                       AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        if (isAjaxRequest(request)) {
-            Gson gson = new Gson();
-            String jsonStr = gson.toJson(Map.of("error", "Access Denied"));
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    @Transactional
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+        log.debug("CustomAccessDeniedHandler.handle() 메서드 시작");
 
-            PrintWriter printWriter = response.getWriter();
-            printWriter.println(jsonStr);
-            printWriter.close();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        ErrorResponse errorResponse = null;
 
-        } else {
+        if (authentication != null && authentication.isAuthenticated()) {
+            log.debug("인증된 사용자: {}", authentication.getName());
+            User user = userRepository.getWithRole(authentication.getName());
 
-            response.sendRedirect("http://localhost:3000/home");
+            if (user.getUserRoleList().contains(UserRole.ROLE_BRONZE)) {
+                errorResponse = ErrorResponse.builder()
+                        .status(HttpStatus.FORBIDDEN)
+                        .message("프로필 업데이트가 필요합니다.")
+                        .redirect("/member/modify")
+                        .errorStatus("NEED_PROFILE_UPDATE")
+                        .build();
 
+                log.info("BRONZE 등급 사용자 접근 거부: {}", errorResponse.getMessage());
+            }
         }
+
+        sendJsonResponse(response, errorResponse);
+        log.debug("CustomAccessDeniedHandler.handle() 메서드 종료");
     }
 
-    private boolean isAjaxRequest(HttpServletRequest request) {
-        String header = request.getHeader("X-Requested-With");
-        return "XMLHttpRequest".equals(header);
+    private void sendJsonResponse(HttpServletResponse response, ErrorResponse errorResponse) throws IOException {
+        response.setStatus(errorResponse.getStatus().value());
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        log.debug("JSON 응답 전송 완료: {}", errorResponse);
     }
 }

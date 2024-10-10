@@ -48,11 +48,6 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String redirectUrl = determineRedirectUrl(claims);
         response.sendRedirect(redirectUrl);
 
-//        request.getSession().invalidate();
-//
-//        PrintWriter printWriter = response.getWriter();
-//        printWriter.println(jsonStr);
-//        printWriter.close();
     }
 
     private String determineRedirectUrl(Map<String, Object>claims) {
