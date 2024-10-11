@@ -69,9 +69,9 @@ public class CommentService {
         commentRepository.save(comment);
 
         return CommentResponseDto.convertCommentToDto(comment);
-
-
     }
+
+
     @Cacheable(value = "postComments", key = "#postId")
     public List<CommentResponseDto> findCommentListByPostId(Long postId) {
 
@@ -79,13 +79,10 @@ public class CommentService {
         // entity <-> dto
 
         List<CommentResponseDto> commentResponseDtoList = commentLIst.stream()
-                .map(comment -> CommentResponseDto.convertCommentToDto(comment))
+                .map(CommentResponseDto::convertCommentToDto)
                 .collect(Collectors.toList());
 
-
-
         return convertNestedStructure(commentResponseDtoList);
-
     }
 
 
@@ -93,34 +90,15 @@ public class CommentService {
     public Long deleteComment(Long commentId) {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment NOT FOUND"));
-        commentRepository.deleteById(commentId);
 
+
+        comment.updateDelFlag(!comment.isDelFlag());
+        commentRepository.save(comment);
         cacheManager.getCache("postComments").evict(comment.getPost().getId());
 
          return commentId;
     }
 
-    @Transactional
-    public void deleteCommentByPostId(Long postId) {
-        // 댓글 <-> 대댓글 중첩 구조 변환
-        List<CommentResponseDto> commentResponseDtoList = findCommentListByPostId(postId);
-
-        // 부모 댓글 id 리스트 화
-        List<Long> commentIdList = commentResponseDtoList.stream()
-                .map(CommentResponseDto::getId)
-                .collect(Collectors.toList());
-
-        for (Long commentId : commentIdList) {
-            commentRepository.deleteById(commentId);
-        }
-
-
-    }
-
-
-    /*
-     *  sns 댓글 <-> 대댓글 대댓글의 중첩 구조 변환 메서드
-     * */
 
     private List<CommentResponseDto> convertNestedStructure(List<CommentResponseDto> commentResponseDtoList) {
 

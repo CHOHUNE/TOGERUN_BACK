@@ -40,6 +40,7 @@ public class CommentResponseDto implements NotifyInfo {
     @Builder.Default
     private List<CommentResponseDto> children = new ArrayList<>();
     private LocalDateTime createdAt;
+    private boolean delFlag;
 
 
 //    public CommentResponseDto(Long id, Long postId, String content, String createdBy, Long parentId, LocalDateTime createdAt) {
@@ -65,6 +66,7 @@ public class CommentResponseDto implements NotifyInfo {
                 .goUrlId("/post/"+comment.getPost().getId())
                 .name(comment.getName())
                 .img(comment.getImg())
+                .delFlag(comment.isDelFlag())
                 .build();
     }
 

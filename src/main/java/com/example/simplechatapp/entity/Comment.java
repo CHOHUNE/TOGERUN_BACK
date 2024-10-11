@@ -53,7 +53,7 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @Builder
-    public Comment(Post post, String createdBy, String content, Comment parent, String name, String img) {
+    public Comment(Post post, String createdBy, String content, Comment parent, String name, String img, boolean delFlag) {
         this.post = post;
         this.createdBy = createdBy;
         this.content = content;
@@ -61,11 +61,16 @@ public class Comment {
         this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         this.name = name;
         this.img = img;
+        this.delFlag = delFlag;
 
     }
 
     public void update(String content) {
         this.content = content;
+    }
+
+    public void updateDelFlag(boolean delFlag) {
+        this.delFlag = delFlag;
     }
 
 
