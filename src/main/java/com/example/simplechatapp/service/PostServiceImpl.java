@@ -203,12 +203,14 @@ public class PostServiceImpl implements PostService {
         }
 
         List<CompletableFuture<String>> futures = new ArrayList<>();
+        // CompletableFuture : 비동기 작업을 수행하고 결과를 반환하는 Future의 하위 클래스
+        // Future: 비동기 작업의 결과를 나타내는 인터페이스
 
         for (MultipartFile file : files) {
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
                 String originalFileName = file.getOriginalFilename();
-                String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String fileExtension = originalFileName.substring(originalFileName.lastIndexOf(".")); // 확장자만 추출
                 String fileName = UUID.randomUUID().toString() + fileExtension;
                 String fileKey = String.format("chatApp/post/%d/%s", postId, fileName);
 

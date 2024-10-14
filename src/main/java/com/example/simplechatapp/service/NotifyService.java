@@ -185,14 +185,17 @@ public class NotifyService {
 
     public NotifyDto.PageResponse getAllNotifications(String userEmail, int page, int size) {
 
-        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Notify> notifications = notifyRepository.findByReceiverOrderByCreatedAtDesc(user, pageable);
-        int unreadCount = notifyRepository.countUnreadNotifications(user);
+
+//        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
+//        Page<Notify> notifications = notifyRepository.findByReceiverOrderByCreatedAtDesc(user, pageable);
+
+        Page<NotifyDto.Response> notifications = notifyRepository.findNotificationDtosByReceiverEmail(userEmail, pageable);
+//        int unreadCount = notifyRepository.countUnreadNotifications(userEmail);
 
 
         return NotifyDto.PageResponse.builder().
-                content(notifications.stream().map(NotifyDto.Response::createResponse).toList())
+                content(notifications.getContent())
                 .totalPages(notifications.getTotalPages())
                 .totalElements(notifications.getTotalElements())
                 .currentPage(notifications.getNumber())
@@ -202,7 +205,7 @@ public class NotifyService {
 
     public Long getUnreadCount(String email) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
-        return (long) notifyRepository.countUnreadNotifications(user);
+
+        return (long) notifyRepository.countUnreadNotifications(email);
     }
 }

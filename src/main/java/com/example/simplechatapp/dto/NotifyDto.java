@@ -1,14 +1,13 @@
 package com.example.simplechatapp.dto;
 
 
+import com.example.simplechatapp.entity.NotificationType;
 import com.example.simplechatapp.entity.Notify;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +25,18 @@ public class NotifyDto {
         String  goUrl;
         Boolean isRead;
         LocalDateTime createdAt;
+
+        public Response(Long id, String nickname, String content,
+                        NotificationType notificationType, String goUrl,
+                        Boolean isRead, LocalDateTime createdAt) {
+            this.id = id;
+            this.nickname = nickname;
+            this.content = content;
+            this.type = notificationType.name();
+            this.goUrl = goUrl;
+            this.isRead = isRead;
+            this.createdAt = createdAt;
+        }
 
         public static Response createResponse(Notify notify) {
 

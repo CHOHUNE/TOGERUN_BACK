@@ -33,7 +33,7 @@ public class FavoriteService {
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User not found"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
 
-        Favorite favorite  = favoriteRepository.findByUserIdAndPostId(user.getId(), post.getId())
+        Favorite favorite  = favoriteRepository.findByUserIdAndPostId(user.getId(), postId)
                 .orElse(
                         Favorite.builder()
                                 .user(user)
