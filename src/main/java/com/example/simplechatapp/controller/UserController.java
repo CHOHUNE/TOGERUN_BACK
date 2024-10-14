@@ -65,7 +65,6 @@ public class UserController {
 
         result.put("result", "modified");
         result.put("updatedUser", updatedUser);
-        // 클라이언트에게 토큰이 갱신되었음을 알림
         result.put("tokenRefreshed", true);
 
         return ResponseEntity.ok(result);

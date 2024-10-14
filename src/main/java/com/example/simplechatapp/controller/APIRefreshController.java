@@ -21,25 +21,25 @@ public class APIRefreshController {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @RequestMapping("/api/member/refresh")
-    public Map<String, Object> refresh(@RequestHeader("Authorization") String authHeader ) throws CustomJWTException {
+    public Map<String, Object> refresh(@RequestHeader("Authorization") String authHeader) throws CustomJWTException {
 
 
         log.info("Refresh Token Request Received");
 
 
-        if (authHeader == null || authHeader.length() <7 ) {
+        if (authHeader == null || authHeader.length() < 7) {
             throw new CustomJWTException("INVALID_STRING");
         }
 
         String accessToken = authHeader.substring(7);
 
 
-        Map<String,Object> claims;
+        Map<String, Object> claims;
 
         try {
-           claims  = jwtUtil.validToken(accessToken);
+            claims = jwtUtil.validToken(accessToken);
         } catch (CustomJWTException e) {
-            if(!"Expired".equals(e.getMessage())) {
+            if (!"Expired".equals(e.getMessage())) {
                 throw e;
 
             }
@@ -63,24 +63,24 @@ public class APIRefreshController {
         }
 
         String newAccessToken = jwtUtil.generateAccessToken(claims, 10);
-
-
         String newRefreshToken = storeRefreshToken;
+
         if (shouldRefreshToken(storeRefreshToken)) {
             newRefreshToken = jwtUtil.generateRefreshToken(claims, 60 * 24);
-            refreshTokenRepository.saveRefreshToken(email, newRefreshToken,60*24*60*1000);
+            refreshTokenRepository.saveRefreshToken(email, newRefreshToken, 60 * 24 * 60 * 1000);
+
             log.info("New refresh token generated");
-
-
         }
 
         log.info("Token refreshed SuccessFully");
 
-            return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
-        }
+        return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
+
+    }
 
 
     private boolean shouldRefreshToken(String token) {
+
         try {
             Map<String, Object> claims = jwtUtil.validToken(token);
             Number expNumber = (Number) claims.get("exp");
@@ -88,6 +88,7 @@ public class APIRefreshController {
             long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
             return (exp - currentTimeInSeconds) < (12 * 60 * 60);
+
         } catch (CustomJWTException e) {
             return true;
         }
