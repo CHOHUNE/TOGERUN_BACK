@@ -7,6 +7,7 @@ import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    //    private final PasswordEncoder passwordEncoder;
+
     private final UserRepository userRepository;
 
     private static final int MIN_NICKNAME_LENGTH = 3;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private static final List<String> FORBIDDEN_NICKNAMES = Arrays.asList("admin", "root", "system");
 
     @Override
+    @CacheEvict(value = "user", key = "#")
     public UserDTO modifyMember(UserDTO currentUser, UserModifyDTO userModifyDTO) {
 
         User user = userRepository.findByEmail(currentUser.getEmail())
