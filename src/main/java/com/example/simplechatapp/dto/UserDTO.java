@@ -33,23 +33,23 @@ public class UserDTO extends User implements OAuth2User {
 
     public UserDTO(Long id, String email, String password, String name, String nickname, boolean social, String gender, String age, String mobile, String img, List<String> roleNames, boolean isDeleted, LocalDateTime deletedAt) {
         super(
-                email != null && !email.isEmpty() ? email : "defaultEmail@example.com",
-                password != null && !password.isEmpty() ? password : "defaultPassword123!",
+                email != null && !email.isEmpty() ? email : "",
+                password != null && !password.isEmpty() ? password : "",
                 roleNames != null && !roleNames.isEmpty()
                         ? roleNames.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
                         : Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
         this.id = id;
-        this.email = email != null && !email.isEmpty() ? email : "defaultEmail@example.com";
-        this.password = password != null && !password.isEmpty() ? password : "defaultPassword123!";
-        this.name = name != null && !name.isEmpty() ? name : "Default Name";
+        this.email = email != null && !email.isEmpty() ? email : "";
+        this.password = password != null && !password.isEmpty() ? password : "";
+        this.name = name != null && !name.isEmpty() ? name : "";
         this.nickname = nickname != null && !nickname.isEmpty() ? nickname : "";
         this.social = social;
-        this.gender = gender != null && !gender.isEmpty() ? gender : "Unspecified";
-        this.age = age != null && !age.isEmpty() ? age : "0";
+        this.gender = gender != null && !gender.isEmpty() ? gender : "";
+        this.age = age != null && !age.isEmpty() ? age : "";
         this.mobile = mobile != null && !mobile.isEmpty() ? mobile : "010-0000-0000";
-        this.img = img != null && !img.isEmpty() ? img : "default_profile.jpg";
+        this.img = img != null && !img.isEmpty() ? img : "";
         this.roleNames = roleNames != null ? roleNames : new ArrayList<>();
         this.isDeleted = isDeleted;
         this.deletedAt = deletedAt;
