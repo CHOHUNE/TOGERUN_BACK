@@ -29,36 +29,34 @@ public class ChatMessageDTO implements NotifyInfo {
     private LocalDateTime createdAt;
     private String chatMessageType;
 
-    private Set<String> receivers; // User 를 직접 참조 했다가 오류가 생김 - > UserDTO 참조로 변경 -> String 으로 변경
-    //  Hibernate 는 지연로딩을 위해 프록시 객체를 사용하는데 이 Jackson 라이브러리는 프록시 객체를 처리하지 못한다.
-    // Jackson 라이브러리란 ? : 자바 객체를 JSON으로 변환하거나 JSON을 자바 객체로 변환하는데 사용하는 라이브러리
+    private Set<String> receivers;
     private String goUrlId;
     private NotificationType notificationType;
     private NotifyMessage notifyMessage;
     private Long postId;
 
     public static ChatMessageDTO ChatMessageEntityToDto(ChatMessage chatMessage) {
+        String senderEmail = chatMessage.getUser().getEmail();
 
-        return
-                ChatMessageDTO.builder()
-                        .id(chatMessage.getId())
-                        .content(chatMessage.getContent())
-                        .chatRoomId(chatMessage.getChatRoom().getId())
-                        .nickname(chatMessage.getUser().getNickname())
-                        .email(chatMessage.getUser().getEmail())
-                        .createdAt(chatMessage.getCreatedAt().atZone(ZoneId.of("UTC"))
-                                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
-                                .toLocalDateTime())
-                        .chatMessageType(chatMessage.getChatMessageType().name())
-                        .receivers(chatMessage.getChatRoom().getParticipants().parallelStream()
-                                .map(User::getEmail)
-                                .collect(Collectors.toSet())) //participants 에서 email 만 추출
-                        .goUrlId("/post/"+chatMessage.getChatRoom().getPost().getId()+"/chat/")
-                        .notificationType(NotificationType.CHAT)
-                        .notifyMessage(NotifyMessage.CHAT_APP_ALERT)
-                        .postId(chatMessage.getChatRoom().getPost().getId())
-                        .build();
-
+        return ChatMessageDTO.builder()
+                .id(chatMessage.getId())
+                .content(chatMessage.getContent())
+                .chatRoomId(chatMessage.getChatRoom().getId())
+                .nickname(chatMessage.getUser().getNickname())
+                .email(senderEmail)
+                .createdAt(chatMessage.getCreatedAt().atZone(ZoneId.of("UTC"))
+                        .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
+                        .toLocalDateTime())
+                .chatMessageType(chatMessage.getChatMessageType().name())
+                .receivers(chatMessage.getChatRoom().getParticipants().stream()
+                        .map(User::getEmail)
+                        .filter(email -> !email.equals(senderEmail))
+                        .collect(Collectors.toSet()))
+                .goUrlId("/post/" + chatMessage.getChatRoom().getPost().getId() + "/chat/")
+                .notificationType(NotificationType.CHAT)
+                .notifyMessage(NotifyMessage.CHAT_APP_ALERT)
+                .postId(chatMessage.getChatRoom().getPost().getId())
+                .build();
     }
 
     @Override

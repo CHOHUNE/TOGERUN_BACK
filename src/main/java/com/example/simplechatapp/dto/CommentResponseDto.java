@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -60,7 +61,7 @@ public class CommentResponseDto implements NotifyInfo {
                 .createdBy(comment.getCreatedBy())
                 .parentId(comment.getParent() == null ? null : comment.getParent().getId())
                 .createdAt(comment.getCreatedAt())
-                .receivers(comment.getPost().getUser().getEmail() ==comment.getCreatedBy() ? Set.of() : Set.of(comment.getPost().getUser().getEmail()))
+                .receivers(Objects.equals(comment.getPost().getUser().getEmail(), comment.getCreatedBy()) ? Set.of() : Set.of(comment.getPost().getUser().getEmail()))
                 // 포스트 작성자와 코멘트 게재자가 같을 경우에 알람이 가지 않는다.
                 // 단순히 포스트 작성자에게만 알람이 가게 해야 하나 아니면 댓글을 달은 당사자 전부에게 가야 하나 고민 중
                 .goUrlId("/post/"+comment.getPost().getId())
