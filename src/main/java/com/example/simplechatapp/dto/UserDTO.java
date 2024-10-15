@@ -37,7 +37,7 @@ public class UserDTO extends User implements OAuth2User {
                 password != null && !password.isEmpty() ? password : "",
                 roleNames != null && !roleNames.isEmpty()
                         ? roleNames.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
-                        : Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                        : Collections.singletonList(new SimpleGrantedAuthority("ROLE_BRONZE"))
         );
 
         this.id = id;

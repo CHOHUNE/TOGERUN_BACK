@@ -193,4 +193,7 @@ public class Post {
         this.imageList.clear();
     }
 
+    public void changeRoadName(String roadName) {
+        this.roadName = roadName;
+    }
 }

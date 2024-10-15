@@ -75,7 +75,4 @@ public class ChatRoomController {
         return new RedirectView("/post");
 
     }
-
-
-
 }

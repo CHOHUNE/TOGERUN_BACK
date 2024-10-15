@@ -71,6 +71,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             List<String> roleNames = (List<String>) claims.get("roleNames");
 
+
             UserDTO userDTO = new UserDTO(id, email, pw, name,nickname,social.booleanValue(), gender,age,mobile,img,roleNames,false,null);
             // JWT claims 를 바탕으로 UserDTO 생성
 

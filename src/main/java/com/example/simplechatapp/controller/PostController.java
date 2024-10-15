@@ -61,9 +61,10 @@ public class PostController {
 
     //    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     @PostMapping
-    public Map<String, Long> createPost(@AuthenticationPrincipal UserDTO principal,
-                                        @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files,
-                                        PostDTO postDTO) {
+    public Map<String, Long> createPost(
+            @AuthenticationPrincipal UserDTO principal,
+            @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files,
+            PostDTO postDTO) {
 
         // MultiPart-Data-Form 양식으로 보낼 경우 : @RequestBody 사용하지 않음
         // @RequestBody 사용시 JSON 형태로 보내야함
