@@ -13,15 +13,4 @@ public class ErrorResponse {
     @Builder.Default
     private final String errorStatus = "ERROR";
 
-    public static class ErrorResponseBuilder {
-        private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    }
-
-    public int getStatusCode() {
-        return status.value();
-    }
-
-    public String getStatusName() {
-        return status.name();
-    }
 }

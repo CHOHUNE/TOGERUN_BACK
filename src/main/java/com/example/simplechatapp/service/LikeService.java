@@ -55,8 +55,4 @@ public class LikeService {
         return LikeDTO.convertLikeToDto(saveLike, isFirstLike && like.isActive());
 
     }
-
-
-
-
 }
