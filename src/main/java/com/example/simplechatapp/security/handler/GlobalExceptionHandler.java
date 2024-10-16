@@ -15,8 +15,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .message("서버 오류가 발생했습니다.")
-                .redirect("/error")
+                .message(e.getMessage())
+                .redirect("/")
                 .build();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.FORBIDDEN)
-                .message("접근 권한이 없습니다.")
+                .message(e.getMessage() != null ? e.getMessage() : "접근 권한이 없습니다.")
                 .redirect("/member/modify")
                 .errorStatus("ACCESS_DENIED")
                 .build();

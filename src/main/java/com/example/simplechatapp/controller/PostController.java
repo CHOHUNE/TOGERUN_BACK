@@ -85,26 +85,29 @@ public class PostController {
 
 
     @PutMapping("/{id}")
-    public Map<String, String> modify(@PathVariable Long id, PostDTO postDTO, @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files) {
-        postDTO.setId(id);
-        postService.modify(postDTO, files);
+    public ResponseEntity<?> modify(
+            @PathVariable Long id, PostDTO postDTO,
+            @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files,
+            @AuthenticationPrincipal UserDTO principal) {
 
-        return Map.of("result", "success");
+            postService.checkAuthorization(id, principal.getEmail());
+            postService.modify(postDTO, files);
+            postDTO.setId(id);
+            return ResponseEntity.ok(Map.of("result", "success"));
+
     }
 
 
     @DeleteMapping("/{id}")
-    public Map<String, String> remove(@PathVariable Long id) {
+    public ResponseEntity<?> remove(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDTO principal) {
 
-        List<String> oldFileNames = postService.get(id).getImageList();
+            postService.checkAuthorization(id, principal.getEmail());
+            postService.remove(id);
 
-        if (oldFileNames != null && !oldFileNames.isEmpty()) {
-            // customFileUtil.deleteFiles(oldFileNames);
-        }
-
-        postService.remove(id);
-
-        return Map.of("result", "success");
+            List<String> oldFileNames = postService.get(id).getImageList();
+            return ResponseEntity.ok(Map.of("result", "success", "oldFileNames", oldFileNames));
     }
 
     @PostMapping("/{id}/favorite")
@@ -114,7 +117,6 @@ public class PostController {
         log.info("toggleFavoriteEmail:{}", principal.getEmail());
 
         FavoriteDTO favoriteDTO = favoriteService.favoriteToggle(principal.getEmail(), id);
-
         return ResponseEntity.ok(favoriteDTO);
     }
 

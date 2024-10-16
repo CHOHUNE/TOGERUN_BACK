@@ -4,6 +4,7 @@ import com.example.simplechatapp.dto.*;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.PostImage;
 import com.example.simplechatapp.entity.User;
+import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,6 +84,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public void checkAuthorization(Long postId, String userEmail)  {
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new RuntimeException("User not found"));
+
+        boolean isAuthor = post.getUser().getId().equals(user.getId());
+        boolean isAdmin = user.getUserRoleList().contains(UserRole.ROLE_ADMIN);
+
+        if (!isAuthor && !isAdmin) {
+            throw new AccessDeniedException("게시물의 작성자나 관리자 계정이 아닙니다.");
+        }
+
+    }
+
+    @Override
     @Transactional
     public Long register(UserDTO principal, PostDTO postDTO, List<MultipartFile> files) {
         User user = userRepository.findByEmail(principal.getEmail()).orElseThrow(() -> new RuntimeException("User Not Found"));
@@ -108,7 +125,7 @@ public class PostServiceImpl implements PostService {
     @CacheEvict(value = {"post"}, key = "#postDTO.id")
     @Transactional
     public void modify(PostDTO postDTO, List<MultipartFile> newFiles) {
-        Post post = postRepository.findById(postDTO.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
+        Post post = postRepository.findById(postDTO.getId()).orElseThrow(() -> new RuntimeException("POST NOT FOUND"));
 
         updatePostFields(post, postDTO);
         updatePostImages(post, postDTO);

@@ -102,5 +102,7 @@ public interface PostService {
 
     void incrementViewCount(Long postId, String ipAddress);
 
+    void checkAuthorization(Long postId, String userEmail);
+
     void updatedParticipateFlag();
 }
