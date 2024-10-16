@@ -31,7 +31,7 @@ public class Comment {
 //    private User user;
 
     private String createdBy; // 이메일을 or 아이디를 넣을지 고민 -> 이메일
-    private String name;
+    private String nickName;
     private String img;
 
     // 소규모 프로젝트, 성능을 중시하는 경우에 단순히 createdBy를 사용해도 무방
@@ -53,13 +53,13 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @Builder
-    public Comment(Post post, String createdBy, String content, Comment parent, String name, String img, boolean delFlag) {
+    public Comment(Post post, String createdBy, String content, Comment parent, String nickName, String img, boolean delFlag) {
         this.post = post;
         this.createdBy = createdBy;
         this.content = content;
         this.parent = parent;
         this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-        this.name = name;
+        this.nickName = nickName;
         this.img = img;
         this.delFlag = delFlag;
 

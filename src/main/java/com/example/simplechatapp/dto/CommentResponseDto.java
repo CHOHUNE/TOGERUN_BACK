@@ -35,7 +35,7 @@ public class CommentResponseDto implements NotifyInfo {
     private Long parentId;
     private Set<String> receivers;
     private String goUrlId;
-    private String name;
+    private String nickName;
     private String img;
 
     @Builder.Default
@@ -65,7 +65,7 @@ public class CommentResponseDto implements NotifyInfo {
                 // 포스트 작성자와 코멘트 게재자가 같을 경우에 알람이 가지 않는다.
                 // 단순히 포스트 작성자에게만 알람이 가게 해야 하나 아니면 댓글을 달은 당사자 전부에게 가야 하나 고민 중
                 .goUrlId("/post/"+comment.getPost().getId())
-                .name(comment.getName())
+                .nickName(comment.getNickName())
                 .img(comment.getImg())
                 .delFlag(comment.isDelFlag())
                 .build();

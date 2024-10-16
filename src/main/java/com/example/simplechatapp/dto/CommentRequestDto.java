@@ -31,7 +31,7 @@ public class CommentRequestDto {
     private String createdBy;
 
     private Integer senderNo;
-    private String name;
+    private String nickName;
     private String img;
     private Long parent_id;
 

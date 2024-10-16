@@ -38,7 +38,7 @@ public class CommentService {
                 .post(post.orElseThrow())
                 .content(commentRequestDto.getContent())
                 .createdBy(principal.getEmail()) //
-                .name(principal.getName())
+                .nickName(principal.getNickname())
                 .img(principal.getImg())
                 .parent(commentRequestDto.getParent_id() != null ?
                         commentRepository.findById(commentRequestDto.getParent_id()).orElseThrow() : null)
