@@ -42,12 +42,10 @@ public class PostServiceImpl implements PostService {
     private final S3Client s3Client;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-
     private final StringRedisTemplate stringRedisTemplate;
 
     private static final String VIEW_COUNT_PREFIX = "view:";
     private static final Duration VIEW_COUNT_EXPIRATION = Duration.ofHours(24);
-
 
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
@@ -58,9 +56,13 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDTO get(Long id) {
         Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
-        return entityToDTO(post);
+        PostDTO dto = entityToDTO(post);
+        dto.setImageList(post.getImageList().stream()
+                .map(image -> addPrefix(image.getFileName()))
+                .collect(Collectors.toList()));
+        dto.setExistingImageUrls(new ArrayList<>(dto.getImageList()));
+        return dto;
     }
-
 
     @Override
     @Cacheable(value = "post", key = "#postId")
@@ -68,21 +70,16 @@ public class PostServiceImpl implements PostService {
         return postRepository.findPostWithLikeAndFavorite(postId, userId);
     }
 
-
     @Async
     @Override
     public void incrementViewCount(Long postId, String ipAddress) {
         String key = VIEW_COUNT_PREFIX + postId + ":" + ipAddress;
         Boolean keyAbsent = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", VIEW_COUNT_EXPIRATION);
 
-        //keyAbsent : true -> key 가 없어서 새로 생성됨
-        //keyAbsent : false -> key 가 이미 존재함
-
         if (Boolean.TRUE.equals(keyAbsent)) {
             postRepository.incrementViewCount(postId);
         }
     }
-
 
     @Override
     @Transactional
@@ -97,9 +94,12 @@ public class PostServiceImpl implements PostService {
 
         if (files != null && !files.isEmpty()) {
             List<String> uploadFileUrls = uploadFiles(files, savedPost.getId());
-            uploadFileUrls.forEach(savedPost::addImageString);
+            uploadFileUrls.forEach(url -> {
+                savedPost.addImageString(removePrefix(url));
+                postDTO.getImageList().add(url);
+            });
+            postDTO.setExistingImageUrls(new ArrayList<>(postDTO.getImageList()));
         }
-
 
         return savedPost.getId();
     }
@@ -111,9 +111,19 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postDTO.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
 
         updatePostFields(post, postDTO);
+        updatePostImages(post, postDTO);
 
-        updatePostImages(post, postDTO.getExistingImageUrls(), newFiles);
+        if (newFiles != null && !newFiles.isEmpty()) {
+            List<String> newImageUrls = uploadFiles(newFiles, post.getId());
+            newImageUrls.forEach(url -> {
+                post.addImageString(removePrefix(url));
+                postDTO.getImageList().add(url);
+            });
+        }
 
+        postDTO.setExistingImageUrls(new ArrayList<>(postDTO.getImageList().stream()
+                .map(this::addPrefix)
+                .collect(Collectors.toList())));
         postRepository.save(post);
     }
 
@@ -127,13 +137,16 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteById(id);
     }
 
-
     @Override
     public PageResponseDTO<PostListDTO> getList(PageRequestDTO pageRequestDTO) {
         Page<Post> result = postRepository.search1(pageRequestDTO);
         List<PostListDTO> dtoList = result.getContent().stream().map(this::entityToListDTO).collect(Collectors.toList());
 
-        return PageResponseDTO.<PostListDTO>withAll().dtoList(dtoList).pageRequestDTO(pageRequestDTO).total(result.getTotalElements()).build();
+        return PageResponseDTO.<PostListDTO>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(pageRequestDTO)
+                .total(result.getTotalElements())
+                .build();
     }
 
     @Override
@@ -155,7 +168,6 @@ public class PostServiceImpl implements PostService {
         return postRepository.findAll();
     }
 
-
     private void updatePostFields(Post post, PostDTO postDTO) {
         post.changeTitle(postDTO.getTitle());
         post.changeContent(postDTO.getContent());
@@ -163,63 +175,60 @@ public class PostServiceImpl implements PostService {
         post.changePlaceName(postDTO.getPlaceName());
         post.changeLatitude(postDTO.getLatitude());
         post.changeLongitude(postDTO.getLongitude());
+        post.changeRoadName(postDTO.getRoadName());
+        post.changeActivityType(postDTO.getActivityType());
+        post.changeCapacity(postDTO.getCapacity());
+        post.changeParticipateFlag(postDTO.isParticipateFlag());
     }
 
-
-    private void updatePostImages(Post post, List<String> existingImageUrls, List<MultipartFile> newFiles) {
-
-        //1.기존 이미지 리스트 가져오기
+    private void updatePostImages(Post post, PostDTO postDTO) {
         List<PostImage> currentImages = post.getImageList();
 
-        //2.삭제 이미지 처리 :
-        List<PostImage> imagesToDelete = currentImages.stream().filter(image -> !existingImageUrls.contains(image.getFileName())).toList();
+        List<PostImage> imagesToDelete = currentImages.stream()
+                .filter(image -> !postDTO.getExistingImageUrls().contains(addPrefix(image.getFileName())))
+                .collect(Collectors.toList());
 
         deleteFiles(imagesToDelete);
 
-        // 3.새 이미지 업로드
-        List<String> newImageUrls = uploadFiles(newFiles, post.getId());
-
-        // 4. 기존 이미지 삭제 후 최종 이미지 리스트 업데이트
         post.clearList();
-        existingImageUrls.forEach(post::addImageString);
-        newImageUrls.forEach(post::addImageString);
-
+        postDTO.getExistingImageUrls().forEach(url -> post.addImageString(removePrefix(url)));
     }
 
     private void deleteFiles(List<PostImage> postImages) {
         for (PostImage postImage : postImages) {
-            String fileUrl = postImage.getFileName();
-            String fileName = fileUrl.substring(urlPrefix.length());
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(fileName).build();
+            String fileName = postImage.getFileName();
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
 
             s3Client.deleteObject(deleteObjectRequest);
         }
     }
 
     private List<String> uploadFiles(List<MultipartFile> files, Long postId) {
-
         if (files == null || files.isEmpty()) {
             return new ArrayList<>();
         }
 
         List<CompletableFuture<String>> futures = new ArrayList<>();
-        // CompletableFuture : 비동기 작업을 수행하고 결과를 반환하는 Future의 하위 클래스
-        // Future: 비동기 작업의 결과를 나타내는 인터페이스
 
         for (MultipartFile file : files) {
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-
                 String originalFileName = file.getOriginalFilename();
-                String fileExtension = originalFileName.substring(originalFileName.lastIndexOf(".")); // 확장자만 추출
+                String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
                 String fileName = UUID.randomUUID().toString() + fileExtension;
                 String fileKey = String.format("chatApp/post/%d/%s", postId, fileName);
 
                 try {
-                    PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(fileKey).build();
+                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(fileKey)
+                            .build();
 
                     s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-                    return urlPrefix + fileKey;
+                    return addPrefix(fileKey);
                 } catch (IOException e) {
                     throw new RuntimeException("Failed to Upload file", e);
                 }
@@ -233,11 +242,17 @@ public class PostServiceImpl implements PostService {
         return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
     }
 
+    private String removePrefix(String url) {
+        return url.startsWith(urlPrefix) ? url.substring(urlPrefix.length()) : url;
+    }
+
+    private String addPrefix(String key) {
+        return key.startsWith(urlPrefix) ? key : urlPrefix + key;
+    }
 
     @Override
     @Scheduled(cron = "0 0 0/15 * * *")
     public void updatedParticipateFlag() {
-
         LocalDateTime now = LocalDateTime.now();
         List<Post> posts = postRepository.findByMeetingTimeBefore(now);
 
@@ -246,6 +261,4 @@ public class PostServiceImpl implements PostService {
             postRepository.save(post);
         }
     }
-
-
 }

@@ -5,6 +5,7 @@ import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.entity.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
@@ -84,7 +85,11 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
 
     private PostDTO convertToDTO(Post post, Long likeCount, Boolean isFavorite, Boolean isLike) {
 
-        List<String> imageUrls = post.getImageList().stream().map(PostImage::getFileName).toList();
+//        List<String> imageUrls = post.getImageList().stream().map(PostImage::getFileName).toList();
+
+        List<String> imageUrls = post.getImageList().stream()
+                .map(image -> addPrefix(image.getFileName()))
+                .toList();
 
         return PostDTO.builder()
                 .id(post.getId())
@@ -109,20 +114,6 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
                 .participateFlag(post.isParticipateFlag())
                 .roadName(post.getRoadName())
                 .build();
-    }
-
-
-    private BooleanExpression containsKeyword(QPost qPost, String keyword) {
-        if (keyword == null || keyword.isEmpty()) {
-            return null;
-        }
-        return qPost.title.containsIgnoreCase(keyword)
-                .or(qPost.content.containsIgnoreCase(keyword))
-                .or(qPost.content.containsIgnoreCase(keyword))
-                .or(qPost.activityType.eq(ActivityType.valueOf(keyword)))
-                .or(qPost.roadName.containsIgnoreCase(keyword))
-                .or(qPost.placeName.containsIgnoreCase(keyword));
-
     }
 
     private BooleanExpression searchConditions(QPost qPost, PageRequestDTO pageRequestDTO) {
@@ -158,4 +149,15 @@ public class PostSearchImpl extends QuerydslRepositorySupport implements PostSea
 
         // 모든 조건이 null일 경우 항상 true를 반환
         return expression != null ? expression : qPost.isNotNull();
-    }}
+    }
+
+
+    @Value("${image.file.prefix}")
+    private String urlPrefix;
+
+    private String addPrefix(String key) {
+        return key.startsWith(urlPrefix) ? key : urlPrefix + key;
+    }
+
+
+}

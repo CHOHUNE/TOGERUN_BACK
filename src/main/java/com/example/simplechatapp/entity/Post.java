@@ -165,30 +165,6 @@ public class Post {
         }
     }
 
-
-//    @Override
-//    public String toString() {
-//        return "Post{" +
-//                "id=" + id +
-//                ", title='" + title + '\'' +
-//                ", content='" + content + '\'' +
-//                ", user=" + user +
-//                ", localDate=" + localDate +
-//                ", meetingTime=" + meetingTime +
-//                ", delFlag=" + delFlag +
-//                ", latitude=" + latitude +
-//                ", longitude=" + longitude +
-//                ", placeName='" + placeName + '\'' +
-//                ", chatRoom=" + chatRoom +
-//                ", imageList=" + imageList +
-//                ", comments=" + comments +
-//                ", favorites=" + favorites +
-//                ", likes=" + likes +
-//                ", viewCount=" + viewCount +
-//                ", participateFlag=" + participateFlag +
-//                '}';
-//    }
-
     public void clearList() {
         this.imageList.clear();
     }
