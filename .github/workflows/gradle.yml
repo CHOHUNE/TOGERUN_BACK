@@ -43,7 +43,7 @@ jobs:
       run : | 
         cd ./src/main/resources
         touch ./application.yml
-        echo "${{secrets.APPLICATION_PROPERTIES}}" > ./application.yml
+        echo "${{secrets.APPLICATION_PROPERTIES}}" > ./application.properties
       shell: bash
       
     - name: Grant Execute Permission For Gradlew
