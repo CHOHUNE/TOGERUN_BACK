@@ -1,8 +1,8 @@
-name: Java CI with Gradle
+name: Java CI/CD with Gradle
 
 on:
   push:
-    branches: [ "master" ] 
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
@@ -10,78 +10,188 @@ permissions:
   contents: read
 
 jobs:
-  CI-CD:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
+      - uses: actions/checkout@v4
 
-    ## jdk setting
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-
-    ## gradle caching
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
-      with:
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+        with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-        
-    ## create application.yml
-    - name: make application.yml
-      if : contains(github.ref,'develop')
-      run : | 
-        cd ./src/main/resources
-        touch ./application.yml
-        echo "${{secrets.APPLICATION_PROPERTIES}}" > ./application.properties
-      shell: bash
-      
-    - name: Grant Execute Permission For Gradlew
-      run: chmod +x gradlew
 
-    ## docker build & push
-    - name: docker build
-      run: |
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/imagename .
-        docker push ${{ secrets.DOCKER_USERNAME }}/imagename:latest  # 이미지 푸시
-    ## docker deploy
-    - name: Deploy to dev
-      uses: appleboy/ssh-action@master
-      id: deploy-dev
-      if: contains(github.ref, 'develop')
-      with: 
-        key: ${{ secrets.PRIVATE_KEY }}
-        host: ${{ secrets.HOST_DEV }}
-        username: ${{ secrets.USERNAME }}
-        port: 22
-        script: |
-          docker rm -f $(docker ps -qa)
-          docker pull ${{ secrets.DOCKER_USERNAME }}/imagename
-          docker-compose up -d
-          docker image prune -f
+      - name: Grant Execute Permission For Gradlew
+        run: chmod +x gradlew
 
-## time
-  current-time:
-    needs: CI-CD
-    runs-on: ubuntu-latest
-    steps:
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Create application.properties
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.properties
+        shell: bash
+
+      - name: Create NginX config
+        run: |
+          cat << EOF > nginx.conf
+          events {
+              worker_connections 1024;
+          }
+          http {
+              upstream spring-app {
+                  server spring-boot:8080;
+              }
+              server {
+                  listen 80;
+                  location / {
+                      proxy_pass http://spring-app;
+                      proxy_set_header Host \$host;
+                      proxy_set_header X-Real-IP \$remote_addr;
+                      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  }
+              }
+          }
+          EOF
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/imagename:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+        with:
+          host: ${{ secrets.HOST_DEV }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT
+          script: |
+            # Create .env file
+            echo "DOCKER_USERNAME=${DOCKER_USERNAME}" > .env
+            echo "RDS_ENDPOINT=${RDS_ENDPOINT}" >> .env
+            echo "DB_NAME=${DB_NAME}" >> .env
+            echo "DB_USERNAME=${DB_USERNAME}" >> .env
+            echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
+            echo "REDIS_HOST=${REDIS_HOST}" >> .env
+            echo "REDIS_PORT=${REDIS_PORT}" >> .env
+            
+            # Create docker-compose.yml
+            cat << EOF > docker-compose.yml
+            version: '3'
+            services:
+              nginx:
+                image: nginx:alpine
+                ports:
+                  - "80:80"
+                volumes:
+                  - ./nginx.conf:/etc/nginx/nginx.conf:ro
+                depends_on:
+                  - spring-boot
+                networks:
+                  - app_network
+                restart: always
+            
+              spring-boot:
+                image: ${DOCKER_USERNAME}/imagename:latest
+                expose:
+                  - "8080"
+                environment:
+                  - SPRING_DATASOURCE_URL=jdbc:mysql://${RDS_ENDPOINT}/${DB_NAME}?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Seoul&autoReconnect=true
+                  - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+                  - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+                  - SPRING_REDIS_HOST=${REDIS_HOST}
+                  - SPRING_REDIS_PORT=${REDIS_PORT}
+                depends_on:
+                  - redis
+                networks:
+                  - app_network
+                restart: always
+            
+              redis:
+                image: redis:alpine
+                volumes:
+                  - redis_data:/data
+                networks:
+                  - app_network
+                restart: always
+            
+            networks:
+              app_network:
+                driver: bridge
+            
+            volumes:
+              redis_data:
+            EOF
+            
+            # Copy NginX config
+            cat << EOF > nginx.conf
+            events {
+                worker_connections 1024;
+            }
+            http {
+                upstream spring-app {
+                    server spring-boot:8080;
+                }
+                server {
+                    listen 80;
+                    location / {
+                        proxy_pass http://spring-app;
+                        proxy_set_header Host \$host;
+                        proxy_set_header X-Real-IP \$remote_addr;
+                        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    }
+                }
+            }
+            EOF
+            
+            # Pull the latest images
+            docker-compose pull
+            
+            # Start the containers
+            docker-compose up -d
+            
+            # Clean up unused images
+            docker image prune -f
+
       - name: Get Current Time
         uses: 1466587594/get-current-time@v2
         id: current-time
         with:
           format: YYYY-MM-DDTHH:mm:ss
           utcOffset: "+09:00"
+
       - name: Print Current Time
         run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
         shell: bash
