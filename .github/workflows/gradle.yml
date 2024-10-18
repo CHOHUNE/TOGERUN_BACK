@@ -42,7 +42,9 @@ jobs:
 
       - name: Create application.properties
         run: |
+          mkdir ./src/main/resources
           cd ./src/main/resources
+          touch ./application.properties
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.properties
         shell: bash
 
