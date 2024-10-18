@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageDTO implements NotifyInfo {
-
+//test
     private Long id;
     private String content;
     private Long chatRoomId;
