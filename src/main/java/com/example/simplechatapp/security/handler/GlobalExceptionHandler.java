@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.FORBIDDEN)
                 .message(e.getMessage() != null ? e.getMessage() : "접근 권한이 없습니다.")
-                .redirect("/member/modify")
+                .redirect("/error")
                 .errorStatus("ACCESS_DENIED")
                 .build();
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);

@@ -33,6 +33,7 @@ public interface PostRepository extends JpaRepository<Post,Long>,PostSearch {
     @Query("UPDATE Post p SET p.viewCount = p.viewCount +1 WHERE p.id = :postId")
     void incrementViewCount(Long postId);
 
+    @Query("select p from Post p where p.meetingTime < :now")
     List<Post> findByMeetingTimeBefore(LocalDateTime now);
 
 }
