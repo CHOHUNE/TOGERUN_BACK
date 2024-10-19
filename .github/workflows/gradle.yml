@@ -47,7 +47,7 @@ jobs:
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.properties
         shell: bash
 
-      - name: Login to DockerHub
+      - name: Login to Docker
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -59,8 +59,7 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/imagename:latest
-          build-args: |
-            JAR_FILE=build/libs/*.jar
+
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -88,22 +87,53 @@ jobs:
             echo "REDIS_HOST=${REDIS_HOST}" >> .env
             echo "REDIS_PORT=${REDIS_PORT}" >> .env
             
-            # Pull the latest images
-            docker-compose pull
+            cat << EOF > nginx.conf
+            events {
+            worker_connections 1024;
+            }
             
-            # Start the containers
-            docker-compose up -d
+              http {
+              upstream spring-app {
+              server spring-boot:8080;
+            }
             
-            # Clean up unused images
-            docker image prune -f
-
-      - name: Get Current Time
-        uses: 1466587594/get-current-time@v2
-        id: current-time
-        with:
-          format: YYYY-MM-DDTHH:mm:ss
-          utcOffset: "+09:00"
-
-      - name: Print Current Time
-        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
-        shell: bash
+              server {
+              listen 80;
+              server_name localhost;
+            
+              location / {
+              proxy_pass http://spring-app;
+              proxy_set_header Host \$host;
+              proxy_set_header X-Real-IP \$remote_addr;
+              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            }
+            }
+            }
+              EOF
+            
+              # Pull the latest images
+              docker-compose pull
+            
+              # Build and start the containers
+              docker-compose up -d --build
+            
+              # Clean up unused images
+              docker image prune -f
+            
+              # Check container status
+              docker-compose ps
+            
+              # Print recent logs
+              docker-compose logs --tail=100
+                          
+              # Check the status of the containers
+            - name: Get Current Time
+              uses: 1466587594/get-current-time@v2
+              id: current-time
+              with:
+                format: YYYY-MM-DDTHH:mm:ss
+                utcOffset: "+09:00"
+            
+            - name: Print Current Time
+              run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
+              shell: bash
