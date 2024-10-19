@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+        uses: gradle/actions/setup-gradle@v2
         with:
           path: |
             ~/.gradle/caches
@@ -54,12 +54,11 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/imagename:latest
-
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -78,6 +77,8 @@ jobs:
           port: 22
           envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT
           script: |
+            
+
             # Update .env file with latest values
             echo "DOCKER_USERNAME=${DOCKER_USERNAME}" > .env
             echo "RDS_ENDPOINT=${RDS_ENDPOINT}" >> .env
@@ -87,53 +88,50 @@ jobs:
             echo "REDIS_HOST=${REDIS_HOST}" >> .env
             echo "REDIS_PORT=${REDIS_PORT}" >> .env
             
-            cat << EOF > nginx.conf
+            # Create nginx.conf file
+            cat << 'EOF' > nginx.conf
             events {
-            worker_connections 1024;
+              worker_connections 1024;
             }
-            
-              http {
+            http {
               upstream spring-app {
-              server spring-boot:8080;
-            }
-            
+                server spring-boot:8080;
+              }
               server {
-              listen 80;
-              server_name localhost;
-            
-              location / {
-              proxy_pass http://spring-app;
-              proxy_set_header Host \$host;
-              proxy_set_header X-Real-IP \$remote_addr;
-              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                listen 80;
+                server_name localhost;
+                location / {
+                  proxy_pass http://spring-app;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                }
+              }
             }
-            }
-            }
-              EOF
+            EOF
             
-              # Pull the latest images
-              docker-compose pull
+            # Pull the latest images
+            docker-compose pull
             
-              # Build and start the containers
-              docker-compose up -d --build
+            # Build and start the containers
+            docker-compose up -d --build
             
-              # Clean up unused images
-              docker image prune -f
+            # Clean up unused images
+            docker image prune -f
             
-              # Check container status
-              docker-compose ps
+            # Check container status
+            docker-compose ps
             
-              # Print recent logs
-              docker-compose logs --tail=100
-                          
-              # Check the status of the containers
-            - name: Get Current Time
-              uses: 1466587594/get-current-time@v2
-              id: current-time
-              with:
-                format: YYYY-MM-DDTHH:mm:ss
-                utcOffset: "+09:00"
-            
-            - name: Print Current Time
-              run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
-              shell: bash
+            # Print recent logs
+            docker-compose logs --tail=100
+
+      - name: Get Current Time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH:mm:ss
+          utcOffset: "+09:00"
+
+      - name: Print Current Time
+        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
+        shell: bash
