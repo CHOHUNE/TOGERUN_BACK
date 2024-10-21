@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserChatRoomDTO {
 
+
+
     private Long chatRoomId;
     private Long postId;
     private String postTitle;
