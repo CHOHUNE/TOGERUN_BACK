@@ -81,7 +81,7 @@ jobs:
               restart: always
             spring-boot-1:
               container_name: spring-boot-1
-              image: ${DOCKER_USERNAME}/imagename:latest
+              image: ${DOCKER_USERNAME}/spring:latest
               expose:
                 - "8080"
               depends_on:
@@ -97,7 +97,7 @@ jobs:
               restart: always
             spring-boot-2:
               container_name: spring-boot-2
-              image: ${DOCKER_USERNAME}/imagename:latest
+              image: ${DOCKER_USERNAME}/spring:latest
               expose:
                 - "8080"
               depends_on:
@@ -113,7 +113,7 @@ jobs:
               restart: always
             spring-boot-3:
               container_name: spring-boot-3
-              image: ${DOCKER_USERNAME}/imagename:latest
+              image: ${DOCKER_USERNAME}/spring:latest
               expose:
                 - "8080"
               depends_on:
@@ -153,12 +153,13 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          PUBLIC_IP_V4: ${{ secrets.PUBLIC_IP_V4 }}
         with:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT
+          envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT,PUBLIC_IP_V4
           script: |
             # Update .env file with latest values
             echo "DOCKER_USERNAME=${DOCKER_USERNAME}" > .env
@@ -168,6 +169,9 @@ jobs:
             echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
             echo "REDIS_HOST=${REDIS_HOST}" >> .env
             echo "REDIS_PORT=${REDIS_PORT}" >> .env
+            echo "PUBLIC_IP_V4=${PUBLIC_IP_V4}" >> .env
+            
+            
             
             # Copy docker-compose.yml to the server
             cat << EOF > docker-compose.yml
@@ -190,7 +194,7 @@ jobs:
             
               server {
                 listen 80;
-                server_name localhost;
+                server_name PUBLIC_IP_V4;
             
                 location / {
                   proxy_pass http://spring-app;
