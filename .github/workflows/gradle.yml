@@ -88,12 +88,12 @@ jobs:
             echo "REDIS_PORT=${REDIS_PORT}" >> .env
             echo "PUBLIC_IP_V4=${PUBLIC_IP_V4}" >> .env
             
-            # Modify docker-compose.yml
-            sed -i 's/${DOCKER_USERNAME}/'$DOCKER_USERNAME'/g' docker-compose.yml
-            sed -i 's/${RDS_ENDPOINT}/'$RDS_ENDPOINT'/g' docker-compose.yml
-            sed -i 's/${DB_NAME}/'$DB_NAME'/g' docker-compose.yml
-            sed -i 's/${DB_USERNAME}/'$DB_USERNAME'/g' docker-compose.yml
-            sed -i 's/${DB_PASSWORD}/'$DB_PASSWORD'/g' docker-compose.yml
+#            # Modify docker-compose.yml
+#            sed -i 's/${DOCKER_USERNAME}/'$DOCKER_USERNAME'/g' docker-compose.yml
+#            sed -i 's/${RDS_ENDPOINT}/'$RDS_ENDPOINT'/g' docker-compose.yml
+#            sed -i 's/${DB_NAME}/'$DB_NAME'/g' docker-compose.yml
+#            sed -i 's/${DB_USERNAME}/'$DB_USERNAME'/g' docker-compose.yml
+#            sed -i 's/${DB_PASSWORD}/'$DB_PASSWORD'/g' docker-compose.yml
             
             # Create and modify nginx.conf file
             cat << 'EOF' > nginx.conf
