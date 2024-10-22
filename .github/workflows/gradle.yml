@@ -28,13 +28,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
@@ -72,10 +65,14 @@ jobs:
         run: |
           mkdir -p docker-build
           cp build/libs/*.jar docker-build/
-          cp src/main/resources/application.yml docker-build/
+          mkdir -p docker-build/src/main/resources
+          cp src/main/resources/application.yml docker-build/src/main/resources/
           cp Dockerfile docker-build/
+          # 확인을 위한 로그 추가
           echo "Docker build context contents:"
           ls -la docker-build/
+          echo "Docker build context resources contents:"
+          ls -la docker-build/src/main/resources/
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -157,13 +154,6 @@ jobs:
                   - "8080"
                 depends_on:
                   - redis
-                environment:
-                  SPRING_DATASOURCE_URL: \${RDS_ENDPOINT}/chat_app
-                  SPRING_DATASOURCE_USERNAME: \${DB_USERNAME}
-                  SPRING_DATASOURCE_PASSWORD: \${DB_PASSWORD}
-                  SPRING_REDIS_HOST: redis
-                  SPRING_REDIS_PORT: 6379
-                  JWT_SECRET_KEY: \${JWT_SECRET_KEY}
                 networks:
                   - ubuntu_this_network
                 restart: always
@@ -209,7 +199,7 @@ jobs:
             
               server {
                 listen 80;
-                server_name ${PUBLIC_IP_V4};
+                server_name \${PUBLIC_IP_V4};
             
                 location / {
                   proxy_pass http://spring-app;
