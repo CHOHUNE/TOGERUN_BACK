@@ -129,7 +129,7 @@ jobs:
                 depends_on:
                   - redis
                 environment:
-                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/${DB_NAME}
+                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/chat_app
                   SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
                   SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
                   SPRING_REDIS_HOST: redis
@@ -146,7 +146,7 @@ jobs:
                 depends_on:
                   - redis
                 environment:
-                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/${DB_NAME}
+                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/chat_app
                   SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
                   SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
                   SPRING_REDIS_HOST: redis
@@ -163,7 +163,7 @@ jobs:
                 depends_on:
                   - redis
                 environment:
-                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/${DB_NAME}
+                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/chat_app
                   SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
                   SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
                   SPRING_REDIS_HOST: redis
