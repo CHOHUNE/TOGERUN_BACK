@@ -18,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JWTUtil {
 
-    @Value("${JWT_SECRET_KEY}")
+    @Value("${jwt.secret.key}")
     private String key;
 
     private final RefreshTokenRepository refreshTokenRepository;
