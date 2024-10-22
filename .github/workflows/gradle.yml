@@ -73,12 +73,13 @@ jobs:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
           PUBLIC_IP_V4: ${{ secrets.PUBLIC_IP_V4 }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         with:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT,PUBLIC_IP_V4
+          envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT,PUBLIC_IP_V4,JWT_SECRET_KEY
           script: |
             # Create backup directory
             mkdir -p ~/backups
@@ -104,6 +105,7 @@ jobs:
             REDIS_HOST=${REDIS_HOST}
             REDIS_PORT=${REDIS_PORT}
             PUBLIC_IP_V4=${PUBLIC_IP_V4}
+            JWT_SECRET_KEY=${JWT_SECRET_KEY}
             EOF
             
             # Create docker-compose.yml
@@ -139,6 +141,7 @@ jobs:
                   SPRING_DATASOURCE_PASSWORD: \${DB_PASSWORD}
                   SPRING_REDIS_HOST: redis
                   SPRING_REDIS_PORT: 6379
+                  JWT_SECRET_KEY: \${JWT_SECRET_KEY}
                 networks:
                   - ubuntu_this_network
                 restart: always
