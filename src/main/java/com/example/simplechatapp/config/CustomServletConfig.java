@@ -15,7 +15,6 @@ public class CustomServletConfig implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
 
-
         registry.addFormatter(new LocalDateFormatter());
         registry.addFormatter(new LocalDateTimeFormatter());
 
