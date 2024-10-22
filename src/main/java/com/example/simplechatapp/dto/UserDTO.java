@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties({"authorities", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
 public class UserDTO extends User implements OAuth2User {
 
+
     private final Long id;
     private final String email;
     @JsonIgnore
