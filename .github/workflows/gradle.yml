@@ -52,11 +52,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --info
 
-      - name: Verify JAR contents
-        run: |
-          echo "JAR contents:"
-          jar tf build/libs/*.jar | grep -i "application"
-
       - name: Check build results
         run: |
           echo "Listing build directory:"
