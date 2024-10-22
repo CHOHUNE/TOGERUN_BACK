@@ -39,15 +39,28 @@ jobs:
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
 
-      - name: Create application.yml
+      - name: Create and verify application.yml
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > application.yml
-        shell: bash
+          echo "Created application.yml:"
+          cat application.yml
+          echo "Directory contents:"
+          ls -la
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --info
+
+      - name: Check build results
+        run: |
+          echo "Listing build directory:"
+          ls -la build/libs/
+          echo "Checking JAR contents:"
+          for jar in build/libs/*.jar; do
+            echo "Contents of $jar:"
+            jar tf "$jar" | grep -i yml || echo "No yml files found in $jar"
+          done
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -218,12 +231,3 @@ jobs:
       - name: Print Current Time
         run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
         shell: bash
-
-      - name: Check JAR contents
-        run: |
-          jar tf build/libs/*.jar | grep application.yml
-          
-      - name: Check application.yml content
-        run: |
-          cat ./src/main/resources/application.yml
-          echo "File exists: $(test -f ./src/main/resources/application.yml && echo yes || echo no)"
