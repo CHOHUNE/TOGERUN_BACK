@@ -2,9 +2,11 @@ name: Java CI/CD with Gradle
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 permissions:
   contents: read
@@ -14,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -93,18 +95,21 @@ jobs:
             fi
             
             # Update .env file with latest values
-            echo "DOCKER_USERNAME=${DOCKER_USERNAME}" > .env
-            echo "RDS_ENDPOINT=${RDS_ENDPOINT}" >> .env
-            echo "DB_NAME=${DB_NAME}" >> .env
-            echo "DB_USERNAME=${DB_USERNAME}" >> .env
-            echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
-            echo "REDIS_HOST=${REDIS_HOST}" >> .env
-            echo "REDIS_PORT=${REDIS_PORT}" >> .env
-            echo "PUBLIC_IP_V4=${PUBLIC_IP_V4}" >> .env
+            cat << EOF > .env
+            DOCKER_USERNAME=${DOCKER_USERNAME}
+            RDS_ENDPOINT=${RDS_ENDPOINT}
+            DB_NAME=${DB_NAME}
+            DB_USERNAME=${DB_USERNAME}
+            DB_PASSWORD=${DB_PASSWORD}
+            REDIS_HOST=${REDIS_HOST}
+            REDIS_PORT=${REDIS_PORT}
+            PUBLIC_IP_V4=${PUBLIC_IP_V4}
+            EOF
             
             # Create docker-compose.yml
-            cat << 'EOF' > docker-compose.yml
+            cat << EOF > docker-compose.yml
             version: '3'
+            
             services:
               nginx:
                 image: nginx:alpine
@@ -121,17 +126,17 @@ jobs:
                   - ubuntu_this_network
                 restart: always
             
-              spring-boot-1:
+              spring-boot-1: &spring-service
                 container_name: spring-boot-1
-                image: ${DOCKER_USERNAME}/spring:latest
+                image: \${DOCKER_USERNAME}/spring:latest
                 expose:
                   - "8080"
                 depends_on:
                   - redis
                 environment:
-                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/chat_app
-                  SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-                  SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+                  SPRING_DATASOURCE_URL: \${RDS_ENDPOINT}/chat_app
+                  SPRING_DATASOURCE_USERNAME: \${DB_USERNAME}
+                  SPRING_DATASOURCE_PASSWORD: \${DB_PASSWORD}
                   SPRING_REDIS_HOST: redis
                   SPRING_REDIS_PORT: 6379
                 networks:
@@ -139,38 +144,12 @@ jobs:
                 restart: always
             
               spring-boot-2:
+                <<: *spring-service
                 container_name: spring-boot-2
-                image: ${DOCKER_USERNAME}/spring:latest
-                expose:
-                  - "8080"
-                depends_on:
-                  - redis
-                environment:
-                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/chat_app
-                  SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-                  SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-                  SPRING_REDIS_HOST: redis
-                  SPRING_REDIS_PORT: 6379
-                networks:
-                  - ubuntu_this_network
-                restart: always
             
               spring-boot-3:
+                <<: *spring-service
                 container_name: spring-boot-3
-                image: ${DOCKER_USERNAME}/spring:latest
-                expose:
-                  - "8080"
-                depends_on:
-                  - redis
-                environment:
-                  SPRING_DATASOURCE_URL: ${RDS_ENDPOINT}/chat_app
-                  SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-                  SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-                  SPRING_REDIS_HOST: redis
-                  SPRING_REDIS_PORT: 6379
-                networks:
-                  - ubuntu_this_network
-                restart: always
             
               redis:
                 image: redis:alpine
@@ -184,12 +163,13 @@ jobs:
             networks:
               ubuntu_this_network:
                 external: true
+            
             volumes:
               redis:
             EOF
             
-            # Create and modify nginx.conf file
-            cat << 'EOF' > nginx.conf
+            # Create nginx.conf
+            cat << EOF > nginx.conf
             events {
               worker_connections 1024;
             }
@@ -204,19 +184,17 @@ jobs:
             
               server {
                 listen 80;
-                server_name PUBLIC_IP_V4;
+                server_name ${PUBLIC_IP_V4};
             
                 location / {
                   proxy_pass http://spring-app;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
                 }
               }
             }
             EOF
-            
-            sed -i "s/PUBLIC_IP_V4/${PUBLIC_IP_V4}/g" nginx.conf
             
             # Pull the latest images
             docker-compose pull
