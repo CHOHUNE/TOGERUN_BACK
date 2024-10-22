@@ -218,3 +218,12 @@ jobs:
       - name: Print Current Time
         run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
         shell: bash
+
+      - name: Check JAR contents
+        run: |
+          jar tf build/libs/*.jar | grep application.yml
+          
+      - name: Check application.yml content
+        run: |
+          cat ./src/main/resources/application.yml
+          echo "File exists: $(test -f ./src/main/resources/application.yml && echo yes || echo no)"
