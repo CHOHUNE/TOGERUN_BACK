@@ -43,7 +43,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > application.yml
+          echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
           echo "Created application.yml:"
           cat application.yml
           echo "Directory contents:"
@@ -68,10 +68,18 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Create build context
+        run: |
+          mkdir -p docker-build
+          cp build/libs/*.jar docker-build/
+          mkdir -p docker-build/src/main/resources
+          cp src/main/resources/application.yml docker-build/src/main/resources/
+          cp Dockerfile docker-build/
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: docker-build
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/spring:latest
 
