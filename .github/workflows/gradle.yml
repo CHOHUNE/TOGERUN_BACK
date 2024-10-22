@@ -72,9 +72,10 @@ jobs:
         run: |
           mkdir -p docker-build
           cp build/libs/*.jar docker-build/
-          mkdir -p docker-build/src/main/resources
-          cp src/main/resources/application.yml docker-build/src/main/resources/
+          cp src/main/resources/application.yml docker-build/
           cp Dockerfile docker-build/
+          echo "Docker build context contents:"
+          ls -la docker-build/
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
