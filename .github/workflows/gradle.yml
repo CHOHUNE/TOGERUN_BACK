@@ -42,11 +42,11 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Create application.properties
+      - name: Create application.yml
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.properties
+          echo "${{ secrets.APPLICATION_YML }}" > application.yml
         shell: bash
 
       - name: Login to DockerHub
