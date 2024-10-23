@@ -18,7 +18,7 @@ import java.util.Map;
 public class JWTUtil {
 
 //    @Value("${jwt.secret.key}")
-    private final String key= "12345678901234567890123456789012";
+    private final String key = "12345678901234567890123456789012";
 
     private final RefreshTokenRepository refreshTokenRepository;
 
