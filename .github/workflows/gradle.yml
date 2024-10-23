@@ -33,26 +33,50 @@ jobs:
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
           echo "Created application.yml:"
           cat application.yml
+          echo "Resources directory contents:"
+          ls -la
 
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+
+
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
 
+      - name: Verify Resources Before Build
+        run: |
+          echo "Current directory structure:"
+          ls -R ./src/main/resources/
+          echo "application.yml contents:"
+          cat ./src/main/resources/application.yml
+
       - name: Build with Gradle
         run: ./gradlew build --info
+
 
       - name: Verify JAR contents
         run: |
           echo "Verifying JAR contents:"
           for jar in build/libs/*.jar; do
-            echo "Checking $jar for application.yml:"
-            jar tvf "$jar" | grep -i "application.yml" || echo "Warning: application.yml not found in $jar"
-            jar xf "$jar" BOOT-INF/classes/application.yml
-            echo "Contents of extracted application.yml:"
-            cat BOOT-INF/classes/application.yml
+            echo "Checking $jar structure:"
+            jar tvf "$jar" | grep -i "yml"
+          
+            # 임시 디렉토리에 추출
+            mkdir -p temp_extract
+            cd temp_extract
+          
+            # jar 파일에서 모든 yml 파일 추출
+            jar xf "../$jar" $(jar tvf "../$jar" | grep -i "yml")
+          
+            # 추출된 파일들의 위치 확인
+            find . -name "*.yml" -exec echo "Found yml at: {}" \; -exec cat {} \;
+          
+            # 정리
+            cd ..
+            rm -rf temp_extract
           done
+
 
       - name: Create build context
         run: |
