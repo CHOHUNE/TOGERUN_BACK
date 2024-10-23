@@ -33,55 +33,19 @@ jobs:
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
           echo "Created application.yml:"
           cat application.yml
-          echo "Resources directory contents:"
-          ls -la
-
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
 
-
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
-
-      - name: Verify Resources Before Build
-        run: |
-          echo "Current directory structure:"
-          ls -R ./src/main/resources/
-          echo "application.yml contents:"
-          cat ./src/main/resources/application.yml
 
       - name: Build with Gradle
         run: ./gradlew build --info
 
-
-      - name: Verify JAR contents
-        run: |
-          echo "Verifying JAR contents:"
-          for jar in build/libs/*.jar; do
-            echo "Checking $jar structure:"
-            jar tvf "$jar" | grep -i "yml"
-          
-            # 임시 디렉토리에 추출
-            mkdir -p temp_extract
-            cd temp_extract
-          
-            # jar 파일에서 모든 yml 파일 추출
-            jar xf "../$jar" $(jar tvf "../$jar" | grep -i "yml")
-          
-            # 추출된 파일들의 위치 확인
-            find . -name "*.yml" -exec echo "Found yml at: {}" \; -exec cat {} \;
-          
-            # 정리
-            cd ..
-            rm -rf temp_extract
-          done
-
-
       - name: Create build context
         run: |
           mkdir -p docker-build
-          # JAR 파일 찾기 및 복사
           EXEC_JAR=$(find build/libs/ -name "*.jar" -not -name "*plain.jar" -type f)
           
           if [ -z "$EXEC_JAR" ]; then
@@ -91,12 +55,7 @@ jobs:
           
           echo "Found executable JAR: $EXEC_JAR"
           cp "$EXEC_JAR" docker-build/app.jar
-          
-          # Dockerfile 복사
           cp Dockerfile docker-build/
-          
-          echo "Build context contents:"
-          ls -la docker-build/
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -115,35 +74,14 @@ jobs:
         uses: appleboy/ssh-action@master
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
           PUBLIC_IP_V4: ${{ secrets.PUBLIC_IP_V4 }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         with:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          envs: DOCKER_USERNAME,RDS_ENDPOINT,DB_NAME,DB_USERNAME,DB_PASSWORD,REDIS_HOST,REDIS_PORT,PUBLIC_IP_V4,JWT_SECRET_KEY
+          envs: DOCKER_USERNAME,PUBLIC_IP_V4
           script: |
-            
-            # Update .env file with latest values
-            cat << EOF > .env
-            DOCKER_USERNAME=${DOCKER_USERNAME}
-            RDS_ENDPOINT=${RDS_ENDPOINT}
-            DB_NAME=${DB_NAME}
-            DB_USERNAME=${DB_USERNAME}
-            DB_PASSWORD=${DB_PASSWORD}
-            REDIS_HOST=${REDIS_HOST}
-            REDIS_PORT=${REDIS_PORT}
-            PUBLIC_IP_V4=${PUBLIC_IP_V4}
-            JWT_SECRET_KEY=${JWT_SECRET_KEY}
-            EOF
-            
             # Create docker-compose.yml
             cat << EOF > docker-compose.yml
             version: '3'
@@ -228,14 +166,16 @@ jobs:
             }
             EOF
             
-            # Pull the latest images
-            docker-compose pull
-            
-            # Build and start the containers
-            docker-compose up -d --build
-            
-            # Clean up unused images
+            # Docker cleanup
+            docker-compose down --remove-orphans
             docker image prune -f
+            
+            # Create network if not exists
+            docker network create ubuntu_this_network || true
+            
+            # Pull latest images and restart
+            docker-compose pull
+            docker-compose up -d
 
       - name: Get Current Time
         uses: 1466587594/get-current-time@v2

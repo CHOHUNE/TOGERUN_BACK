@@ -4,6 +4,7 @@ import com.example.simplechatapp.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -17,8 +18,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JWTUtil {
 
-//    @Value("${jwt.secret.key}")
-    private final String key = "12345678901234567890123456789012";
+    @Value("${jwt.secret.key}")
+    private String key;
 
     private final RefreshTokenRepository refreshTokenRepository;
 
