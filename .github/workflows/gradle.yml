@@ -81,7 +81,7 @@ jobs:
       - name: Create build context
         run: |
           mkdir -p docker-build
-          cp build/libs/*.jar docker-build/app.jar
+          cp build/libs/*[!plain].jar docker-build/app.jar
 
 
       - name: Login to DockerHub
