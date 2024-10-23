@@ -28,8 +28,8 @@ jobs:
 
       - name: Create and verify application.yml
         run: |
-          mkdir -p ./src/main/resources/main
-          cd ./src/main/resources/main
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
           echo "Created application.yml:"
           cat application.yml
@@ -47,9 +47,9 @@ jobs:
       - name: Verify Resources Before Build
         run: |
           echo "Current directory structure:"
-          ls -R ./src/main/resources/main
+          ls -R ./src/main/resources/
           echo "application.yml contents:"
-          cat ./src/main/resources/main/application.yml
+          cat ./src/main/resources/application.yml
 
       - name: Build with Gradle
         run: ./gradlew build --info
