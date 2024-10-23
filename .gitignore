@@ -19,6 +19,8 @@ bin/
 
 ### IntelliJ IDEA ###
 application.properties
+application.yml
+global-bundle.pem
 
 .idea
 *.iws
