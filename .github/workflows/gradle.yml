@@ -26,12 +26,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
-
-      - name: Grant Execute Permission For Gradlew
-        run: chmod +x gradlew
-
       - name: Create and verify application.yml
         run: |
           mkdir -p ./src/main/resources
@@ -39,41 +33,38 @@ jobs:
           echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
           echo "Created application.yml:"
           cat application.yml
-          echo "Directory contents:"
-          ls -la
+
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+      - name: Grant Execute Permission For Gradlew
+        run: chmod +x gradlew
 
       - name: Build with Gradle
         run: ./gradlew build --info
 
-      - name: Check build results
+      - name: Verify JAR contents
         run: |
-          echo "Listing build directory:"
-          ls -la build/libs/
-          echo "Checking JAR contents:"
+          echo "Verifying JAR contents:"
           for jar in build/libs/*.jar; do
-            echo "Contents of $jar:"
-            jar tf "$jar" | grep -i yml || echo "No yml files found in $jar"
+            echo "Checking $jar for application.yml:"
+            jar tvf "$jar" | grep -i "application.yml" || echo "Warning: application.yml not found in $jar"
+            jar xf "$jar" BOOT-INF/classes/application.yml
+            echo "Contents of extracted application.yml:"
+            cat BOOT-INF/classes/application.yml
           done
+
+      - name: Create build context
+        run: |
+          mkdir -p docker-build
+          cp build/libs/*.jar docker-build/app.jar
+
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Create build context
-        run: |
-          mkdir -p docker-build
-          cp build/libs/*.jar docker-build/
-          mkdir -p docker-build/src/main/resources
-          cp src/main/resources/application.yml docker-build/src/main/resources/
-          cp Dockerfile docker-build/
-          # 확인을 위한 로그 추가
-          echo "Docker build context contents:"
-          ls -la docker-build/
-          echo "Docker build context resources contents:"
-          ls -la docker-build/src/main/resources/
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
