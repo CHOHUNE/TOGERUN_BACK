@@ -1,5 +1,6 @@
 name: Java CI/CD with Gradle
 
+# 워크플로우 트리거 설정
 on:
   push:
     branches:
@@ -8,13 +9,15 @@ on:
     branches:
       - master
 
+# 기본 권한 설정
 permissions:
   contents: read
 
+# 환경 변수 설정
 env:
   DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/spring
-  API_DOMAIN: api.togerun.shop  # [추가] 도메인 직접 지정
-  EMAIL: ${{ secrets.EMAIL }}    # [추가] Let's Encrypt 이메일
+  API_DOMAIN: api.togerun.shop
+  EMAIL: ${{ secrets.EMAIL }}
 
 jobs:
   build-and-deploy:
@@ -22,15 +25,18 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Step 1: 소스 코드 체크아웃
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Step 2: Java 개발 환경 설정
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # Step 3: application.yml 파일 생성 및 검증
       - name: Create and verify application.yml
         run: |
           mkdir -p ./src/main/resources
@@ -39,15 +45,19 @@ jobs:
           echo "Created application.yml:"
           cat application.yml
 
+      # Step 4: Gradle 설정
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
 
+      # Step 5: Gradle 실행 권한 부여
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
 
+      # Step 6: Gradle 빌드 실행
       - name: Build with Gradle
         run: ./gradlew build --info
 
+      # Step 7: Docker 빌드 컨텍스트 생성
       - name: Create build context
         run: |
           mkdir -p docker-build
@@ -62,12 +72,14 @@ jobs:
           cp "$EXEC_JAR" docker-build/app.jar
           cp Dockerfile docker-build/
 
+      # Step 8: DockerHub 로그인
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # Step 9: Docker 이미지 빌드 및 푸시
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -75,13 +87,14 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/spring:latest
 
+      # Step 10: EC2 배포
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           PUBLIC_IP_V4: ${{ secrets.PUBLIC_IP_V4 }}
-          EMAIL: ${{ secrets.EMAIL }}          # [추가] Let's Encrypt 이메일
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}  # [추가] Redis 비밀번호
+          EMAIL: ${{ secrets.EMAIL }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         with:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USERNAME }}
@@ -89,12 +102,12 @@ jobs:
           port: 22
           envs: DOCKER_USERNAME,PUBLIC_IP_V4,EMAIL,REDIS_PASSWORD
           script: |
-            # [추가] SSL 및 certbot 디렉토리 생성
+            # SSL 인증서 관련 디렉토리 생성
             mkdir -p certbot/conf
             mkdir -p certbot/www
             mkdir -p ssl
             
-            # Create docker-compose.yml
+            # docker-compose.yml 파일 생성
             cat << EOF > docker-compose.yml
             version: '3'
             
@@ -104,12 +117,12 @@ jobs:
                 container_name: nginx
                 ports:
                   - "80:80"
-                  - "443:443"    # [추가] HTTPS 포트
+                  - "443:443"
                 volumes:
                   - ./nginx.conf:/etc/nginx/nginx.conf:ro
-                  - ./ssl:/etc/nginx/ssl:ro  # [추가] SSL 인증서
-                  - ./certbot/conf:/etc/letsencrypt    # [추가] Let's Encrypt 설정
-                  - ./certbot/www:/var/www/certbot     # [추가] ACME challenge
+                  - ./ssl:/etc/nginx/ssl:ro
+                  - ./certbot/conf:/etc/letsencrypt
+                  - ./certbot/www:/var/www/certbot
                 depends_on:
                   - spring-boot-1
                   - spring-boot-2
@@ -118,7 +131,6 @@ jobs:
                   - ubuntu_this_network
                 restart: always
             
-              # [추가] certbot 서비스
               certbot:
                 image: certbot/certbot
                 container_name: certbot
@@ -149,7 +161,7 @@ jobs:
               redis:
                 image: redis:alpine
                 container_name: redis_boot
-                command: redis-server --requirepass "\${REDIS_PASSWORD}"  # [추가] Redis 비밀번호
+                command: redis-server --requirepass "\${REDIS_PASSWORD}"
                 volumes:
                   - redis:/data
                 networks:
@@ -164,7 +176,7 @@ jobs:
               redis:
             EOF
             
-            # [추가] 초기 nginx.conf (HTTP -> HTTPS 리다이렉트)
+            # 초기 nginx.conf 생성 (HTTP -> HTTPS 리다이렉트)
             cat << EOF > nginx.conf
             events {
               worker_connections 1024;
@@ -183,7 +195,6 @@ jobs:
                 listen [::]:80;
                 server_name api.togerun.shop;
             
-                # [추가] Let's Encrypt ACME Challenge
                 location /.well-known/acme-challenge/ {
                     root /var/www/certbot;
                 }
@@ -195,26 +206,44 @@ jobs:
             }
             EOF
             
-            # Docker cleanup
+            # 기존 Docker 컨테이너 정리
             docker-compose down --remove-orphans
             docker image prune -f
             
-            # Create network if not exists
+            # Docker 네트워크 생성 (없는 경우)
             docker network create ubuntu_this_network || true
             
-            # [추가] nginx 먼저 시작 (Let's Encrypt 용)
-            docker-compose up -d nginx
+            # SSL 인증서 파일 존재 여부 확인
+            if [ ! -d "./certbot/conf/live/api.togerun.shop" ]; then
+              echo "SSL certificates not found. Initiating first-time certificate acquisition..."
             
-            # [추가] Let's Encrypt 인증서 발급
-            docker-compose run --rm certbot certonly \
-              --webroot \
-              --webroot-path /var/www/certbot \
-              --email \${EMAIL} \
-              --agree-tos \
-              --no-eff-email \
-              -d api.togerun.shop
+              # nginx 컨테이너 시작 (초기 HTTP 설정)
+              docker-compose up -d nginx
             
-            # [추가] HTTPS 설정이 포함된 최종 nginx.conf
+              # 잠시 대기하여 nginx가 완전히 시작되도록 함
+              sleep 10
+            
+              # Let's Encrypt 인증서 최초 발급
+              docker-compose run --rm certbot certonly \
+                --webroot \
+                --webroot-path /var/www/certbot \
+                --email \${EMAIL} \
+                --agree-tos \
+                --no-eff-email \
+                -d api.togerun.shop
+            
+              # 인증서 발급 확인
+              if [ ! -d "./certbot/conf/live/api.togerun.shop" ]; then
+                echo "Failed to acquire SSL certificates. Exiting..."
+                exit 1
+              fi
+            
+              echo "SSL certificates successfully acquired!"
+            else
+              echo "SSL certificates already exist. Proceeding with deployment..."
+            fi
+            
+            # HTTPS 설정이 포함된 최종 nginx.conf 생성
             cat << EOF > nginx.conf
             events {
               worker_connections 1024;
@@ -299,10 +328,11 @@ jobs:
             }
             EOF
             
-            # Pull latest images and restart
+            # 최신 이미지 풀 및 서비스 재시작
             docker-compose pull
             docker-compose up -d
 
+      # Step 11: 배포 시간 기록
       - name: Get Current Time
         uses: 1466587594/get-current-time@v2
         id: current-time
