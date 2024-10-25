@@ -56,13 +56,13 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         Boolean isDeleted =(Boolean) claims.get("isDeleted");
 
         if (Boolean.TRUE.equals(isSocial)) {
-            return "http://localhost:3000/member/modify/";
+            return "https://www.togerun.shop/member/modify/";
 
         } else if (Boolean.TRUE.equals(isDeleted)) {
-            return "http://localhost:3000/member/restore/" + claims.get("id");
+            return "https://www.togerun.shop/member/restore/" + claims.get("id");
 
         } else {
-            return "http://localhost:3000/";
+            return "https://www.togerun.shop/";
         }
     }
 }
