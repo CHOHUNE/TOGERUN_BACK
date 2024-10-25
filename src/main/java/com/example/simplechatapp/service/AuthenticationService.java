@@ -30,7 +30,9 @@ public class AuthenticationService {
 
         claims.put("accessToken", accessToken);
 
+
         setCookie(response, claims);
+
     }
 
     public void setAuthenticationTokens(UserDTO userDTO, HttpServletResponse response) {
@@ -47,15 +49,17 @@ public class AuthenticationService {
         String encodedJsonStr = URLEncoder.encode(jsonStr, StandardCharsets.UTF_8);
 
         Cookie cookie = new Cookie("member", encodedJsonStr);
-        cookie.setMaxAge(60 * 60 * 60);
 
-//        HTTPS 필수 설정 추가
+        cookie.setMaxAge(60 * 60 * 60);
+        cookie.setPath("/");
         cookie.setSecure(true);
         cookie.setHttpOnly(false);
 
 
-        cookie.setPath("/");
+
         response.addCookie(cookie);
+        response.setHeader("Authorization", "Bearer " + claims.get("accessToken"));
+
     }
 
 }

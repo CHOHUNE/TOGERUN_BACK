@@ -45,6 +45,8 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         authenticationService.setAuthenticationTokens(claims, response);
 
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Access-Control-Allow-Origin", "https://www.togerun.shop");
         String redirectUrl = determineRedirectUrl(claims);
         response.sendRedirect(redirectUrl);
 
