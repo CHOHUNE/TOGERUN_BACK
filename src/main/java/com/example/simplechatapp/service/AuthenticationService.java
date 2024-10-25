@@ -52,7 +52,7 @@ public class AuthenticationService {
 //        HTTPS 필수 설정 추가
         cookie.setSecure(true);
         cookie.setHttpOnly(false);
-        cookie.setDomain(".togerun.shop");
+
 
         cookie.setPath("/");
         response.addCookie(cookie);
