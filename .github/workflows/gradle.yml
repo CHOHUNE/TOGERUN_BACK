@@ -248,7 +248,7 @@ jobs:
                   proxy_send_timeout 300;
                   proxy_read_timeout 300;
                   send_timeout 300;
-                  proxy_cookie_path / "/; secure; HttpOnly; Domain=.togerun.shop";
+                  proxy_cookie_path / "/; secure;  Domain=.togerun.shop";
                 }
               }
             }
