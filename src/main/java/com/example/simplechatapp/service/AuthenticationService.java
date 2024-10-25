@@ -48,6 +48,12 @@ public class AuthenticationService {
 
         Cookie cookie = new Cookie("member", encodedJsonStr);
         cookie.setMaxAge(60 * 60 * 60);
+
+//        HTTPS 필수 설정 추가
+        cookie.setSecure(true);
+        cookie.setHttpOnly(false);
+        cookie.setDomain(".togerun.shop");
+
         cookie.setPath("/");
         response.addCookie(cookie);
     }

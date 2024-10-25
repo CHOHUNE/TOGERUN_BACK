@@ -56,9 +56,12 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         Boolean isDeleted =(Boolean) claims.get("isDeleted");
 
         if (Boolean.TRUE.equals(isSocial)) {
+
+            log.info("Redirect : social user");
             return "https://www.togerun.shop/member/modify/";
 
         } else if (Boolean.TRUE.equals(isDeleted)) {
+            log.info("Redirect : deleted user");
             return "https://www.togerun.shop/member/restore/" + claims.get("id");
 
         } else {
