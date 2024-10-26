@@ -20,12 +20,9 @@ public class NotifyController {
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(
-//            @RequestParam("token") String token,
                @AuthenticationPrincipal UserDTO principal,
                                                 @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
 
-//        Map<String, Object> claims = JWTUtil.validToken(token);
-//        String email = (String) claims.get("email");
 
         return ResponseEntity.ok(notifyService.subscribe(principal.getEmail(), lastEventId));
     }

@@ -28,11 +28,6 @@ import org.springframework.security.web.access.expression.DefaultWebSecurityExpr
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 
 @Configuration
@@ -64,13 +59,20 @@ public class CustomSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS))
-                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()));
+                                SessionCreationPolicy.STATELESS));
+
+//                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/api/member/refresh").permitAll()
-                .requestMatchers("/chat").permitAll()
+                .requestMatchers(
+                        "/",
+                        "/api/member/refresh",
+                        "/chat",
+                        "/health",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/login/oauth2/code/**"  // OAuth2 콜백 URL 허용
+                ).permitAll()
                 .requestMatchers("/api/notifications/subscribe").authenticated()
                 .anyRequest().authenticated()
         ).formLogin(config -> {
@@ -109,28 +111,28 @@ public class CustomSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:3000",
-                "https://www.togerun.shop",
-                "https://togerun.shop"
-        ));
-        configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Cache-Control",
-                "Content-Type",
-                "Accept",
-                "Last-Event-ID"));
-        configuration.setExposedHeaders(List.of("Authorization","Set-Cookie"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // 1 시간 동안 preflight 요청 캐시
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOriginPatterns(List.of(
+//                "http://localhost:3000",
+//                "https://www.togerun.shop",
+//                "https://togerun.shop"
+//        ));
+//        configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(List.of(
+//                "Authorization",
+//                "Cache-Control",
+//                "Content-Type",
+//                "Accept",
+//                "Last-Event-ID"));
+//        configuration.setExposedHeaders(List.of("Authorization","Set-Cookie"));
+//        configuration.setAllowCredentials(true);
+//        configuration.setMaxAge(3600L); // 1 시간 동안 preflight 요청 캐시
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//
+//        return source;
+//    }
 }
