@@ -50,6 +50,7 @@ public class CustomSecurityConfig {
     private final ObjectMapper objectMapper;
     private final RoleHierarchy roleHierarchy;
 
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.expressionHandler(customWebSecurityExpressionHandler());
@@ -116,12 +117,13 @@ public class CustomSecurityConfig {
                 "https://togerun.shop"
         ));
         configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type","Accept"));
         configuration.setExposedHeaders(List.of("Authorization","Set-Cookie"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // 1 시간 동안 preflight 요청 캐시
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/api/**", configuration); //api 경로만 CORS 적용
 
         return source;
     }

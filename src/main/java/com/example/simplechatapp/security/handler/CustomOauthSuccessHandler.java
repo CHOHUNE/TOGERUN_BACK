@@ -2,14 +2,13 @@ package com.example.simplechatapp.security.handler;
 
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.dto.oauth2.CustomOAuth2User;
-import com.example.simplechatapp.repository.RefreshTokenRepository;
 import com.example.simplechatapp.service.AuthenticationService;
-import com.example.simplechatapp.util.JWTUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,51 +22,40 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JWTUtil jwtUtil;
     private final AuthenticationService authenticationService;
+
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        UserDTO userDTO;
-
-        if (authentication.getPrincipal() instanceof CustomOAuth2User) {
-
-            CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-
-            userDTO = oAuth2User.getUserDTO();
-        }else{
-            userDTO = (UserDTO) authentication.getPrincipal();
-        }
-
+        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        UserDTO userDTO = oAuth2User.getUserDTO();
         Map<String, Object> claims = userDTO.getClaim();
 
         authenticationService.setAuthenticationTokens(claims, response);
-
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-        response.setHeader("Access-Control-Allow-Origin", "https://www.togerun.shop");
-        String redirectUrl = determineRedirectUrl(claims);
-        response.sendRedirect(redirectUrl);
+        response.sendRedirect(determineRedirectUrl(claims));
 
     }
 
-    private String determineRedirectUrl(Map<String, Object>claims) {
+    private String determineRedirectUrl(Map<String, Object> claims) {
 
         Boolean isSocial = (Boolean) claims.get("social");
-        Boolean isDeleted =(Boolean) claims.get("isDeleted");
+        Boolean isDeleted = (Boolean) claims.get("isDeleted");
 
         if (Boolean.TRUE.equals(isSocial)) {
 
             log.info("Redirect : social user");
-            return "https://www.togerun.shop/member/modify/";
+            return frontendUrl + "/member/modify/";
 
         } else if (Boolean.TRUE.equals(isDeleted)) {
             log.info("Redirect : deleted user");
-            return "https://www.togerun.shop/member/restore/" + claims.get("id");
+            return frontendUrl + "member/restore/" + claims.get("id");
 
         } else {
-            return "https://www.togerun.shop/";
+            return frontendUrl + "/";
         }
     }
 }
