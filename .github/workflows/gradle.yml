@@ -54,7 +54,6 @@ jobs:
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
 
-      # Step 6: Gradle 빌드 실행
       - name: Build with Gradle
         run: ./gradlew build --info
 
@@ -176,7 +175,7 @@ jobs:
               redis:
             EOF
             
-            # nginx.conf 생성 (HTTPS 설정 포함)
+            # nginx.conf 생성
             cat << EOF > nginx.conf
             events {
                 worker_connections 1024;
@@ -185,12 +184,14 @@ jobs:
             }
 
             http {
+                include /etc/nginx/mime.types;
+                default_type application/octet-stream;
+
                 upstream spring-app {
                     server spring-boot:8080;
                     keepalive 32;
                 }
 
-                # CORS 설정을 위한 맵
                 map \$http_origin \$cors_origin {
                     default "";
                     "https://www.togerun.shop" "\$http_origin";
@@ -213,11 +214,11 @@ jobs:
                 }
 
                 server {
-                    listen 443 ssl http2;
-                    listen [::]:443 ssl http2;
+                    listen 443 ssl;
+                    listen [::]:443 ssl;
+                    http2 on;
                     server_name api.togerun.shop;
 
-                    # SSL 설정
                     ssl_certificate /etc/letsencrypt/live/api.togerun.shop/fullchain.pem;
                     ssl_certificate_key /etc/letsencrypt/live/api.togerun.shop/privkey.pem;
                     ssl_protocols TLSv1.2 TLSv1.3;
@@ -226,19 +227,18 @@ jobs:
                     ssl_session_cache shared:SSL:10m;
                     ssl_session_timeout 10m;
 
-                    # CORS 프리플라이트 요청을 위한 OPTIONS 처리
-                    if (\$request_method = 'OPTIONS') {
-                        add_header 'Access-Control-Allow-Origin' \$cors_origin;
-                        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
-                        add_header 'Access-Control-Allow-Headers' 'Authorization, Cache-Control, Content-Type, Accept, Last-Event-ID';
-                        add_header 'Access-Control-Allow-Credentials' 'true';
-                        add_header 'Access-Control-Max-Age' 3600;
-                        add_header 'Content-Type' 'text/plain charset=UTF-8';
-                        add_header 'Content-Length' 0;
-                        return 204;
-                    }
-
                     location / {
+                        if (\$request_method = 'OPTIONS') {
+                            add_header 'Access-Control-Allow-Origin' \$cors_origin always;
+                            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
+                            add_header 'Access-Control-Allow-Headers' 'Authorization, Cache-Control, Content-Type, Accept, Last-Event-ID' always;
+                            add_header 'Access-Control-Allow-Credentials' 'true' always;
+                            add_header 'Access-Control-Max-Age' 3600 always;
+                            add_header 'Content-Type' 'text/plain charset=UTF-8' always;
+                            add_header 'Content-Length' 0 always;
+                            return 204;
+                        }
+
                         # 보안 헤더
                         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
                         add_header X-Frame-Options "SAMEORIGIN" always;
