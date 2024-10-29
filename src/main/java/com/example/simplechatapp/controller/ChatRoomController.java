@@ -71,7 +71,6 @@ public class ChatRoomController {
     public RedirectView handleChatRoomFullException(ChatRoomFullException e, RedirectAttributes redirectAttributes) {
 
         redirectAttributes.addFlashAttribute("error", "채팅 방이 가득 찼습니다");
-
         return new RedirectView("/post");
 
     }

@@ -39,9 +39,6 @@ public class NotifyService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-//    public List<Notification> getNotificationList(String userEmail) {
-//        return notifyRepository.findAllByReceiverEmail(userEmail);
-//    }
 
     public SseEmitter subscribe(String userNickname, String lastEventId) {
 
@@ -80,8 +77,6 @@ public class NotifyService {
     }
 
 
-
-
     private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
 
         try {
@@ -117,9 +112,9 @@ public class NotifyService {
 // 구독자의 이메일을 기반으로 이벤트 캐시를 가져와 마지막 이벤트 ID 와 비교하여 미수신한 데이터 전송
 
 
-    public void send(String receiver, NotificationType notificationType, String content, String url,Long postId) {
+    public void send(String receiver, NotificationType notificationType, String content, String url, Long postId) {
 
-        Notify notification = notifyRepository.save(createNotification(receiver, notificationType, content, url,postId));
+        Notify notification = notifyRepository.save(createNotification(receiver, notificationType, content, url, postId));
 
 
         String eventId = receiver + "_" + System.currentTimeMillis();
@@ -139,7 +134,7 @@ public class NotifyService {
     // 각 Ssemitter 에 대해 이벤트 캐시에 key 와 생성한 Notify 객체를 저장하고,
     // SendNotification 메서드를 호출해 알림과 관련된 데이터 (eventId, key, ResponseNotifyDto) 를 emitter 로 전송
 
-    private Notify createNotification(String receiver, NotificationType notificationType, String content, String url,Long postId) {
+    private Notify createNotification(String receiver, NotificationType notificationType, String content, String url, Long postId) {
 
         User user = userRepository.findByEmail(receiver).orElseThrow(() -> new RuntimeException("User Not Found"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post Not Found"));
@@ -187,19 +182,14 @@ public class NotifyService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-//        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
-//        Page<Notify> notifications = notifyRepository.findByReceiverOrderByCreatedAtDesc(user, pageable);
 
         Page<NotifyDto.Response> notifications = notifyRepository.findNotificationDtosByReceiverEmail(userEmail, pageable);
-//        int unreadCount = notifyRepository.countUnreadNotifications(userEmail);
-
 
         return NotifyDto.PageResponse.builder().
                 content(notifications.getContent())
                 .totalPages(notifications.getTotalPages())
                 .totalElements(notifications.getTotalElements())
                 .currentPage(notifications.getNumber())
-//                .unreadCount(unreadCount).
                 .build();
     }
 

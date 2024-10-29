@@ -16,9 +16,4 @@ public enum NotifyMessage {
     NotifyMessage(String message) {
         this.message = message;
     }
-
-//    public String getMessage() {
-//        return message;
-//    }
-
 }

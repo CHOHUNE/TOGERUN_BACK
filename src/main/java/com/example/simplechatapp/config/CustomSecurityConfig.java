@@ -67,6 +67,7 @@ public class CustomSecurityConfig {
                 .requestMatchers(
                         "/",
                         "/api/member/refresh",
+                        "/api/member/logout",
                         "/chat",
                         "/health",
                         "/swagger-ui/**",
@@ -110,29 +111,4 @@ public class CustomSecurityConfig {
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOriginPatterns(List.of(
-//                "http://localhost:3000",
-//                "https://www.togerun.shop",
-//                "https://togerun.shop"
-//        ));
-//        configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//        configuration.setAllowedHeaders(List.of(
-//                "Authorization",
-//                "Cache-Control",
-//                "Content-Type",
-//                "Accept",
-//                "Last-Event-ID"));
-//        configuration.setExposedHeaders(List.of("Authorization","Set-Cookie"));
-//        configuration.setAllowCredentials(true);
-//        configuration.setMaxAge(3600L); // 1 시간 동안 preflight 요청 캐시
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//
-//        return source;
-//    }
 }

@@ -11,5 +11,4 @@ public interface NotifyInfo {
     NotificationType getNotificationType();
     NotifyMessage getNotifyMessage();
     Long getPostId();
-
 }
