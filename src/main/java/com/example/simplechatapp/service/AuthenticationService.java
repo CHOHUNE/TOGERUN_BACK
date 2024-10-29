@@ -54,7 +54,7 @@ public class AuthenticationService {
         cookie.setPath("/");
         cookie.setSecure(true);
         cookie.setHttpOnly(false);
-        cookie.setDomain(".togerun.shop");
+        cookie.setDomain("togerun.shop");
 
 
 
