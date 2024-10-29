@@ -12,12 +12,10 @@ public class CustomOAuth2User implements OAuth2User {
 
     private final UserDTO userDTO;
 
-
     //attributes 란? OAuth2 공급자로부터 받은 사용자 정보를 담고 있는 Map
     @Override
     public Map<String, Object> getAttributes() {
         return null;
-
     }
 
     @Override

@@ -50,10 +50,11 @@ public class AuthenticationService {
 
         Cookie cookie = new Cookie("member", encodedJsonStr);
 
-        cookie.setMaxAge(60 * 60 * 60);
+        cookie.setMaxAge(6 * 60 * 60); // 6시간
         cookie.setPath("/");
         cookie.setSecure(true);
         cookie.setHttpOnly(false);
+        cookie.setDomain(".togerun.shop");
 
 
 

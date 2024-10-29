@@ -67,7 +67,6 @@ public class CustomSecurityConfig {
                 .requestMatchers(
                         "/",
                         "/api/member/refresh",
-                        "/api/member/logout",
                         "/chat",
                         "/health",
                         "/swagger-ui/**",
