@@ -50,7 +50,7 @@ echo "Current container: $CURRENT_CONTAINER"
 
 # Docker 이미지 풀
 echo "Pulling latest Docker image..."
-docker pull ${DOCKER_USERNAME}/spring:latest
+docker pull "${DOCKER_USERNAME}"/spring:latest
 
 # 새 컨테이너 시작
 echo "Starting new container: $TARGET_CONTAINER"
