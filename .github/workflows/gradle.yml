@@ -54,9 +54,11 @@ jobs:
       - name: Grant Execute Permission For Gradlew
         run: chmod +x gradlew
 
+      # Step 6: Gradle 빌드 실행
       - name: Build with Gradle
         run: ./gradlew build --info
 
+      # Step 7: Docker 빌드 컨텍스트 생성
       - name: Create build context
         run: |
           mkdir -p docker-build
@@ -86,158 +88,88 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/spring:latest
 
-      # Step 10: EC2 배포
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          PUBLIC_IP_V4: ${{ secrets.PUBLIC_IP_V4 }}
-          EMAIL: ${{ secrets.EMAIL }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        with:
-          host: ${{ secrets.HOST_DEV }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          port: 22
-          envs: DOCKER_USERNAME,PUBLIC_IP_V4,EMAIL,REDIS_PASSWORD
-          script: |
-            # SSL 인증서 관련 디렉토리 생성
-            mkdir -p certbot/conf
-            mkdir -p certbot/www
-            mkdir -p ssl
-            
-            # Create docker-compose.yml
-            cat << EOF > docker-compose.yml
-            version: '3'
-            
-            services:
-              nginx:
-                image: nginx:alpine
-                container_name: nginx
-                ports:
-                  - "80:80"
-                  - "443:443"
-                volumes:
-                  - ./nginx.conf:/etc/nginx/nginx.conf:ro
-                  - ./ssl:/etc/nginx/ssl:ro
-                  - ./certbot/conf:/etc/letsencrypt
-                  - ./certbot/www:/var/www/certbot
-                depends_on:
-                  - spring-boot
-                networks:
-                  - ubuntu_this_network
-                restart: always
-            
-              certbot:
-                image: certbot/certbot
-                container_name: certbot
-                volumes:
-                  - ./certbot/conf:/etc/letsencrypt
-                  - ./certbot/www:/var/www/certbot
-                entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait \$\${!}; done;'"
-            
-              spring-boot:
-                container_name: spring-boot
-                image: \${DOCKER_USERNAME}/spring:latest
-                expose:
-                  - "8080"
-                environment:
-                  - JAVA_OPTS=-XX:+UseG1GC -Xms256m -Xmx512m
-                  - SPRING_PROFILES_ACTIVE=prod
-                  - SPRING_DATA_REDIS_HOST=redis
-                  - SPRING_DATA_REDIS_PASSWORD=\${REDIS_PASSWORD}
-                healthcheck:
-                  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-                depends_on:
-                  - redis
-                networks:
-                  - ubuntu_this_network
-                restart: always
-            
-              redis:
-                image: redis:alpine
-                container_name: redis_boot
-                command: redis-server --requirepass "\${REDIS_PASSWORD}"
-                volumes:
-                  - redis:/data
-                networks:
-                  - ubuntu_this_network
-                restart: always
-            
-            networks:
-              ubuntu_this_network:
-                external: true
-            
-            volumes:
-              redis:
-            EOF
-            
-            # nginx.conf 생성
-            cat << EOF > nginx.conf
-            events {
-                worker_connections 1024;
-                multi_accept on;
-                use epoll;
-            }
+      # Step 10: 배포 패키지 생성
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy
+          
+          # Docker 관련 파일 복사
+          cp -r docker-build/* deploy/
+          cp docker-compose.blue-green.yml deploy/
+          
+          # 배포 스크립트 복사
+          mkdir -p deploy/scripts
+          cp -r scripts/* deploy/scripts/
+          chmod +x deploy/scripts/*.sh
+          
+          # SSL 인증서 디렉토리 구조 생성
+          mkdir -p deploy/certbot/conf
+          mkdir -p deploy/certbot/www
+          mkdir -p deploy/ssl
+          
+          # nginx 설정 파일 생성
+          cat << 'EOF' > deploy/nginx.conf
+          events {
+              worker_connections 1024;
+              multi_accept on;
+              use epoll;
+          }
 
-            http {
-                include /etc/nginx/mime.types;
-                default_type application/octet-stream;
+          http {
+              include /etc/nginx/mime.types;
+              default_type application/octet-stream;
 
-                upstream spring-app {
-                    server spring-boot:8080;
-                    keepalive 32;
-                }
+              upstream spring-app {
+                  server spring-boot-blue:8080;
+                  keepalive 32;
+              }
 
-                map \$http_origin \$cors_origin {
-                    default "";
-                    "https://www.togerun.shop" "\$http_origin";
-                    "https://togerun.shop" "\$http_origin";
-                    "http://localhost:3000" "\$http_origin";
-                }
+              map $http_origin $cors_origin {
+                  default "";
+                  "https://www.togerun.shop" "$http_origin";
+                  "https://togerun.shop" "$http_origin";
+                  "http://localhost:3000" "$http_origin";
+              }
 
-                server {
-                    listen 80;
-                    listen [::]:80;
-                    server_name api.togerun.shop;
+              server {
+                  listen 80;
+                  listen [::]:80;
+                  server_name api.togerun.shop;
 
-                    location /.well-known/acme-challenge/ {
-                        root /var/www/certbot;
-                    }
+                  location /.well-known/acme-challenge/ {
+                      root /var/www/certbot;
+                  }
 
-                    location / {
-                        return 301 https://\$host\$request_uri;
-                    }
-                }
+                  location / {
+                      return 301 https://$host$request_uri;
+                  }
+              }
 
-                server {
-                    listen 443 ssl;
-                    listen [::]:443 ssl;
-                    http2 on;
-                    server_name api.togerun.shop;
+              server {
+                  listen 443 ssl;
+                  listen [::]:443 ssl;
+                  http2 on;
+                  server_name api.togerun.shop;
 
-                    ssl_certificate /etc/letsencrypt/live/api.togerun.shop/fullchain.pem;
-                    ssl_certificate_key /etc/letsencrypt/live/api.togerun.shop/privkey.pem;
-                    ssl_protocols TLSv1.2 TLSv1.3;
-                    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
-                    ssl_prefer_server_ciphers off;
-                    ssl_session_cache shared:SSL:10m;
-                    ssl_session_timeout 10m;
+                  ssl_certificate /etc/letsencrypt/live/api.togerun.shop/fullchain.pem;
+                  ssl_certificate_key /etc/letsencrypt/live/api.togerun.shop/privkey.pem;
+                  ssl_protocols TLSv1.2 TLSv1.3;
+                  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+                  ssl_prefer_server_ciphers off;
+                  ssl_session_cache shared:SSL:10m;
+                  ssl_session_timeout 10m;
 
-                    location / {
-                        if (\$request_method = 'OPTIONS') {
-                            add_header 'Access-Control-Allow-Origin' \$cors_origin always;
-                            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
-                            add_header 'Access-Control-Allow-Headers' 'Authorization, Cache-Control, Content-Type, Accept, Last-Event-ID' always;
-                            add_header 'Access-Control-Allow-Credentials' 'true' always;
-                            add_header 'Access-Control-Max-Age' 3600 always;
-                            add_header 'Content-Type' 'text/plain charset=UTF-8' always;
-                            add_header 'Content-Length' 0 always;
-                            return 204;
-                        }
+                  location / {
+                      if ($request_method = 'OPTIONS') {
+                          add_header 'Access-Control-Allow-Origin' $cors_origin always;
+                          add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
+                          add_header 'Access-Control-Allow-Headers' 'Authorization, Cache-Control, Content-Type, Accept, Last-Event-ID' always;
+                          add_header 'Access-Control-Allow-Credentials' 'true' always;
+                          add_header 'Access-Control-Max-Age' 3600 always;
+                          add_header 'Content-Type' 'text/plain charset=UTF-8' always;
+                          add_header 'Content-Length' 0 always;
+                          return 204;
+                      }
 
                         # 보안 헤더
                         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
@@ -272,28 +204,44 @@ jobs:
                         send_timeout 300;
 
                         # SSE 설정
-                        proxy_buffering off;
-                        proxy_cache off;
-            
+                      proxy_buffering off;
+                      proxy_cache off;
                         # 쿠키 설정
-                        proxy_cookie_path / "/; secure; Domain=.togerun.shop";
-                    }
-                }
-            }
-            EOF
-            
-            # 기존 Docker 컨테이너 정리
-            docker-compose down --remove-orphans
-            docker image prune -f
-            
-            # Docker 네트워크 생성 (없는 경우)
-            docker network create ubuntu_this_network || true
-            
-            # 최신 이미지 풀 및 서비스 재시작
-            docker-compose pull
-            docker-compose up -d
+                      proxy_cookie_path / "/; secure; Domain=.togerun.shop";
 
-      # Step 11: 배포 시간 기록
+                  }
+              }
+          }
+          EOF
+          
+          # appspec.yml 복사
+          cp appspec.yml deploy/
+          
+          # 배포 패키지 생성
+          cd deploy && zip -r ../deploy.zip .
+
+      # Step 11: AWS 자격 증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 12: S3에 배포 패키지 업로드
+      - name: Upload to S3
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/deploy.zip
+
+      # Step 13: CodeDeploy 배포 시작
+      - name: Start CodeDeploy Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ secrets.CODE_DEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ secrets.CODE_DEPLOY_GROUP_NAME }} \
+            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=deploy.zip
+
+      # Step 14: 배포 시간 기록
       - name: Get Current Time
         uses: 1466587594/get-current-time@v2
         id: current-time
