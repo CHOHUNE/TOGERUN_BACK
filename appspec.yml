@@ -1,5 +1,9 @@
 version: 0.0
 os: linux
+env:
+  variables:
+    DOCKER_USERNAME: "{{ secrets.DOCKER_USERNAME }}"
+    REDIS_PASSWORD: "{{ secrets.REDIS_PASSWORD }}"
 files:
   - source: /
     destination: /home/ubuntu/app
@@ -19,6 +23,10 @@ hooks:
     - location: scripts/start_application.sh
       timeout: 300
       runas: ubuntu
+      env:
+        variables:
+          DOCKER_USERNAME: "{{ secrets.DOCKER_USERNAME }}"
+          REDIS_PASSWORD: "{{ secrets.REDIS_PASSWORD }}"
   ValidateService:
     - location: scripts/validate_service.sh
       timeout: 300
