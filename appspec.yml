@@ -21,19 +21,7 @@ hooks:
     - location: scripts/before_install.sh
       timeout: 300
       runas: ubuntu
-  AfterInstall:
-    - location: scripts/set_environment.sh
-      timeout: 300
-      runas: ubuntu
   ApplicationStart:
     - location: scripts/start_application.sh
       timeout: 600
-      runas: ubuntu
-      environment:
-        variables:
-          DOCKER_USERNAME: "#{DOCKER_USERNAME}"
-          REDIS_PASSWORD: "#{REDIS_PASSWORD}"
-  ValidateService:
-    - location: scripts/validate_service.sh
-      timeout: 300
       runas: ubuntu

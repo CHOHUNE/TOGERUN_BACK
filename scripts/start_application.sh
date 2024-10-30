@@ -3,17 +3,6 @@
 # 스크립트 실행 디렉토리로 이동
 cd /home/ubuntu/app
 
-# 환경 변수 파일 존재 여부 확인
-if [ ! -f .env ]; then
-    echo "Error: .env file not found"
-    exit 1
-fi
-
-# 환경 변수 로드
-set -a
-source .env
-set +a
-
 # 환경 변수 확인
 if [ -z "$DOCKER_USERNAME" ]; then
     echo "Error: DOCKER_USERNAME is not set"
