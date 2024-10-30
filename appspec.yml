@@ -1,39 +1,27 @@
 version: 0.0
 os: linux
-env:
-  variables:
-    DOCKER_USERNAME: "{{ secrets.DOCKER_USERNAME }}"
-    REDIS_PASSWORD: "{{ secrets.REDIS_PASSWORD }}"
-    EMAIL: "{{ secrets.EMAIL }}"
-    AWS_REGION: "{{ secrets.AWS_REGION }}"
-    PUBLIC_IP_V4: "{{ secrets.PUBLIC_IP_V4 }}"
-    # 애플리케이션 실행에 필요한 다른 환경 변수들
 files:
   - source: /
     destination: /home/ubuntu/app
-    overwrite: yes
 permissions:
-  - object: /home/ubuntu/app
-    pattern: "**"
-    owner: ubuntu
-    group: ubuntu
+  - object: /home/ubuntu/app/scripts
+    pattern: "*.sh"
     mode: 755
+    type:
+      - file
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
       timeout: 300
       runas: ubuntu
-  ApplicationStart:
-    - location: scripts/start_application.sh
+  AfterInstall:
+    - location: scripts/set_environment.sh  # 새로 추가된 스크립트
       timeout: 300
       runas: ubuntu
-      env:
-        variables:
-          DOCKER_USERNAME: "{{ secrets.DOCKER_USERNAME }}"
-          REDIS_PASSWORD: "{{ secrets.REDIS_PASSWORD }}"
-          EMAIL: "{{ secrets.EMAIL }}"
-          AWS_REGION: "{{ secrets.AWS_REGION }}"
-          PUBLIC_IP_V4: "{{ secrets.PUBLIC_IP_V4 }}"
+  ApplicationStart:
+    - location: scripts/start_application.sh
+      timeout: 600
+      runas: ubuntu
   ValidateService:
     - location: scripts/validate_service.sh
       timeout: 300

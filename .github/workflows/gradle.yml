@@ -240,6 +240,9 @@ jobs:
             --application-name ${{ secrets.CODE_DEPLOY_APP_NAME }} \
             --deployment-group-name ${{ secrets.CODE_DEPLOY_GROUP_NAME }} \
             --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=deploy.zip
+            --environment-variables \
+                DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} \
+                REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
 
       # Step 14: 배포 시간 기록
       - name: Get Current Time
