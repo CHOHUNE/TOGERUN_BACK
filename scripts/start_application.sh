@@ -3,7 +3,16 @@
 # 스크립트 실행 디렉토리로 이동
 cd /home/ubuntu/app
 
-# 환경 변수 확인
+# .env 파일 존재 확인
+if [ ! -f ".env" ]; then
+    echo "Error: .env file not found"
+    exit 1
+fi
+
+# .env 파일 로드
+source .env
+
+# 환경변수 확인
 if [ -z "$DOCKER_USERNAME" ]; then
     echo "Error: DOCKER_USERNAME is not set"
     exit 1
@@ -41,9 +50,9 @@ echo "Current container: $CURRENT_CONTAINER"
 echo "Pulling latest Docker image..."
 docker pull "${DOCKER_USERNAME}"/spring:latest
 
-# 새 컨테이너 시작
+# 새 컨테이너 시작 (환경변수 파일 사용)
 echo "Starting new container: $TARGET_CONTAINER"
-docker-compose -f docker-compose.blue-green.yml up -d --force-recreate $TARGET_CONTAINER
+docker-compose --env-file .env -f docker-compose.blue-green.yml up -d --force-recreate $TARGET_CONTAINER
 
 # 컨테이너 시작 확인
 echo "Verifying container startup..."
@@ -60,20 +69,7 @@ for i in {1..30}; do
 
     if docker exec $TARGET_CONTAINER curl -s "http://localhost:8080/actuator/health" | grep -q "UP"; then
         echo "Health check passed! Container is healthy"
-
-        # 이전 컨테이너가 있다면 로그 출력
-        if [ -n "$CURRENT_CONTAINER" ] && docker ps -q --filter "name=$CURRENT_CONTAINER" > /dev/null; then
-            echo "Previous container ($CURRENT_CONTAINER) logs:"
-            docker logs --tail 100 $CURRENT_CONTAINER
-        fi
-
         exit 0
-    fi
-
-    # 실패한 경우 컨테이너 로그 확인
-    if [ $i -eq 30 ]; then
-        echo "Container logs:"
-        docker logs $TARGET_CONTAINER
     fi
 
     echo "Waiting for container to be healthy..."
