@@ -9,6 +9,13 @@ permissions:
     mode: 755
     type:
       - file
+  - object: /home/ubuntu/app
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 644
+    type:
+      - file
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
@@ -18,14 +25,14 @@ hooks:
     - location: scripts/set_environment.sh
       timeout: 300
       runas: ubuntu
-      environment:
-        variables:
-          DOCKER_USERNAME: '#{DOCKER_USERNAME}'
-          REDIS_PASSWORD: '#{REDIS_PASSWORD}'
   ApplicationStart:
     - location: scripts/start_application.sh
       timeout: 600
       runas: ubuntu
+      environment:
+        variables:
+          DOCKER_USERNAME: "#{DOCKER_USERNAME}"
+          REDIS_PASSWORD: "#{REDIS_PASSWORD}"
   ValidateService:
     - location: scripts/validate_service.sh
       timeout: 300
