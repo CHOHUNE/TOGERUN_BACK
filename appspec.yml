@@ -4,6 +4,10 @@ env:
   variables:
     DOCKER_USERNAME: "{{ secrets.DOCKER_USERNAME }}"
     REDIS_PASSWORD: "{{ secrets.REDIS_PASSWORD }}"
+    EMAIL: "{{ secrets.EMAIL }}"
+    AWS_REGION: "{{ secrets.AWS_REGION }}"
+    PUBLIC_IP_V4: "{{ secrets.PUBLIC_IP_V4 }}"
+    # 애플리케이션 실행에 필요한 다른 환경 변수들
 files:
   - source: /
     destination: /home/ubuntu/app
@@ -27,6 +31,9 @@ hooks:
         variables:
           DOCKER_USERNAME: "{{ secrets.DOCKER_USERNAME }}"
           REDIS_PASSWORD: "{{ secrets.REDIS_PASSWORD }}"
+          EMAIL: "{{ secrets.EMAIL }}"
+          AWS_REGION: "{{ secrets.AWS_REGION }}"
+          PUBLIC_IP_V4: "{{ secrets.PUBLIC_IP_V4 }}"
   ValidateService:
     - location: scripts/validate_service.sh
       timeout: 300
