@@ -106,17 +106,16 @@ jobs:
           cat << 'EOF' > deploy/scripts/set_environment.sh
           
           # 환경 변수 파일 생성
-          cat << 'EOF' > /home/ubuntu/app/.env
+          cat > /home/ubuntu/app/.env << ENVFILE
           DOCKER_USERNAME=${DOCKER_USERNAME}
           REDIS_PASSWORD=${REDIS_PASSWORD}
-          ENVEOF
+          ENVFILE
           
           # 환경 변수 파일 권한 설정
           chmod 600 /home/ubuntu/app/.env
           EOF
-          
+  
           chmod +x deploy/scripts/set_environment.sh
-      
           
           # SSL 인증서 디렉토리 구조 생성
           mkdir -p deploy/certbot/conf
@@ -254,10 +253,10 @@ jobs:
         run: |
           aws deploy create-deployment \
             --application-name ${{ secrets.CODE_DEPLOY_APP_NAME }} \
-            --deployment-group-name ${{ secrets.CODE_DEPLOY_GROUP_NAME }} \
-            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=deploy.zip
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --environment-variables "{\"DOCKER_USERNAME\":\"${{ secrets.DOCKER_USERNAME }}\",\"REDIS_PASSWORD\":\"${{ secrets.REDIS_PASSWORD }}\"}"
+           --deployment-group-name ${{ secrets.CODE_DEPLOY_GROUP_NAME }} \
+          --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=deploy.zip \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --file-exists-behavior OVERWRITE
 
       # Step 14: 배포 시간 기록
       - name: Get Current Time
