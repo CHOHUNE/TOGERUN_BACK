@@ -112,7 +112,10 @@ log "Performing health check..."
 for i in {1..30}; do
     log "Health check attempt $i of 30..."
 
-    if docker exec $TARGET_CONTAINER curl -s "http://localhost:8080/actuator/health" | grep -q "UP"; then
+    # Docker healthcheck 상태 확인
+    HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $TARGET_CONTAINER)
+
+    if [ "$HEALTH_STATUS" = "healthy" ]; then
         log "Health check passed! Container is healthy"
 
         # Nginx 설정 업데이트가 필요한 경우
@@ -130,7 +133,7 @@ for i in {1..30}; do
         exit 0
     fi
 
-    log "Waiting for container to be healthy..."
+    log "Container status: $HEALTH_STATUS - Waiting for healthy status..."
     sleep 10
 done
 
