@@ -111,22 +111,21 @@ jobs:
           )
           
           for file in "${required_files[@]}"; do
-          if [ ! -f "$file" ]; then
-            echo "Error: Required file $file not found"
-            exit 1
+            if [ ! -f "$file" ]; then
+              echo "Error: Required file $file not found"
+              exit 1
             fi
-            
+          
             if [[ $file == scripts/* ]]; then
-            cp "$file" deploy/scripts/
+              cp "$file" deploy/scripts/
             else
-            cp "$file" deploy/
+              cp "$file" deploy/
             fi
           done
           
           echo "All required files copied successfully"
-          
 
-    # 환경 변수 설정 스크립트 생성
+          # 환경 변수 설정 스크립트 생성
           cat << 'EOF' > deploy/scripts/set_environment.sh
           #!/bin/bash
           
@@ -138,16 +137,15 @@ jobs:
           
           # 로깅 함수
           log() {
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
           }
           
           # 디렉토리 존재 확인 및 생성
           log "Creating app directory if not exists..."
           mkdir -p "$APP_DIR"
           
-          
           # 환경 변수 파일 생성
-            log "Creating environment file..."
+          log "Creating environment file..."
           cat > "$APP_DIR/.env" << ENVEOF
           DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
@@ -168,15 +166,13 @@ jobs:
           
           # 환경 변수 파일 검증
           if [ ! -f "$APP_DIR/.env" ]; then
-              log "Error: Failed to create .env file"
-              exit 1
+            log "Error: Failed to create .env file"
+            exit 1
           fi
-          
           
           log "Environment setup completed successfully"
           exit 0
           EOF
-          
           
           # SSL 인증서 디렉토리 구조 생성
           mkdir -p deploy/certbot/conf
