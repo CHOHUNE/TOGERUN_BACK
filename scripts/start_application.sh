@@ -31,6 +31,33 @@ if [ -z "$REDIS_PASSWORD" ]; then
     exit 1
 fi
 
+# Docker network 확인 및 생성
+log "Checking Docker network..."
+if ! docker network ls | grep -q "ubuntu_this_network"; then
+    log "Creating Docker network: ubuntu_this_network"
+    docker network create ubuntu_this_network
+fi
+
+# Redis 컨테이너 확인 및 시작
+log "Checking Redis container..."
+if ! docker ps | grep -q "redis_boot"; then
+    log "Starting Redis container..."
+    if ! docker-compose --env-file .env -f docker-compose.blue-green.yml up -d redis; then
+        log "Error: Failed to start Redis container"
+        exit 1
+    fi
+fi
+
+# Nginx 컨테이너 확인 및 시작
+log "Checking Nginx container..."
+if ! docker ps | grep -q "nginx"; then
+    log "Starting Nginx container..."
+    if ! docker-compose --env-file .env -f docker-compose.blue-green.yml up -d nginx certbot; then
+        log "Error: Failed to start Nginx container"
+        exit 1
+    fi
+fi
+
 # 현재 실행 중인 컨테이너 확인
 log "Checking current deployment status..."
 BLUE_CONTAINER=$(docker ps -q --filter "name=spring-boot-blue")
@@ -65,7 +92,7 @@ fi
 log "Cleaning up existing target container..."
 docker rm -f $TARGET_CONTAINER || true
 
-# 새 컨테이너 시작 (환경변수 파일 사용)
+# 새 컨테이너 시작
 log "Starting new container: $TARGET_CONTAINER"
 if ! docker-compose --env-file .env -f docker-compose.blue-green.yml up -d --force-recreate $TARGET_CONTAINER; then
     log "Error: Failed to start container with docker-compose"
@@ -87,6 +114,19 @@ for i in {1..30}; do
 
     if docker exec $TARGET_CONTAINER curl -s "http://localhost:8080/actuator/health" | grep -q "UP"; then
         log "Health check passed! Container is healthy"
+
+        # Nginx 설정 업데이트가 필요한 경우
+        if [ "$TARGET_CONTAINER" = "spring-boot-blue" ]; then
+            log "Updating Nginx configuration to point to blue deployment..."
+            # 여기에 Nginx 설정 업데이트 로직 추가 가능
+        else
+            log "Updating Nginx configuration to point to green deployment..."
+            # 여기에 Nginx 설정 업데이트 로직 추가 가능
+        fi
+
+        # Nginx 설정 리로드
+        docker exec nginx nginx -s reload
+
         exit 0
     fi
 
