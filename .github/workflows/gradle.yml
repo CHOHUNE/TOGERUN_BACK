@@ -100,203 +100,97 @@ jobs:
           # 배포 스크립트 디렉토리 생성
           mkdir -p deploy/scripts
           
-          # 기존 스크립트 복사
-          if [ -d "scripts" ]; then
-            cp -r scripts/* deploy/scripts/
-          fi
+          # 필수 파일 존재 확인 및 복사
+          required_files=(
+            "scripts/before_install.sh"
+            "scripts/start_application.sh"
+            "scripts/validate_service.sh"
+            "appspec.yml"
+            "nginx.conf"
+            "docker-compose.blue-green.yml"
+          )
           
-          # 환경 변수 설정 스크립트 생성
+          for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "Error: Required file $file not found"
+            exit 1
+            fi
+            
+            if [[ $file == scripts/* ]]; then
+            cp "$file" deploy/scripts/
+            else
+            cp "$file" deploy/
+            fi
+          done
+          
+          echo "All required files copied successfully"
+          
+
+    # 환경 변수 설정 스크립트 생성
           cat << 'EOF' > deploy/scripts/set_environment.sh
           #!/bin/bash
           
           # 앱 디렉토리 설정
           APP_DIR="/home/ubuntu/app"
           
+          # 로그 파일 설정
+          LOG_FILE="/home/ubuntu/app/logs/deployment.log"
+          
+          # 로깅 함수
+          log() {
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
+          }
+          
           # 디렉토리 존재 확인 및 생성
+          log "Creating app directory if not exists..."
           mkdir -p "$APP_DIR"
           
+          
           # 환경 변수 파일 생성
+            log "Creating environment file..."
           cat > "$APP_DIR/.env" << ENVEOF
           DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           ENVEOF
           
           # 파일 권한 및 소유권 설정
+          log "Setting file permissions..."
           chown ubuntu:ubuntu "$APP_DIR/.env"
           chmod 600 "$APP_DIR/.env"
           
           # 환경 변수 파일 확인
           echo "Verifying .env file creation:"
           ls -l "$APP_DIR/.env"
-          echo "Environment file contents (without values):"
+          
+          # 환경 변수 파일 내용 확인 (값 제외)
+          log "Environment file contents (without values):"
           grep -v '^#' "$APP_DIR/.env" | cut -d'=' -f1
+          
+          # 환경 변수 파일 검증
+          if [ ! -f "$APP_DIR/.env" ]; then
+              log "Error: Failed to create .env file"
+              exit 1
+          fi
+          
+          
+          log "Environment setup completed successfully"
+          exit 0
           EOF
           
-          # 모든 스크립트에 실행 권한 부여
-          chmod +x deploy/scripts/*.sh
-          
-          # 스크립트 존재 확인
-          echo "Verifying scripts:"
-          ls -l deploy/scripts/
           
           # SSL 인증서 디렉토리 구조 생성
           mkdir -p deploy/certbot/conf
           mkdir -p deploy/certbot/www
           mkdir -p deploy/ssl
           
-          # nginx 설정 파일 생성
-          cat << 'EOF' > deploy/nginx.conf
-          events {
-              worker_connections 1024;
-              multi_accept on;
-              use epoll;
-          }
-
-          http {
-              include /etc/nginx/mime.types;
-              default_type application/octet-stream;
-
-              upstream spring-app {
-                  server spring-boot-blue:8080;
-                  keepalive 32;
-              }
-
-              map $http_origin $cors_origin {
-                  default "";
-                  "https://www.togerun.shop" "$http_origin";
-                  "https://togerun.shop" "$http_origin";
-                  "http://localhost:3000" "$http_origin";
-              }
-
-              server {
-                  listen 80;
-                  listen [::]:80;
-                  server_name api.togerun.shop;
-
-                  location /.well-known/acme-challenge/ {
-                      root /var/www/certbot;
-                  }
-
-                  location / {
-                      return 301 https://$host$request_uri;
-                  }
-              }
-
-              server {
-                  listen 443 ssl;
-                  listen [::]:443 ssl;
-                  http2 on;
-                  server_name api.togerun.shop;
-
-                  ssl_certificate /etc/letsencrypt/live/api.togerun.shop/fullchain.pem;
-                  ssl_certificate_key /etc/letsencrypt/live/api.togerun.shop/privkey.pem;
-                  ssl_protocols TLSv1.2 TLSv1.3;
-                  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
-                  ssl_prefer_server_ciphers off;
-                  ssl_session_cache shared:SSL:10m;
-                  ssl_session_timeout 10m;
-
-                  location / {
-                      if ($request_method = 'OPTIONS') {
-                          add_header 'Access-Control-Allow-Origin' $cors_origin always;
-                          add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
-                          add_header 'Access-Control-Allow-Headers' 'Authorization, Cache-Control, Content-Type, Accept, Last-Event-ID' always;
-                          add_header 'Access-Control-Allow-Credentials' 'true' always;
-                          add_header 'Access-Control-Max-Age' 3600 always;
-                          add_header 'Content-Type' 'text/plain charset=UTF-8' always;
-                          add_header 'Content-Length' 0 always;
-                          return 204;
-                      }
-
-                      # 보안 헤더
-                      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-                      add_header X-Frame-Options "SAMEORIGIN" always;
-                      add_header X-Content-Type-Options "nosniff" always;
-                      add_header X-XSS-Protection "1; mode=block" always;
+          # 모든 스크립트에 실행 권한 부여
+          chmod +x deploy/scripts/*.sh
           
-                      # CORS 헤더
-                      add_header 'Access-Control-Allow-Origin' $cors_origin always;
-                      add_header 'Access-Control-Allow-Credentials' 'true' always;
-                      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
-                      add_header 'Access-Control-Allow-Headers' 'Authorization, Cache-Control, Content-Type, Accept, Last-Event-ID' always;
-
-                      # 프록시 설정
-                      proxy_pass http://spring-app;
-                      proxy_http_version 1.1;
-          
-                      # 헤더 설정
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                      proxy_set_header X-Forwarded-Proto $scheme;
-          
-                      # WebSocket 지원
-                      proxy_set_header Upgrade $http_upgrade;
-                      proxy_set_header Connection "upgrade";
-
-                      # 타임아웃 설정
-                      proxy_connect_timeout 300;
-                      proxy_send_timeout 300;
-                      proxy_read_timeout 300;
-                      send_timeout 300;
-
-                      # SSE 설정
-                      proxy_buffering off;
-                      proxy_cache off;
-          
-                      # 쿠키 설정
-                      proxy_cookie_path / "/; secure; Domain=.togerun.shop";
-                  }
-              }
-          }
-          EOF
-          
-          # appspec.yml 생성
-          cat << 'EOF' > deploy/appspec.yml
-          version: 0.0
-          os: linux
-          files:
-            - source: /
-              destination: /home/ubuntu/app
-          permissions:
-            - object: /home/ubuntu/app/scripts
-              pattern: "*.sh"
-              mode: 755
-              owner: ubuntu
-              group: ubuntu
-              type:
-                - file
-            - object: /home/ubuntu/app
-              pattern: "**/*"
-              owner: ubuntu
-              group: ubuntu
-              mode: 644
-              type:
-                - file
-            - object: /home/ubuntu/app/.env
-              mode: 600
-              owner: ubuntu
-              group: ubuntu
-              type:
-                - file
-          hooks:
-            BeforeInstall:
-              - location: scripts/before_install.sh
-                timeout: 300
-                runas: ubuntu
-            AfterInstall:
-              - location: scripts/set_environment.sh
-                timeout: 300
-                runas: root
-            ApplicationStart:
-              - location: scripts/start_application.sh
-                timeout: 600
-                runas: ubuntu
-            ValidateService:
-              - location: scripts/validate_service.sh
-                timeout: 300
-                runas: ubuntu
-          EOF
+          # 파일 존재 여부 확인
+          echo "Verifying deployment files:"
+          ls -la deploy/
+          echo "Verifying scripts:"
+          ls -la deploy/scripts/
           
           # 배포 패키지 생성
           cd deploy && zip -r ../deploy.zip .
