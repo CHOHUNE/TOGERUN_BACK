@@ -71,7 +71,9 @@ public class CustomSecurityConfig {
                         "/health",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "/login/oauth2/code/**"  // OAuth2 콜백 URL 허용
+                        "/login/oauth2/code/**",  // OAuth2 콜백 URL 허용,
+                        "/actuator/health"
+
                 ).permitAll()
                 .requestMatchers("/api/notifications/subscribe").authenticated()
                 .anyRequest().authenticated()
