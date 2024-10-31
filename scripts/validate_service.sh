@@ -13,7 +13,7 @@ fi
 
 # nginx 설정 업데이트
 sed -i "s/server spring-boot-[^:]*:8080/server $NEW_CONTAINER:8080/g" nginx.conf
-docker-compose restart nginx
+docker-compose --env-file .env -f docker-compose.blue-green.yml restart nginx
 
 # 이전 컨테이너 종료
 docker stop $OLD_CONTAINER || true

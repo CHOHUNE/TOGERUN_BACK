@@ -97,29 +97,47 @@ jobs:
           cp -r docker-build/* deploy/
           cp docker-compose.blue-green.yml deploy/
           
-          # 배포 스크립트 복사
+          # 배포 스크립트 디렉토리 생성
           mkdir -p deploy/scripts
-          cp -r scripts/* deploy/scripts/
-          chmod +x deploy/scripts/*.sh
+          
+          # 기존 스크립트 복사
+          if [ -d "scripts" ]; then
+            cp -r scripts/* deploy/scripts/
+          fi
           
           # 환경 변수 설정 스크립트 생성
-          cat << EOF > deploy/scripts/set_environment.sh
+          cat << 'EOF' > deploy/scripts/set_environment.sh
           #!/bin/bash
           
           # 앱 디렉토리 설정
           APP_DIR="/home/ubuntu/app"
           
+          # 디렉토리 존재 확인 및 생성
+          mkdir -p "$APP_DIR"
           
           # 환경 변수 파일 생성
-          cat > "\$APP_DIR/.env" << ENVEOF
+          cat > "$APP_DIR/.env" << ENVEOF
           DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           ENVEOF
           
-          # 파일 권한 설정
-          chmod 600 "\$APP_DIR/.env"
-          chown ubuntu:ubuntu "\$APP_DIR/.env"
+          # 파일 권한 및 소유권 설정
+          chown ubuntu:ubuntu "$APP_DIR/.env"
+          chmod 600 "$APP_DIR/.env"
+          
+          # 환경 변수 파일 확인
+          echo "Verifying .env file creation:"
+          ls -l "$APP_DIR/.env"
+          echo "Environment file contents (without values):"
+          grep -v '^#' "$APP_DIR/.env" | cut -d'=' -f1
           EOF
+          
+          # 모든 스크립트에 실행 권한 부여
+          chmod +x deploy/scripts/*.sh
+          
+          # 스크립트 존재 확인
+          echo "Verifying scripts:"
+          ls -l deploy/scripts/
           
           # SSL 인증서 디렉토리 구조 생성
           mkdir -p deploy/certbot/conf
@@ -233,8 +251,52 @@ jobs:
           }
           EOF
           
-          # appspec.yml 복사
-          cp appspec.yml deploy/
+          # appspec.yml 생성
+          cat << 'EOF' > deploy/appspec.yml
+          version: 0.0
+          os: linux
+          files:
+            - source: /
+              destination: /home/ubuntu/app
+          permissions:
+            - object: /home/ubuntu/app/scripts
+              pattern: "*.sh"
+              mode: 755
+              owner: ubuntu
+              group: ubuntu
+              type:
+                - file
+            - object: /home/ubuntu/app
+              pattern: "**/*"
+              owner: ubuntu
+              group: ubuntu
+              mode: 644
+              type:
+                - file
+            - object: /home/ubuntu/app/.env
+              mode: 600
+              owner: ubuntu
+              group: ubuntu
+              type:
+                - file
+          hooks:
+            BeforeInstall:
+              - location: scripts/before_install.sh
+                timeout: 300
+                runas: ubuntu
+            AfterInstall:
+              - location: scripts/set_environment.sh
+                timeout: 300
+                runas: root
+            ApplicationStart:
+              - location: scripts/start_application.sh
+                timeout: 600
+                runas: ubuntu
+            ValidateService:
+              - location: scripts/validate_service.sh
+                timeout: 300
+                runas: ubuntu
+          EOF
           
           # 배포 패키지 생성
           cd deploy && zip -r ../deploy.zip .
