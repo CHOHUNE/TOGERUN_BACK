@@ -1,53 +1,39 @@
 #!/bin/bash
-
-# 스크립트 실행 디렉토리로 이동
-cd /home/ubuntu/app
-
-# 로그 파일 설정
-LOG_FILE="/home/ubuntu/app/logs/deployment.log"
-
-# 로깅 함수
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
-}
+source /home/ubuntu/app/scripts/common.sh
+cd $APP_DIR
 
 # 현재 실행 중인 컨테이너 확인
-log "Checking current deployment status..."
-CURRENT_CONTAINER=$(docker ps --filter "status=running" --filter "name=spring-boot-blue" -q)
+get_running_containers
 
-if [ -n "$CURRENT_CONTAINER" ]; then
-    NEW_CONTAINER="spring-boot-green"
-    OLD_CONTAINER="spring-boot-blue"
-else
-    NEW_CONTAINER="spring-boot-blue"
+log "Current running containers:"
+log "Blue: ${BLUE_RUNNING:-none}"
+log "Green: ${GREEN_RUNNING:-none}"
+
+# 대상 컨테이너 결정
+if [ -n "$BLUE_RUNNING" ]; then
+    TARGET_CONTAINER="spring-boot-blue"
     OLD_CONTAINER="spring-boot-green"
+else
+    TARGET_CONTAINER="spring-boot-green"
+    OLD_CONTAINER="spring-boot-blue"
 fi
 
-log "Current deployment:"
-log "New container: $NEW_CONTAINER"
-log "Old container: $OLD_CONTAINER"
+# 최종 헬스체크 (3번 시도)
+check_container_health $TARGET_CONTAINER 3 || {
+    log "Error: Target container health check failed"
+    exit 1
+}
 
 # nginx 설정 업데이트
-log "Updating nginx configuration..."
-if ! sed -i "s/server spring-boot-[^:]*:8080/server $NEW_CONTAINER:8080/g" nginx.conf; then
-    log "Error: Failed to update nginx configuration"
-    exit 1
+update_nginx_config $TARGET_CONTAINER || exit 1
+
+# nginx 설정 리로드
+reload_nginx || exit 1
+
+# 이전 컨테이너 정리
+if [ -n "$OLD_CONTAINER" ]; then
+    cleanup_container $OLD_CONTAINER
 fi
-
-# nginx 재시작
-log "Restarting nginx..."
-if ! docker-compose --env-file .env -f docker-compose.blue-green.yml restart nginx; then
-    log "Error: Failed to restart nginx"
-    exit 1
-fi
-
-# 이전 컨테이너 종료 (30초 타임아웃)
-log "Stopping old container with grace period..."
-docker stop -t 30 $OLD_CONTAINER || true
-
-# 이전 컨테이너 제거
-log "Removing old container..."
-docker rm $OLD_CONTAINER || true
 
 log "Deployment validation completed successfully"
 exit 0
