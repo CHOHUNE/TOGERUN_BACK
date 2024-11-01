@@ -102,6 +102,7 @@ jobs:
           
           # 필수 파일 존재 확인 및 복사
           required_files=(
+            "scripts/common.sh"
             "scripts/before_install.sh"
             "scripts/start_application.sh"
             "scripts/validate_service.sh"
