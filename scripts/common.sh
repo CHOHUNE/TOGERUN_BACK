@@ -67,15 +67,6 @@ check_container_exists() {
     docker ps -a --filter "name=$container_name" --format '{{.Names}}' | grep -q "^$container_name$"
 }
 
-# nginx 관련 함수들
-reload_nginx() {
-    if ! docker exec nginx nginx -s reload; then
-        log "Error: Failed to reload nginx"
-        return 1
-    fi
-    return 0
-}
-
 # 컨테이너 정리 함수
 cleanup_container() {
     local container_name=$1
@@ -86,4 +77,72 @@ cleanup_container() {
         docker stop -t "$timeout" "$container_name" || true
         docker rm "$container_name" || true
     fi
+}
+
+# nginx 설정 업데이트 함수
+update_nginx_config() {
+    local target_container=$1
+    local nginx_conf="${APP_DIR}/nginx.conf"
+    local temp_conf="${APP_DIR}/nginx.conf.tmp"
+
+    # nginx 설정 파일 존재 확인
+    if [ ! -f "$nginx_conf" ]; then
+        log "Error: nginx configuration file not found at $nginx_conf"
+        return 1
+    fi
+
+    # upstream 설정 업데이트
+    if [ "$target_container" = "spring-boot-blue" ]; then
+        sed '/upstream spring-app/,/}/{/server/d};/upstream spring-app/a\        server spring-boot-blue:8080 max_fails=3 fail_timeout=30s;\n        server spring-boot-green:8080 backup max_fails=3 fail_timeout=30s;' "$nginx_conf" > "$temp_conf"
+    else
+        sed '/upstream spring-app/,/}/{/server/d};/upstream spring-app/a\        server spring-boot-green:8080 max_fails=3 fail_timeout=30s;\n        server spring-boot-blue:8080 backup max_fails=3 fail_timeout=30s;' "$nginx_conf" > "$temp_conf"
+    fi
+
+    # 설정 파일 검증
+    if ! docker cp "$temp_conf" nginx:/tmp/nginx.conf; then
+        log "Error: Failed to copy nginx configuration for testing"
+        rm "$temp_conf"
+        return 1
+    fi
+
+    if ! docker exec nginx nginx -t -c /tmp/nginx.conf; then
+        log "Error: Invalid nginx configuration"
+        rm "$temp_conf"
+        return 1
+    fi
+
+    # 설정 파일 교체 및 권한 설정
+    if ! mv "$temp_conf" "$nginx_conf"; then
+        log "Error: Failed to update nginx configuration"
+        return 1
+    fi
+
+    log "Successfully updated nginx configuration for $target_container"
+    return 0
+}
+
+# nginx 리로드 함수 강화
+reload_nginx() {
+    log "Reloading nginx configuration..."
+
+    # 설정 테스트
+    if ! docker exec nginx nginx -t; then
+        log "Error: Invalid nginx configuration"
+        return 1
+    fi
+
+    # 설정 리로드
+    if ! docker exec nginx nginx -s reload; then
+        log "Error: Failed to reload nginx"
+        return 1
+    fi
+
+    # 리로드 후 상태 확인
+    if ! docker exec nginx pgrep nginx > /dev/null; then
+        log "Error: Nginx process not running after reload"
+        return 1
+    fi
+
+    log "Nginx configuration reloaded successfully"
+    return 0
 }
