@@ -1,7 +1,7 @@
 FROM bellsoft/liberica-openjdk-alpine:17
 
 # curl 설치
-RUN apt-get update && apt-get install -y curl
+RUN apk add --no-cache curl
 
 VOLUME /tmp
 COPY app.jar app.jar
