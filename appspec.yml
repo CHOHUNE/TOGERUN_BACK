@@ -3,6 +3,8 @@ os: linux
 files:
   - source: /
     destination: /home/ubuntu/app
+  - source: /scripts/common.sh
+    destination: /home/ubuntu/app/scripts/
 files_exists_behavior: overwrite
 permissions:
   - object: /home/ubuntu/app/scripts
