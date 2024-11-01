@@ -9,10 +9,16 @@ init_log() {
 APP_DIR="/home/ubuntu/app"
 mkdir -p "$APP_DIR/scripts"
 
-# common.sh가 없으면 생성
+# 현재 스크립트가 있는 디렉토리 경로 가져오기
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# 프로젝트 루트 디렉토리 (scripts 폴더의 상위 디렉토리)
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# common.sh가 없으면 복사
 if [ ! -f "$APP_DIR/scripts/common.sh" ]; then
-    init_log "Creating common.sh..."
-    cp /path/to/source/common.sh "$APP_DIR/scripts/common.sh"
+    init_log "Copying common.sh from project..."
+    cp "$PROJECT_ROOT/scripts/common.sh" "$APP_DIR/scripts/common.sh"
+    chmod 755 "$APP_DIR/scripts/common.sh"
 fi
 
 # 이후 common.sh import
