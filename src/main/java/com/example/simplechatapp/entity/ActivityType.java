@@ -5,9 +5,7 @@ public enum ActivityType {
     RUNNING,
     HIKING,
     CYCLING,
-    YOGA,
-    PILATES,
-    WEIGHT_TRAINING,
-    SURFING
+    CROSSFIT
+
 
 }
