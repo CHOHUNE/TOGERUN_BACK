@@ -10,7 +10,7 @@ mkdir -p "$APP_DIR"
 # 환경 변수 파일 생성
 log "Creating environment file..."
 cat > "$APP_DIR/.env" << EOF
-APP_DIR=${APP_DIR}
+
 DOCKER_USERNAME=${DOCKER_USERNAME}
 REDIS_PASSWORD=${REDIS_PASSWORD}
 EOF
