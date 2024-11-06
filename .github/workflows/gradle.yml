@@ -148,6 +148,7 @@ jobs:
           # 환경 변수 파일 생성
           log "Creating environment file..."
           cat > "$APP_DIR/.env" << ENVEOF
+          APP_DIR=/home/ubuntu/app
           DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           ENVEOF
