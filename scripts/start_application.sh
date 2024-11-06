@@ -2,7 +2,7 @@
 
 # 공통 함수 import
 source /home/ubuntu/app/scripts/common.sh
-
+export APP_DIR="/home/ubuntu/app"
 # 작업 디렉토리 이동
 cd $APP_DIR
 
