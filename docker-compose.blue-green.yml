@@ -8,10 +8,10 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
+      - ${APP_DIR}/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${APP_DIR}/ssl:/etc/nginx/ssl:ro
+      - ${APP_DIR}/certbot/conf:/etc/letsencrypt:ro
+      - ${APP_DIR}/certbot/www:/var/www/certbot:ro
     networks:
       - ubuntu_this_network
     restart: always
@@ -28,8 +28,8 @@ services:
     image: certbot/certbot
     container_name: certbot
     volumes:
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot
+      - ${APP_DIR}/certbot/conf:/etc/letsencrypt:ro
+      - ${APP_DIR}/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   spring-boot-blue:
