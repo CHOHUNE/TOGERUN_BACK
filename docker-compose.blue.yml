@@ -1,13 +1,14 @@
 
 services:
-  nginx-green:
+  nginx:
     image: nginx:alpine
-    container_name: nginx-green
+    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ${APP_DIR}/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${APP_DIR}/nginx/conf.d:/etc/nginx/conf.d:ro
       - ${APP_DIR}/ssl:/etc/nginx/ssl:ro
       - ${APP_DIR}/certbot/conf:/etc/letsencrypt:ro
       - ${APP_DIR}/certbot/www:/var/www/certbot:ro
