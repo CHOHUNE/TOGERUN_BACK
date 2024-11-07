@@ -92,7 +92,8 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deploy
-          
+          mkdir -p deploy/nginx/conf.d
+        
           # Docker 관련 파일 복사
           cp -r docker-build/* deploy/
           cp docker-compose.blue.yml deploy/
@@ -103,8 +104,9 @@ jobs:
           mkdir -p deploy/nginx
           
           # nginx 설정 파일 복사
-          cp nginx.blue.conf deploy/nginx/
-          cp nginx.green.conf deploy/nginx/
+          cp nginx.conf deploy/nginx/
+          cp blue.conf deploy/nginx/conf.d/
+          cp green.conf deploy/nginx/conf.d/
           
           # 필수 파일 존재 확인 및 복사
           required_files=(

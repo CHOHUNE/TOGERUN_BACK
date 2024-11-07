@@ -5,6 +5,6 @@ RUN apk add --no-cache curl
 
 VOLUME /tmp
 COPY app.jar app.jar
-EXPOSE 8080
+EXPOSE 8081 8082
 
 ENTRYPOINT ["java","-jar","/app.jar"]

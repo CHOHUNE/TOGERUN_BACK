@@ -11,12 +11,13 @@ log() {
 # 컨테이너 헬스체크
 check_container_health() {
     local container=$1
-    local max_attempts=${2:-30}
+    local port=$2    # 포트를 파라미터로 받음
+    local max_attempts=${3:-30}
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
         log "Health check attempt $attempt of $max_attempts for $container..."
-        if docker exec $container curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+        if docker exec $container curl -f http://localhost:$port/actuator/health > /dev/null 2>&1; then
             log "Health check passed for $container!"
             return 0
         fi
@@ -82,42 +83,42 @@ cleanup_container() {
 # nginx 컨테이너 전환 함수
 switch_nginx() {
     local target_color=$1
-    local old_color=$([ "$target_color" = "blue" ] && echo "green" || echo "blue")
+    local nginx_container="nginx-proxy"
 
     log "Switching to $target_color deployment..."
 
-    # 새로운 nginx 시작
-    docker-compose -f docker-compose.${target_color}.yml up -d nginx-${target_color} || {
-        log "Error: Failed to start nginx-${target_color}"
+    # nginx 컨테이너가 실행 중인지 확인
+    if ! docker ps -q -f name=$nginx_container | grep -q .; then
+        log "Error: Nginx container is not running"
         return 1
-    }
+    fi
+
+    # 새로운 설정 적용
+    docker exec $nginx_container sh -c "ln -sf /etc/nginx/conf.d/${target_color}.conf /etc/nginx/conf.d/current.conf"
+
+    # nginx 설정 리로드
+    if ! docker exec $nginx_container nginx -s reload; then
+        log "Error: Failed to reload nginx configuration"
+        return 1
+    fi
 
     # 헬스체크
     local max_attempts=30
     local attempt=1
     while [ $attempt -le $max_attempts ]; do
-        log "Health check attempt $attempt of $max_attempts for nginx-${target_color}..."
-        if docker exec nginx-${target_color} wget -q --spider http://localhost/health; then
-            log "Health check passed for nginx-${target_color}!"
-            break
+        log "Health check attempt $attempt of $max_attempts for nginx..."
+        if docker exec $nginx_container wget -q --spider http://localhost/health; then
+            log "Health check passed for nginx!"
+            return 0
         fi
         attempt=$((attempt + 1))
         sleep 5
     done
 
-    if [ $attempt -gt $max_attempts ]; then
-        log "Error: Health check failed for nginx-${target_color}"
-        return 1
-    fi
+    log "Error: Health check failed for nginx"
+    return 1
+    }
 
-    # 이전 nginx 정리
-    if docker ps -q -f name=nginx-${old_color} | grep -q .; then
-        log "Stopping old nginx-${old_color}..."
-        docker-compose -f docker-compose.${old_color}.yml stop nginx-${old_color}
-    fi
-
-    return 0
-}
 
 check_container_health_validate() {
     local container=$1
