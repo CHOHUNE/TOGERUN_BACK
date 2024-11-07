@@ -1,0 +1,61 @@
+version: '3.4'
+
+services:
+  nginx-green:
+    image: nginx:alpine
+    container_name: nginx-green
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${APP_DIR}/nginx/nginx.green.conf:/etc/nginx/nginx.conf:ro
+      - ${APP_DIR}/ssl:/etc/nginx/ssl:ro
+      - ${APP_DIR}/certbot/conf:/etc/letsencrypt:ro
+      - ${APP_DIR}/certbot/www:/var/www/certbot:ro
+    networks:
+      - ubuntu_this_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  spring-boot-green:
+    container_name: spring-boot-green
+    image: ${DOCKER_USERNAME}/spring:latest
+    expose:
+      - "8082"
+    environment:
+      - JAVA_OPTS=-XX:+UseG1GC -Xms256m -Xmx512m
+      - SPRING_PROFILES_ACTIVE=green,prod
+      - SERVER_PORT=8082
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PASSWORD=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ubuntu_this_network
+    restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: redis_boot
+    command: redis-server --requirepass "${REDIS_PASSWORD}"
+    volumes:
+      - redis:/data
+    networks:
+      - ubuntu_this_network
+    restart: always
+
+networks:
+  ubuntu_this_network:
+    external: true
+
+volumes:
+  redis:

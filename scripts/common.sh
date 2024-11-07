@@ -79,70 +79,60 @@ cleanup_container() {
     fi
 }
 
-# nginx 설정 업데이트 함수
-update_nginx_config() {
-    local target_container=$1
-    local nginx_conf="${APP_DIR}/nginx.conf"
-    local temp_conf="${APP_DIR}/nginx.conf.tmp"
+# nginx 컨테이너 전환 함수
+switch_nginx() {
+    local target_color=$1
+    local old_color=$([ "$target_color" = "blue" ] && echo "green" || echo "blue")
 
-    # nginx 설정 파일 존재 확인
-    if [ ! -f "$nginx_conf" ]; then
-        log "Error: nginx configuration file not found at $nginx_conf"
+    log "Switching to $target_color deployment..."
+
+    # 새로운 nginx 시작
+    docker-compose -f docker-compose.${target_color}.yml up -d nginx-${target_color} || {
+        log "Error: Failed to start nginx-${target_color}"
+        return 1
+    }
+
+    # 헬스체크
+    local max_attempts=30
+    local attempt=1
+    while [ $attempt -le $max_attempts ]; do
+        log "Health check attempt $attempt of $max_attempts for nginx-${target_color}..."
+        if docker exec nginx-${target_color} wget -q --spider http://localhost/health; then
+            log "Health check passed for nginx-${target_color}!"
+            break
+        fi
+        attempt=$((attempt + 1))
+        sleep 5
+    done
+
+    if [ $attempt -gt $max_attempts ]; then
+        log "Error: Health check failed for nginx-${target_color}"
         return 1
     fi
 
-    # upstream 설정 업데이트
-    if [ "$target_container" = "spring-boot-blue" ]; then
-        sed '/upstream spring-app/,/}/{/server/d};/upstream spring-app/a\        server spring-boot-blue:8080 max_fails=3 fail_timeout=30s;\n        server spring-boot-green:8080 backup max_fails=3 fail_timeout=30s;' "$nginx_conf" > "$temp_conf"
-    else
-        sed '/upstream spring-app/,/}/{/server/d};/upstream spring-app/a\        server spring-boot-green:8080 max_fails=3 fail_timeout=30s;\n        server spring-boot-blue:8080 backup max_fails=3 fail_timeout=30s;' "$nginx_conf" > "$temp_conf"
+    # 이전 nginx 정리
+    if docker ps -q -f name=nginx-${old_color} | grep -q .; then
+        log "Stopping old nginx-${old_color}..."
+        docker-compose -f docker-compose.${old_color}.yml stop nginx-${old_color}
     fi
 
-    # 설정 파일 검증
-    if ! docker cp "$temp_conf" nginx:/tmp/nginx.conf; then
-        log "Error: Failed to copy nginx configuration for testing"
-        rm "$temp_conf"
-        return 1
-    fi
-
-    if ! docker exec nginx nginx -t -c /tmp/nginx.conf; then
-        log "Error: Invalid nginx configuration"
-        rm "$temp_conf"
-        return 1
-    fi
-
-    # 설정 파일 교체 및 권한 설정
-    if ! mv "$temp_conf" "$nginx_conf"; then
-        log "Error: Failed to update nginx configuration"
-        return 1
-    fi
-
-    log "Successfully updated nginx configuration for $target_container"
     return 0
 }
 
-# nginx 리로드 함수 강화
-reload_nginx() {
-    log "Reloading nginx configuration..."
+check_container_health_validate() {
+    local container=$1
+    local port=$2
+    local max_attempts=${3:-30}
+    local attempt=1
 
-    # 설정 테스트
-    if ! docker exec nginx nginx -t; then
-        log "Error: Invalid nginx configuration"
-        return 1
-    fi
-
-    # 설정 리로드
-    if ! docker exec nginx nginx -s reload; then
-        log "Error: Failed to reload nginx"
-        return 1
-    fi
-
-    # 리로드 후 상태 확인
-    if ! docker exec nginx pgrep nginx > /dev/null; then
-        log "Error: Nginx process not running after reload"
-        return 1
-    fi
-
-    log "Nginx configuration reloaded successfully"
-    return 0
+    while [ $attempt -le $max_attempts ]; do
+        log "Health check attempt $attempt of $max_attempts for $container..."
+        if docker exec $container curl -f http://localhost:$port/actuator/health > /dev/null 2>&1; then
+            log "Health check passed for $container!"
+            return 0
+        fi
+        attempt=$((attempt + 1))
+        sleep 10
+    done
+    return 1
 }

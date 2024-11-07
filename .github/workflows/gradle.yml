@@ -95,10 +95,16 @@ jobs:
           
           # Docker 관련 파일 복사
           cp -r docker-build/* deploy/
-          cp docker-compose.blue-green.yml deploy/
+          cp docker-compose.blue.yml deploy/
+          cp docker-compose.green.yml deploy/
           
           # 배포 스크립트 디렉토리 생성
           mkdir -p deploy/scripts
+          mkdir -p deploy/nginx
+          
+          # nginx 설정 파일 복사
+          cp nginx.blue.conf deploy/nginx/
+          cp nginx.green.conf deploy/nginx/
           
           # 필수 파일 존재 확인 및 복사
           required_files=(
@@ -107,8 +113,6 @@ jobs:
             "scripts/start_application.sh"
             "scripts/validate_service.sh"
             "appspec.yml"
-            "nginx.conf"
-            "docker-compose.blue-green.yml"
           )
           
           for file in "${required_files[@]}"; do
@@ -144,6 +148,8 @@ jobs:
           # 디렉토리 존재 확인 및 생성
           log "Creating app directory if not exists..."
           mkdir -p "$APP_DIR"
+          mkdir -p "$APP_DIR/nginx"
+          mkdir -p "$APP_DIR/logs"
           
           # 환경 변수 파일 생성
           log "Creating environment file..."
@@ -157,6 +163,9 @@ jobs:
           log "Setting file permissions..."
           chown ubuntu:ubuntu "$APP_DIR/.env"
           chmod 600 "$APP_DIR/.env"
+          chmod 755 "$APP_DIR/nginx"
+          chmod 644 "$APP_DIR/nginx/*.conf"
+        
           
           # 환경 변수 파일 확인
           echo "Verifying .env file creation:"
@@ -189,6 +198,8 @@ jobs:
           ls -la deploy/
           echo "Verifying scripts:"
           ls -la deploy/scripts/
+          echo "Verifying nginx configs:"
+          ls -la deploy/nginx/
           
           # 배포 패키지 생성
           cd deploy && zip -r ../deploy.zip .
