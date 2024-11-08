@@ -83,7 +83,7 @@ cleanup_container() {
 # nginx 컨테이너 전환 함수
 switch_nginx() {
     local target_color=$1
-    local nginx_container="nginx-proxy"
+    local nginx_container="nginx"
 
     log "Switching to $target_color deployment..."
 
@@ -99,6 +99,16 @@ switch_nginx() {
     # nginx 설정 리로드
     if ! docker exec $nginx_container nginx -s reload; then
         log "Error: Failed to reload nginx configuration"
+        return 1
+    fi
+
+    # switch_nginx 함수에 디버깅 로그 추가
+    docker exec $nginx_container ls -l /etc/nginx/conf.d/ || log "Error: Cannot list nginx config directory"
+    docker exec $nginx_container cat /etc/nginx/conf.d/current.conf || log "Error: Cannot read current nginx config"
+
+    # nginx 설정 테스트 단계 추가
+    if ! docker exec $nginx_container nginx -t; then
+        log "Error: Nginx configuration test failed"
         return 1
     fi
 
