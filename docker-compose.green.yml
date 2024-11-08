@@ -22,14 +22,14 @@ services:
       retries: 3
       start_period: 30s
 
-  spring-boot-blue:
-    container_name: spring-boot-blue
+  spring-boot-green:
+    container_name: spring-boot-green
     image: ${DOCKER_USERNAME}/spring:latest
     ports:
       - "8082:8082"
     environment:
       - JAVA_OPTS=-XX:+UseG1GC -Xms256m -Xmx512m
-      - SPRING_PROFILES_ACTIVE=blue,prod
+      - SPRING_PROFILES_ACTIVE=green,prod
       - SERVER_PORT=8082
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PASSWORD=${REDIS_PASSWORD}
