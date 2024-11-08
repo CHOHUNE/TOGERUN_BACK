@@ -17,8 +17,11 @@ if [ -n "$BLUE_RUNNING" ]; then
 else
     TARGET_COLOR="green"
     TARGET_CONTAINER="spring-boot-green"
-    TARGET_PORT=8081
+    TARGET_PORT=8082
 fi
+
+# nginx 전환
+switch_nginx $TARGET_COLOR || exit 1
 
 # 최종 헬스체크 (3번 시도)
 check_container_health_validate $TARGET_CONTAINER $TARGET_PORT 3 || {
@@ -26,8 +29,7 @@ check_container_health_validate $TARGET_CONTAINER $TARGET_PORT 3 || {
     exit 1
 }
 
-# nginx 전환
-switch_nginx $TARGET_COLOR || exit 1
+
 
 log "Deployment validation completed successfully"
 exit 0
