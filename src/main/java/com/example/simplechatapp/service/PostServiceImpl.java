@@ -95,7 +95,6 @@ public class PostServiceImpl implements PostService {
         if (!isAuthor && !isAdmin) {
             throw new AccessDeniedException("게시물의 작성자나 관리자 계정이 아닙니다.");
         }
-
     }
 
     @Override

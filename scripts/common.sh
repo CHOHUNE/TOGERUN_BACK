@@ -129,7 +129,6 @@ switch_nginx() {
     return 1
     }
 
-
 check_container_health_validate() {
     local container=$1
     local port=$2
