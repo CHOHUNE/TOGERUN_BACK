@@ -52,7 +52,7 @@ public class CustomOauthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         } else if (Boolean.TRUE.equals(isDeleted)) {
             log.info("Redirect : deleted user");
-            return frontendUrl + "member/restore/" + claims.get("id");
+            return frontendUrl + "/member/restore/" + claims.get("id");
 
         } else {
             return frontendUrl + "/";
