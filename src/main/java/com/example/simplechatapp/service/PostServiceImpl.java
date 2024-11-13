@@ -57,6 +57,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDTO get(Long id) {
+
         Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
         PostDTO dto = entityToDTO(post);
         dto.setImageList(post.getImageList().stream()
@@ -147,10 +148,11 @@ public class PostServiceImpl implements PostService {
     @Caching(evict = {@CacheEvict(value = "post", key = "#id"), @CacheEvict(value = "postComments", key = "#id")})
     @Transactional
     public void remove(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
-        deleteFiles(post.getImageList());
 
+        Post post = postRepository.findById(id).orElseThrow();
+        deleteFiles(post.getImageList());
         postRepository.deleteById(id);
+
     }
 
     @Override
