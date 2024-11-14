@@ -149,7 +149,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void remove(Long id) {
 
-        Post post = postRepository.findById(id).orElseThrow();
+        Post post = postRepository.findById(id).orElseThrow(()-> new RuntimeException("Post not found"));
         deleteFiles(post.getImageList());
         postRepository.deleteById(id);
 

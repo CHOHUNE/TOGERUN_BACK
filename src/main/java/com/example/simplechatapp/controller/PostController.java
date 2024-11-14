@@ -90,10 +90,10 @@ public class PostController {
             @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal UserDTO principal) {
 
-            postService.checkAuthorization(id, principal.getEmail());
-            postService.modify(postDTO, files);
-            postDTO.setId(id);
-            return ResponseEntity.ok(Map.of("result", "success"));
+        postService.checkAuthorization(id, principal.getEmail());
+        postService.modify(postDTO, files);
+        postDTO.setId(id);
+        return ResponseEntity.ok(Map.of("result", "success"));
 
     }
 
@@ -103,11 +103,13 @@ public class PostController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserDTO principal) {
 
-            postService.checkAuthorization(id, principal.getEmail());
-            postService.remove(id);
+        postService.checkAuthorization(id, principal.getEmail());
 
-            List<String> oldFileNames = postService.get(id).getImageList();
-            return ResponseEntity.ok(Map.of("result", "success", "oldFileNames", oldFileNames));
+        List<String> oldFileNames = postService.get(id).getImageList();
+
+        postService.remove(id);
+
+        return ResponseEntity.ok(Map.of("result", "success", "oldFileNames", oldFileNames));
     }
 
     @PostMapping("/{id}/favorite")
