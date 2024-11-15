@@ -3,8 +3,7 @@
 # Togerun
 
 
-![](https://velog.velcdn.com/images/yuureru/post/d2b86026-a53d-4b13-b124-db0fb97618c4/image.png)
-
+![](https://velog.velcdn.com/images/yuureru/post/350fdf86-939d-4ed1-b4de-c84529c1c2b5/image.png)
 
 # 1. 프로젝트 개요
 
