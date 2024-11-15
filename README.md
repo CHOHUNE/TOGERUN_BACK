@@ -237,4 +237,238 @@
 | user_id      | bigint(20) | PK, FK | 사용자 ID |
 
 
+## 5. 기능 구현
 
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/303a043c-71e3-4d61-b357-dcef160a4f2e/image.png)
+
+**소셜 로그인**
+
+- SpringSecurity Oauth2.0 JWT 인증 방식 사용
+- RefreshToken은 Redis 저장
+- AccessToken은 Cookie 저장
+- 각 소셜로그인에서 제공하는 정보를 가져 옵니다.
+- ( 이미지, 이름, 닉네임, 이메일 )
+- 회원 정보 값에 공란이 있을 경우 다른 기능 이용시 회원 정보 수정으로 Redirect 처리
+- 중복되는 이메일 방지를 위하여 이메일 뒤에 언더바 뒤에 출처 추가
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/eb4679ca-b09d-4437-98bc-31d9fb23b7db/image.png)
+
+**게시판**
+
+- PC, 태블릿, 모바일 반응형 디자인 적용
+- Querydsl 동적 쿼리 생성을 이용한 지역, 종목 선택 및 검색어 입력
+- JPA Pagenation 적용
+- 타이틀, 닉네임, 작성 날짜, 참여 가능 여부, 조회수, 좋아요 카운트, 활동 타입, 집결 장소 도로명 주소 기재
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/52c88586-1519-4e4b-8b58-c848650e9cb8/image.png)
+
+**게시판**
+
+- 글 상세 반응형 디자인 적용
+- 좋아요, 즐겨찾기, 채팅방 입장, 댓글 기능
+- 카카오 맵 API 를 이용한 위치 태그 표시
+- 글 작성자, ADMIN 계정 수정 삭제 가능
+- 무한 대댓글 기능
+- 삭제시 대댓글이 없는 경우 바로 소거
+- 삭제시 대댓글이 있는 경우 삭제된 댓글로 표시
+- 댓글 당사자 수정, 삭제 가능.
+- ADMIN 계정 모든 댓글 삭제만 가능. ( 수정 불가 )
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/e12b6d5f-7c60-49b0-a000-84d1d50fcfa3/image.png)
+
+**즐겨찾기**
+
+- 즐겨찾기 모아보기 기능
+- 상세 클릭시 해당 게시글로 이동
+- 삭제시 가능
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/78899158-8fe6-4bb3-b85b-d60f5b72633b/image.png)
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/6e37e26d-2264-4d65-86c5-45f37aaead5a/image.png)
+
+**채팅방**
+
+- 채팅방 입장시 게시글에 해당하는 채팅방 생성
+- Stomp, Redis 를 활용해 구현
+- Stomp : WebSocket 연결 관리,라우팅 규칙 제공
+- Redis : Pub, Sub, 인메모리를 이용한 빠른 메세지 처리
+- 해당 채팅방 페이지 벗어날시 웹소켓 연결 종료
+- 상단 네비바에서 채팅방 목록 확인 기능
+- 채팅방 나가기 버튼 클릭시 목록에서 삭제
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/8fcf861f-65ee-40a4-86a2-36b52de6cac9/image.png)
+
+**SSE 알람**
+
+- 사이트 접속시 SSE 항시 연결
+- 댓글, 채팅방, 좋아요 실시간 알람
+- 더 보기 버튼 useInfiniteQuery 적용
+- 모두읽기 버튼으로 알람 일괄 읽기 처리
+- AOP pointcut 을 애너테이션으로 처리
+- 해당 알람 클릭시 게시물, 혹은 채팅방으로 이동
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/222be66c-8b34-43dd-b611-d428b8782b80/image.png)
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/a901380f-336f-4bb4-a1e9-a11c86acb42c/image.png)
+
+**SSE 알람**
+
+- AOP 포인트 컷에 애너테이션 적용
+- 댓글 작성, 메세지 보내기, 라이크 메서드에 애너테이션 적용
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/d9ac26ac-12f8-4fef-9fae-f0b6a2c09658/image.png)
+
+**카카오 맵 장소 태깅**
+
+- 글 작성 페이지 내 장소 검색 후 선택 가능
+- 글 상세 페이지 해당 장소 확인 가능
+- 글 상세 페이지 내 장소명과 도로명 주소 확인 가능
+- 게시판 페이지 해당 글 도로명 주소 확인 및 검색 가능
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/dae0ff1f-9734-4310-a457-65102ba2f8ef/image.png)
+
+**Redis 조회수 중복 방지**
+
+- 글 조회시 view:해당게시물ID:IP에 해당하는 값 Redis 에 저장
+- 해당 값은 1일 후에 자동 소멸
+- 해당 값이 없을 때에만 Redis 인메모리에 저장
+- 해당 값이 없을시 false 반환
+- False 일시에 조회수 증가
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/a5532989-c9c4-42d0-b6f2-df885cb310b7/image.png)
+
+**Redis 캐싱,RefreshToken 저장**
+
+- 게시물과 코멘트 캐싱 처리
+- Cache-Aside 패턴 구현
+- 수정 혹은 삭제시 캐시 삭제
+- 빈번히 조회되고 상대적으로 수정, 삭제가 덜 빈번하여 해당 패턴 적용
+- 보안 강화를 위해 RefreshToken 저장, 12시간 후 만료
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/cb8b842b-bc31-435a-a5af-30baaa91f938/image.png)
+
+**Nginx** **Reverse Proxy**
+
+- Blue green 무중단 배포 환경 구축
+- 동적 업스트림 전환
+- CodeDeploy 단계에서 동적으로 blue/ green 중 해당하는 upstream conf 파일로 심볼릭 링크 변경
+- 443 포트로 들어온 트래픽을 8081 혹은 8082로 전환
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7cff6025-8078-43ac-aa45-e0cbee33ba01/9b8a440e-94fc-477a-ba73-dc80ac4a4e9a/image.png)
+
+**Nginx** **보안 관련**
+
+- 인프라 단계에서 CORS 정책 해결과 XSS 헤더 추가
+- Let’s Encrypt 인증서를 사용해 SSL 레이어 구성
+- Cerbot을 이용해 12시간 마다 갱신 확인
+- 가비아에서 도메인 구매 후
+
+**Github Actions를 통한 CI**
+
+- 빌드 환경 구성 : Gradle, JDK17, Ubuntu
+- 애플리케이션 빌드 : 환경변수 주입, JAR 파일 생성
+- Docker 이미지 생성: 이미지 빌드, Docker hub push
+- 환경변수는 githubactions repository secerts 에서 관리
+- docker hub 에 업로드 한 container 는 private 처리
+
+**CodeDeploy를 통한 CD**
+
+- 배포 패키지 구성 :nginx.conf, docker-compose.yml
+- 배포스크립트 구성
+- SSL 인증서 설정
+- S3 버킷 배포 패키지 업로드
+- CodeDeploy 를 통한 EC2 배포 실행
+- 배포 log 기록
+
+**무중단 배포 구현**
+
+- Blue (8081), Green (8082) 환경 구성
+- Health Check
+- Nginx 리버스 프록시, 로드밸런싱 설정
+- 컨테이너 : Spring, Redis, Nginx, Certbot (SSL)
+
+**Keep**
+
+배포, 백엔드, 프론트 실제 전체적인 개발 사이클 경험
+CICD 파이프라인 구축과 무중단 배포 환경 구성
+개발 외 프로젝트 규모와 비용적 측면을 고려한 기술 스택 의사 결정 경험
+실시간 통신이 필요한 기능들에 대한 적절한 기술 적용 ( 채팅 : 웹소켓, 알람 : SSE )
+보안을 고려한 인증/ 인가 시스템 설계, SSL 계층 적용, RefreshToken Redis 별도저장
+인가되지 않은 사용자 요청에 대한 리다이렉트 처리
+
+**Problem**
+
+체계 적인 문서화 부족
+트러블 슈팅 과정에 대한 해결책과 기록 다소 미흡
+개발 프로세스 관리
+리소스 낭비가 우려되는 오버엔지니어링
+명확한 설계 없이 진행하여 중복 컴포넌트 발생으로 개발 일정 지체
+1인 프로젝트 진행으로 체계적인 일정 관리와 우선순위 미흡
+재사용 가능한 컴포넌트 설계 다소 미흡
+
+**기술적 의사 결정**
+
+1. 일반 회원가입 없이 소셜 로그인만 구현한 이유 
+    1. Oauth2.0 프로토콜 활용으로 보안 강화
+    2. 사용자의 민감한 정보 직접 관리 리스크 제거
+    3. 즉시 SNS 계정으로 서비스 이용으로 사용자 경험 개선
+2. 토큰 기반 인증 아키텍처
+    1. accessToken 
+        1. stateless 서버 부하 감소
+        2. 짧은 유효기간으로 탈취 위험 감소
+    2. refreshToken Redis 저장시 이점
+        1. in-memory 처리로 인증 성능 향상
+        2. Key-Value 구조로 토큰 관리 용이
+        3. TTL 기능으로 만료 처리 자동화
+3. 실시간 통신 프로토콜 선택 (WebSocket & ServerSentEvent )
+    1. Websocet (채팅 적용)
+        1. Stomp 프로토콜로 메시지 포맷 표준화
+        2. 양방향 통신으로 실시가 대화 구현
+    2. SSE (알림)
+        1. 단방향 통신으로 항시 연결을 유지하는데 Websocket 보다 리소스 관리가 효율적
+4. CORS 정책 인프라 레벨 구현
+    1. SpringSecurity 에 구현하지 않고 바로 Nginx 에서 CORS 처리
+        1. 서버 부하 감소
+        2. CORS SSL 등 통합 관리
+5. 채팅 시스템 아키텍처
+    1. Stomp + Redis
+        1. Stomp
+            1. 채팅방 구독 / 해지 기능 구현 
+            2. 메세지 타입 및 라우팅 표준화
+        2. Redis
+            1. Pub/Sub 실시간 메세지 전송
+            2. 채팅방 정보 캐싱
+6. 상태관리 라이브러리
+    1. Redux vs Recoil
+        1. 보일러 플레이트 코드 감소
+        2. 비교적 소규모 프로젝트로 간단한 상태관리만 필요로 했음.
+7. CI/CD 파이프라인 
+    1. jenkins 대신 github actions을 선택한 이유 
+        1. gitHub 통합 환경으로 비교적 간단한 구현
+        2. 소규모 프로젝트로 복잡한 커스텀이 필요 없음.
+        3. 별도의 CI 서버가 필요 없음
+    2. AWS CodeDeploy 선택한 이유 
+        1. blue-green 배포 구현
+        2. 자동 롤백 기능
+8. SSL 인증서 관리
+    1. CloudFront 와 route53 대신 도메인 직접 구매,Let’s Encrypt+Cerbot+nginx 
+        1. 비용적인 측면 무료 인증서 발급과 자동 갱신 스크립트 
+9. 웹 서버 아키텍처
+    1. Nginx 
+        1. 로드밸런싱 ( blue, green 배포)
+        2. SSL 관리
+        3. 정적 컨텐츠 캐싱
+10. 무중단 배포 Blue Green 전략
+    1. 롤백시 관리 용이
+    2. 간단한 구현 
+    3. 헬스 체크 통합
+11. 성능 최적화 
+    1. Redis : 빈번한 데이터 조회로 Cache-Aside 전략 선택 
+12. ORM Mybatis → JPA
+    1. 반복적 CURD 코드 제거로 개발 생산성 증대
+    2. 상속 구조 표현 
+13. QueryDSL 
+    1. 타입 safe 해서 컴파일 시점시 문법 검증. 실패시 build 되지 않음
+    2. 동적 조건 처리와 서브쿼리 지원 
+14. UI 프레임 워크 ChakuraUI → TailWindCSS
+    1. 반응형 디자인 용이
