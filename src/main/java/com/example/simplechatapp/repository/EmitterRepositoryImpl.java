@@ -50,28 +50,4 @@ public class EmitterRepositoryImpl implements EmitterRepository{
 
         emitters.remove(id);
     }
-
-    @Override
-    public void deleteAllEmitterStartWithId(String userId) {
-        emitters.forEach(
-                (key,emitter)->{
-                    if(key.startsWith(userId)){
-                        emitters.remove(key);
-                    }
-                }
-        );
-
-    }
-
-    @Override
-    public void deleteAllEventCacheStartWitId(String userId) {
-
-        eventCache.forEach(
-                (key,emitter)->{
-                    if(key.startsWith(userId)){
-                        eventCache.remove(key);
-                    }
-                }
-        );
-    }
 }

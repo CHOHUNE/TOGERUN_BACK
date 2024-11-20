@@ -201,21 +201,17 @@ public class ChatRoomService {
 
     @Transactional(readOnly = true)
     public List<UserChatRoomDTO> getUserChatRoom(String userEmail) {
-
-//        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
-//
-//        return user.getJoinedChatRoom().stream()
-//                .map(this::convertTouserChatRoomDTO)
-//                .toList();
-
         return chatRoomRepository.findUserChatRoomDTOs(userEmail);
-
+    }
+    @Transactional(readOnly = true)
+    public List<UserChatRoomDTO> getUserChatRoomNewVer(String userEmail) {
+        return chatRoomRepository.findUserChatRoomDTOsNew(userEmail);
     }
 
 
 
-    private UserChatRoomDTO convertTouserChatRoomDTO(ChatRoom chatRoom) {
 
+    private UserChatRoomDTO convertTouserChatRoomDTO(ChatRoom chatRoom) {
         UserChatRoomDTO dto = new UserChatRoomDTO();
 
         dto.setChatRoomId(chatRoom.getId());
