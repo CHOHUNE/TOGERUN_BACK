@@ -203,10 +203,11 @@ public class ChatRoomService {
     public List<UserChatRoomDTO> getUserChatRoom(String userEmail) {
         return chatRoomRepository.findUserChatRoomDTOs(userEmail);
     }
-    @Transactional(readOnly = true)
-    public List<UserChatRoomDTO> getUserChatRoomNewVer(String userEmail) {
-        return chatRoomRepository.findUserChatRoomDTOsNew(userEmail);
-    }
+
+//    @Transactional(readOnly = true)
+//    public List<UserChatRoomDTO> getUserChatRoomNewVer(String userEmail) {
+//        return chatRoomRepository.findUserChatRoomDTOsNew(userEmail);
+//    }
 
 
 

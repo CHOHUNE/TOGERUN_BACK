@@ -30,6 +30,7 @@ public class UserController {
     private final AuthenticationService authenticationService;
     private final FavoriteService favoriteService;
 
+
     @GetMapping("/joined")
     public ResponseEntity<List<UserChatRoomDTO>> getUserChatRooms(@AuthenticationPrincipal UserDTO principal) {
         try {
@@ -41,17 +42,16 @@ public class UserController {
         }
     }
 
-
-        @GetMapping("/joinedNewVer")
-    public ResponseEntity<List<UserChatRoomDTO>> getUserChatRoomsNew(@AuthenticationPrincipal UserDTO principal) {
-        try {
-            List<UserChatRoomDTO> chatRooms = chatRoomService.getUserChatRoomNewVer(principal.getEmail());
-            return ResponseEntity.ok(chatRooms);
-        } catch (Exception e) {
-            log.error("Error while fetching user chat rooms", e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
+//        @GetMapping("/joinedNewVer")
+//    public ResponseEntity<List<UserChatRoomDTO>> getUserChatRoomsNew(@AuthenticationPrincipal UserDTO principal) {
+//        try {
+//            List<UserChatRoomDTO> chatRooms = chatRoomService.getUserChatRoomNewVer(principal.getEmail());
+//            return ResponseEntity.ok(chatRooms);
+//        } catch (Exception e) {
+//            log.error("Error while fetching user chat rooms", e);
+//            return ResponseEntity.internalServerError().build();
+//        }
+//    }
 
 
 
