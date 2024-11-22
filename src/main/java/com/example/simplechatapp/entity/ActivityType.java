@@ -7,7 +7,5 @@ public enum ActivityType {
     CYCLING,
     YOGA,
     PILATES,
-    WEIGHT_TRAINING,
-    SURFING
 
 }
