@@ -47,8 +47,8 @@ public class PostController {
         User user = userRepository.findByEmail(principal.getEmail())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        String ipAddress = request.getRemoteAddr(); // 클라이언트 IP 주소
-        postService.incrementViewCount(id, ipAddress);
+
+        postService.incrementViewCount(id, principal.getId());
 
         return postService.findPostWithLikeAndFavorite(id, user.getId())
                 .map(ResponseEntity::ok)

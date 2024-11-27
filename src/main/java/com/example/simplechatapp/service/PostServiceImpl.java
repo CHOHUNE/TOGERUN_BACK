@@ -8,12 +8,15 @@ import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Log4j2
 public class PostServiceImpl implements PostService {
 
     private final S3Client s3Client;
@@ -46,8 +50,11 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final StringRedisTemplate stringRedisTemplate;
 
-    private static final String VIEW_COUNT_PREFIX = "view:";
+    private static final String VIEW_COUNT_PREFIX = "post:view:";
     private static final Duration VIEW_COUNT_EXPIRATION = Duration.ofHours(24);
+    private final RedisTemplate redisTemplate;
+
+    private static final int BATCH_SIZE=100;
 
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
@@ -60,6 +67,14 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
         PostDTO dto = entityToDTO(post);
+
+        // Redis의 임시 조회수도 확인
+        String key = VIEW_COUNT_PREFIX + id;
+        Long redisCount = stringRedisTemplate.opsForZSet().size(key);
+        if (redisCount != null) {
+            dto.setViewCount(post.getViewCount() + redisCount);
+        }
+
         dto.setImageList(post.getImageList().stream()
                 .map(image -> addPrefix(image.getFileName()))
                 .collect(Collectors.toList()));
@@ -75,12 +90,25 @@ public class PostServiceImpl implements PostService {
 
     @Async
     @Override
-    public void incrementViewCount(Long postId, String ipAddress) {
-        String key = VIEW_COUNT_PREFIX + postId + ":" + ipAddress;
-        Boolean keyAbsent = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", VIEW_COUNT_EXPIRATION);
+    public void incrementViewCount(Long postId, Long userId) {
+        if (userId == null) {
+            return; // 비로그인 사용자는 카운트 하지 않음
+        }
+        String key = VIEW_COUNT_PREFIX + postId;
+        ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
+        // ZSetOperations : Redis의 Sorted Set을 다루는 인터페이스
 
-        if (Boolean.TRUE.equals(keyAbsent)) {
-            postRepository.incrementViewCount(postId);
+        double currentTime = System.currentTimeMillis();
+
+        zSetOps.removeRangeByScore(key,0,currentTime - VIEW_COUNT_EXPIRATION.toMillis());
+        Boolean added = zSetOps.add(key,userId.toString(),currentTime);
+        // ZSet에 userId를 추가하고, 이미 존재하면 false를 반환
+        // 각 파라메터 값 : key, value, score:시간
+
+        if (Boolean.TRUE.equals(added)) {
+            redisTemplate.expire(key, VIEW_COUNT_EXPIRATION);
+
+            postRepository.incrementViewCount(postId,1L);
         }
     }
 
@@ -269,14 +297,18 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Scheduled(cron = "0 0 0/15 * * *")
+    @Scheduled(cron = "0 */15 * * * *")  // 15분마다 실행
     public void updatedParticipateFlag() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Post> posts = postRepository.findByMeetingTimeBefore(now);
+        log.info("참가 여부 플래그 업데이트시작: {}", LocalDateTime.now());
 
-        for (Post post : posts) {
-            post.changeParticipateFlag(false);
-            postRepository.save(post);
+        LocalDateTime now = LocalDateTime.now();
+
+        try {
+            int updateCount = postRepository.bulkUpdateParticipateFlag(now);
+            log.info("참가 플래그 업데이트 완료, 업데이트 게시물 수 :{}", updateCount);
+        } catch (Exception e) {
+            log.error("참가 플래그 업데이트 중 오류 발생", e);
         }
     }
+
 }

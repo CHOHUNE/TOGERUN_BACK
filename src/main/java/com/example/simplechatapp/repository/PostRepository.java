@@ -11,8 +11,17 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post,Long>,PostSearch {
 
     @Modifying
-    @Query("UPDATE Post p SET p.viewCount = p.viewCount +1 WHERE p.id = :postId")
-    void incrementViewCount(Long postId);
+    @Query("UPDATE Post p SET p.viewCount = p.viewCount WHERE p.id = :postId")
+    void incrementViewCount(Long postId,Long viewCount);
+
+
+    @Modifying
+    @Query("""
+            UPDATE Post p SET p.participateFlag = false 
+            WHERE p.meetingTime <: now
+            AND p.participateFlag=true
+            """)
+    int bulkUpdateParticipateFlag(LocalDateTime now);
 
     @Query("select p from Post p where p.meetingTime < :now")
     List<Post> findByMeetingTimeBefore(LocalDateTime now);

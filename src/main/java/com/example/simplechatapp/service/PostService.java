@@ -100,7 +100,7 @@ public interface PostService {
 
     List<Post> findAll();
 
-    void incrementViewCount(Long postId, String ipAddress);
+    void incrementViewCount(Long postId, Long userId);
 
     void checkAuthorization(Long postId, String userEmail);
 
