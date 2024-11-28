@@ -2,7 +2,6 @@ package com.example.simplechatapp.config;
 
 import com.example.simplechatapp.dto.CommentResponseDto;
 import com.example.simplechatapp.dto.PostDTO;
-import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.service.RedisSubscriber;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -36,7 +35,7 @@ public class RedisConfig {
 
         mapper.addMixIn(PostDTO.class, TypeInfoMixin.class);
         mapper.addMixIn(CommentResponseDto.class, TypeInfoMixin.class);
-        mapper.addMixIn(UserDTO.class, TypeInfoMixin.class);
+//        mapper.addMixIn(UserDTO.class, TypeInfoMixin.class);
 
         return mapper;
     }

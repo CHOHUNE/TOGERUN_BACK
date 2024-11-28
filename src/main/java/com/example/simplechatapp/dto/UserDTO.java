@@ -2,7 +2,6 @@ package com.example.simplechatapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -13,7 +12,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonIgnoreProperties({"authorities", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
 public class UserDTO extends User implements OAuth2User {
 
