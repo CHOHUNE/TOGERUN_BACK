@@ -1,8 +1,9 @@
 package com.example.simplechatapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -13,7 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonIgnoreProperties({"authorities", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
 public class UserDTO extends User implements OAuth2User {
 
@@ -34,7 +34,22 @@ public class UserDTO extends User implements OAuth2User {
     private boolean isDeleted;
     private LocalDateTime deletedAt;
 
-    public UserDTO(Long id, String email, String password, String name, String nickname, boolean social, String gender, String age, String mobile, String img, List<String> roleNames, boolean isDeleted, LocalDateTime deletedAt) {
+    @JsonCreator
+    public UserDTO(
+            @JsonProperty("id") Long id,
+            @JsonProperty("email") String email,
+            @JsonProperty("password") String password,
+            @JsonProperty("name") String name,
+            @JsonProperty("nickname") String nickname,
+            @JsonProperty("social") boolean social,
+            @JsonProperty("gender") String gender,
+            @JsonProperty("age") String age,
+            @JsonProperty("mobile") String mobile,
+            @JsonProperty("img") String img,
+            @JsonProperty("roleNames") List<String> roleNames,
+            @JsonProperty("isDeleted") boolean isDeleted,
+            @JsonProperty("deletedAt") LocalDateTime deletedAt
+    ) {
         super(
                 email != null && !email.isEmpty() ? email : "",
                 password != null && !password.isEmpty() ? password : "",
@@ -58,6 +73,7 @@ public class UserDTO extends User implements OAuth2User {
         this.deletedAt = deletedAt;
     }
 
+
     @JsonIgnore
     public Map<String, Object> getClaim() {
         Map<String, Object> dataMap = new HashMap<>();
@@ -65,7 +81,6 @@ public class UserDTO extends User implements OAuth2User {
         dataMap.put("email", email);
         dataMap.put("nickname", nickname);
         dataMap.put("name", name);
-
         dataMap.put("social", social);
         dataMap.put("age", age);
         dataMap.put("mobile", mobile);
