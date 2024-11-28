@@ -2,6 +2,7 @@ package com.example.simplechatapp.config;
 
 import com.example.simplechatapp.dto.CommentResponseDto;
 import com.example.simplechatapp.dto.PostDTO;
+import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.service.RedisSubscriber;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -35,6 +36,7 @@ public class RedisConfig {
 
         mapper.addMixIn(PostDTO.class, TypeInfoMixin.class);
         mapper.addMixIn(CommentResponseDto.class, TypeInfoMixin.class);
+        mapper.addMixIn(UserDTO.class, TypeInfoMixin.class);
 
         return mapper;
     }
@@ -64,7 +66,11 @@ public class RedisConfig {
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultCacheConfig)
 //                .withCacheConfiguration("post", defaultCacheConfig.entryTtl(Duration.ofHours(1)))
-                .withCacheConfiguration("postComments", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)))
+                .withCacheConfiguration("member", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
+                .withCacheConfiguration("post", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
+                .withCacheConfiguration("chat", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
+                .withCacheConfiguration("view", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
+                .withCacheConfiguration("postComments", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
 
                 .build();
     }
