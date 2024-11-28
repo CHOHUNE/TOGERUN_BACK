@@ -30,7 +30,6 @@ public class RedisConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
 
-
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
@@ -64,7 +63,7 @@ public class RedisConfig {
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultCacheConfig)
-                .withCacheConfiguration("post", defaultCacheConfig.entryTtl(Duration.ofHours(1)))
+//                .withCacheConfiguration("post", defaultCacheConfig.entryTtl(Duration.ofHours(1)))
                 .withCacheConfiguration("postComments", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)))
 
                 .build();
@@ -90,6 +89,6 @@ public class RedisConfig {
 }
     //Redis 서버와 상호작용 하기 위한 RedisTemplate 관련 설정을 해준다. Redis 서버에서는 bytes 코드만이
     // 저장되므로 key 와 value 에 Serializer 를 설정 해준다. Json 포맷 형식으로 메세지를 교환하기 위해
-    // ValueSerializer 를 Jackson2JsonRedisSerializer 로 설정 해준다.
+
 
 

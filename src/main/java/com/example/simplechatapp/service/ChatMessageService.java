@@ -8,7 +8,6 @@ import com.example.simplechatapp.repository.ChatMessageRepository;
 import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +16,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -53,33 +48,28 @@ public class ChatMessageService {
 
         ChatMessageDTO responseDTO = ChatMessageDTO.ChatMessageEntityToDto(savedMessage);
 
-        String redisKey = "chat:messages:" + postId;
-        String cachedMessage = redisTemplate.opsForValue().get(redisKey);
-        List<ChatMessageDTO> messages;
-
-        if (cachedMessage != null) {
-            messages = objectMapper.readValue(cachedMessage, new TypeReference<List<ChatMessageDTO>>() {});
-
-        } else {
-            messages = new ArrayList<>();
-            }
-
-        messages.add(responseDTO);
-
-        String updatedMessages= objectMapper.writeValueAsString(messages);
-        redisTemplate.opsForValue().set(redisKey, updatedMessages);
-        redisTemplate.expire(redisKey, 1, TimeUnit.HOURS); // 1 시간 뒤 소멸
+//        String redisKey = "chat:messages:" + postId;
+//        String cachedMessage = redisTemplate.opsForValue().get(redisKey);
+//        List<ChatMessageDTO> messages;
+//
+//        if (cachedMessage != null) {
+//            messages = objectMapper.readValue(cachedMessage, new TypeReference<List<ChatMessageDTO>>() {});
+//
+//        } else {
+//            messages = new ArrayList<>();
+//            }
+//
+//        messages.add(responseDTO);
+//
+//        String updatedMessages= objectMapper.writeValueAsString(messages);
+//        redisTemplate.opsForValue().set(redisKey, updatedMessages);
+//        redisTemplate.expire(redisKey, 1, TimeUnit.HOURS); // 1 시간 뒤 소멸
 
 
         String jsonMessage = objectMapper.writeValueAsString(responseDTO);
         redisTemplate.convertAndSend("chat." + postId, jsonMessage);
 
-        // 이 부분은 RedisSubscriber.java 에서 처리
-//        messagingTemplate.convertAndSend("/topic/chat." + postId, responseDTO);
-
-
         return responseDTO;
 
     }
-
 }

@@ -7,6 +7,7 @@ import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -66,6 +67,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Cacheable(value = "member", key = "#email")
     public UserDTO getMember(String email) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));

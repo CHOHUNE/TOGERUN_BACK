@@ -9,7 +9,6 @@ import com.example.simplechatapp.repository.ChatRoomRepository;
 import com.example.simplechatapp.repository.PostRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -18,10 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Log4j2
@@ -37,32 +34,32 @@ public class ChatRoomService {
 
 
     public List<ChatMessageDTO> getMessageByPostId(Long postId) {
-        String redisKey = "chat:messages:" + postId;
-        String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-
-        if (cachedMessages != null && !cachedMessages.isEmpty()) {
-            try {
-                List<ChatMessageDTO> messages = objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
-                });
-                log.info("Cache Hit! {} messages", messages.size());
-                return messages;
-            } catch (Exception e) {
-                log.error("Error deserializing messages from Redis {}", e.getMessage());
-            }
-        }
+//        String redisKey = "chat:messages:" + postId;
+//        String cachedMessages = redisTemplate.opsForValue().get(redisKey);
+//
+//        if (cachedMessages != null && !cachedMessages.isEmpty()) {
+//            try {
+//                List<ChatMessageDTO> messages = objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
+//                });
+//                log.info("Cache Hit! {} messages", messages.size());
+//                return messages;
+//            } catch (Exception e) {
+//                log.error("Error deserializing messages from Redis {}", e.getMessage());
+//            }
+//        }
 
         List<ChatMessage> chatMessages = chatMessageRepository.findChatMessageByPostId(postId);
         List<ChatMessageDTO> messageDTOs = chatMessages.stream().map(ChatMessageDTO::ChatMessageEntityToDto).toList();
 
-        if (!messageDTOs.isEmpty()) {
-            try {
-                String jsonMessages = objectMapper.writeValueAsString(messageDTOs);
-                redisTemplate.opsForValue().set(redisKey, jsonMessages);
-                redisTemplate.expire(redisKey, 1, TimeUnit.HOURS);
-            } catch (Exception e) {
-                log.error("Error serializing messages for Redis", e);
-            }
-        }
+//        if (!messageDTOs.isEmpty()) {
+//            try {
+//                String jsonMessages = objectMapper.writeValueAsString(messageDTOs);
+//                redisTemplate.opsForValue().set(redisKey, jsonMessages);
+//                redisTemplate.expire(redisKey, 1, TimeUnit.HOURS);
+//            } catch (Exception e) {
+//                log.error("Error serializing messages for Redis", e);
+//            }
+//        }
 
         return messageDTOs;
     }
@@ -113,15 +110,15 @@ public class ChatRoomService {
             ChatMessage savedJoinMessage = chatMessageRepository.save(joinMessage);
             ChatMessageDTO joinMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedJoinMessage);
 
-            // Redis에 메시지 저장
-            String redisKey = "chat:messages:" + postId;
-            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
-            }) : new ArrayList<>();
-
-            messages.add(joinMessageDTO);
-            String updatedMessages = objectMapper.writeValueAsString(messages);
-            redisTemplate.opsForValue().set(redisKey, updatedMessages);
+//            // Redis에 메시지 저장
+//            String redisKey = "chat:messages:" + postId;
+//            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
+//            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
+//            }) : new ArrayList<>();
+//
+//            messages.add(joinMessageDTO);
+//            String updatedMessages = objectMapper.writeValueAsString(messages);
+//            redisTemplate.opsForValue().set(redisKey, updatedMessages);
 
 
             String jsonMessage = objectMapper.writeValueAsString(joinMessageDTO);
@@ -141,9 +138,11 @@ public class ChatRoomService {
     @Transactional
     public void leaveChatRoom(Long postId, String userEmail) throws JsonProcessingException {
 
-        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId).orElseThrow(() -> new IllegalArgumentException("ChatRoom Not Found"));
+        ChatRoom chatRoom = chatRoomRepository.findByPostId(postId)
+                .orElseThrow(() -> new IllegalArgumentException("ChatRoom Not Found"));
 
-        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User Not Found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
         if (chatRoom.hasParticipant(user)) {
             chatRoom.removeParticipant(user);
@@ -153,26 +152,29 @@ public class ChatRoomService {
             post.changeParticipateFlag(true);
             postRepository.save(post);
 
-            ChatMessage leaveMessage = ChatMessage.builder().chatRoom(chatRoom).content(user.getNickname() + "님이 퇴장하셨습니다.").user(user).createdAt(LocalDateTime.now()).chatMessageType(ChatMessageType.SYSTEM).build();
+            ChatMessage leaveMessage = ChatMessage.builder()
+                    .chatRoom(chatRoom)
+                    .content(user.getNickname() + "님이 퇴장하셨습니다.")
+                    .user(user)
+                    .createdAt(LocalDateTime.now())
+                    .chatMessageType(ChatMessageType.SYSTEM).build();
 
             ChatMessage savedLeaveMessage = chatMessageRepository.save(leaveMessage);
             ChatMessageDTO leaveMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedLeaveMessage);
 
             //Redis 에 메세지 저장
-
-            String redisKey = "chat:messages:" + postId;
-            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-
-            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
-            }) : new ArrayList<>();
-
-            messages.add(leaveMessageDTO);
-            String updatedMessages = objectMapper.writeValueAsString(messages);
-            redisTemplate.opsForValue().set(redisKey, updatedMessages);
+//            String redisKey = "chat:messages:" + postId;
+//            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
+//
+//            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
+//            }) : new ArrayList<>();
+//
+//            messages.add(leaveMessageDTO);
+//            String updatedMessages = objectMapper.writeValueAsString(messages);
+//            redisTemplate.opsForValue().set(redisKey, updatedMessages);
 
             String jsonMessage = objectMapper.writeValueAsString(leaveMessageDTO);
             redisTemplate.convertAndSend("chat." + postId, jsonMessage);
-
 
         }
         chatRoomRepository.save(chatRoom);
@@ -210,8 +212,6 @@ public class ChatRoomService {
 //    }
 
 
-
-
     private UserChatRoomDTO convertTouserChatRoomDTO(ChatRoom chatRoom) {
         UserChatRoomDTO dto = new UserChatRoomDTO();
 
@@ -232,6 +232,7 @@ public class ChatRoomService {
                 });
 
         return dto;
-    }}
+    }
+}
 
 

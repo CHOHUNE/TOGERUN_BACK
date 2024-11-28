@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -54,7 +52,7 @@ public class PostServiceImpl implements PostService {
     private static final Duration VIEW_COUNT_EXPIRATION = Duration.ofHours(24);
     private final RedisTemplate redisTemplate;
 
-    private static final int BATCH_SIZE=100;
+
 
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
@@ -83,7 +81,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Cacheable(value = "post", key = "#postId")
+//    @Cacheable(value = "post", key = "#postId")
     public Optional<?> findPostWithLikeAndFavorite(Long postId, Long userId) {
         return postRepository.findPostWithLikeAndFavorite(postId, userId);
     }
@@ -107,7 +105,6 @@ public class PostServiceImpl implements PostService {
 
         if (Boolean.TRUE.equals(added)) {
             redisTemplate.expire(key, VIEW_COUNT_EXPIRATION);
-
             postRepository.incrementViewCount(postId,1L);
         }
     }
@@ -150,7 +147,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @CacheEvict(value = {"post"}, key = "#postDTO.id")
+//    @CacheEvict(value = {"post"}, key = "#postDTO.id")
     @Transactional
     public void modify(PostDTO postDTO, List<MultipartFile> newFiles) {
         Post post = postRepository.findById(postDTO.getId()).orElseThrow(() -> new RuntimeException("POST NOT FOUND"));
@@ -173,7 +170,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Caching(evict = {@CacheEvict(value = "post", key = "#id"), @CacheEvict(value = "postComments", key = "#id")})
+//    @Caching(evict = {@CacheEvict(value = "post", key = "#id"),
+            @CacheEvict(value = "postComments", key = "#id")
+//    })
     @Transactional
     public void remove(Long id) {
 
