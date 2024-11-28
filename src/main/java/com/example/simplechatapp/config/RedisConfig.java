@@ -4,6 +4,7 @@ import com.example.simplechatapp.dto.CommentResponseDto;
 import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.service.RedisSubscriber;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -33,6 +34,14 @@ public class RedisConfig {
 
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // Type Info를 포함하도록 설정
+        mapper.activateDefaultTyping(
+                mapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+
 
         mapper.addMixIn(PostDTO.class, TypeInfoMixin.class);
         mapper.addMixIn(CommentResponseDto.class, TypeInfoMixin.class);
