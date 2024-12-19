@@ -35,8 +35,7 @@ public class AutoLoginFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         // 메인 페이지(/)이고 인증되지 않은 상태일 때만 자동 로그인 실행
-        if (request.getRequestURI().equals("/") &&
-            SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (request.getRequestURI().equals("/") ) {
 
             // ID 2번 유저로 자동 로그인
             User dummyUser = userRepository.findById(2L)
