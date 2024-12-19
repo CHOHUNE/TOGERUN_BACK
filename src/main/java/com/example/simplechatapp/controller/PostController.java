@@ -12,7 +12,6 @@ import com.example.simplechatapp.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +23,7 @@ import java.util.Map;
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
 @Log4j2
-@PreAuthorize("hasRole('ROLE_SILVER')") //SpringSecurity 5.0 이후에서는 ROLE_ 접두사를 사용하지 않아도 무방 ( 오히려 생략이 권장 )
+//@PreAuthorize("hasRole('ROLE_SILVER')") //SpringSecurity 5.0 이후에서는 ROLE_ 접두사를 사용하지 않아도 무방 ( 오히려 생략이 권장 )
 public class PostController {
 
     private final PostService postService;
