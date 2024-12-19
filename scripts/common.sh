@@ -12,7 +12,7 @@ log() {
 check_container_health() {
     local container=$1
     local port=$2    # 포트를 파라미터로 받음
-    local max_attempts=${3:-30}
+    local max_attempts=${3:-10}
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
@@ -22,7 +22,7 @@ check_container_health() {
             return 0
         fi
         attempt=$((attempt + 1))
-        sleep 10
+        sleep 15
     done
     return 1
 }
