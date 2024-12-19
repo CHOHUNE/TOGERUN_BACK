@@ -3,6 +3,7 @@ package com.example.simplechatapp.config;
 import com.example.simplechatapp.repository.RefreshTokenRepository;
 import com.example.simplechatapp.repository.UserRepository;
 import com.example.simplechatapp.security.CustomOAuth2UserService;
+import com.example.simplechatapp.security.filter.AutoLoginFilter;
 import com.example.simplechatapp.security.filter.JWTCheckFilter;
 import com.example.simplechatapp.security.handler.APILoginFailureHandler;
 import com.example.simplechatapp.security.handler.APILoginSuccessHandler;
@@ -45,6 +46,9 @@ public class CustomSecurityConfig {
     private final ObjectMapper objectMapper;
     private final RoleHierarchy roleHierarchy;
 
+    //포토폴리요 노출용 더미 관리자 계정 자동 로그인
+    private final AutoLoginFilter autoLoginFilter;
+
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -65,6 +69,7 @@ public class CustomSecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+
                         "/",
                         "/api/member/refresh",
                         "/chat",
@@ -94,6 +99,9 @@ public class CustomSecurityConfig {
                 .deleteCookies("JSESSIONID", "member"));
 
         http.addFilterBefore(new JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
+        //포토폴리요 노출용 더미 관리자 계정 자동 로그인
+        http.addFilterBefore(autoLoginFilter, JWTCheckFilter.class);
 
         http.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
                 httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler(userRepository, objectMapper)));
