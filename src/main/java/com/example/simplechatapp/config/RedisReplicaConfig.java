@@ -23,14 +23,22 @@ import java.time.Duration;
 @Configuration
 public class RedisReplicaConfig {
 
+
+
+    @Value("${spring.data.redis.replica.host}")
+    private String replicaHost;
+
+    @Value("${spring.data.redis.replica.port}")
+    private int replicaPort;
+
     @Value("${spring.data.redis.password}")
     private String password;
 
     @Bean(name = "replicaConnectionFactory")
     public RedisConnectionFactory replicaConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName("redis-replica");
-        config.setPort(6379);
+        config.setHostName(replicaHost);
+        config.setPort(replicaPort);
         config.setPassword(password);
         return new LettuceConnectionFactory(config);
     }
