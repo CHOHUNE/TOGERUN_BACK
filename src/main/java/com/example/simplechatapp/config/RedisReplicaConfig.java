@@ -30,7 +30,7 @@ public class RedisReplicaConfig {
     public RedisConnectionFactory replicaConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName("redis-replica");
-        config.setPort(6380);
+        config.setPort(6379);
         config.setPassword(password);
         return new LettuceConnectionFactory(config);
     }
