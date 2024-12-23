@@ -43,5 +43,6 @@ docker compose --env-file .env -f docker-compose.${INACTIVE_COLOR}.yml up -d --f
 
 sleep 30
 
-log "Deployment validation completed successfully"
+log "Deployment v
+alidation completed successfully"
 exit 0

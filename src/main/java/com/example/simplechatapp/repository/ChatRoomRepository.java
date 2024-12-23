@@ -63,33 +63,33 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<UserChatRoomDTO> findUserChatRoomDTOs(@Param("email") String email);
 
 
-    @Query("""
-
-            WITH LastMessages AS (
-       SELECT\s
-           msg.chatRoom.id as chatRoomId,\s
-           MAX(msg.id) as maxId
-       FROM ChatMessage msg\s
-       GROUP BY msg.chatRoom.id
-   )
-   SELECT NEW com.example.simplechatapp.dto.UserChatRoomDTO(
-       cr.id,
-       p.id,
-       p.title,
-       p.meetingTime,
-       cr.participantCount,
-       p.capacity,
-       latestMsg.createdAt,
-       SUBSTRING(latestMsg.content, 1, 30),
-       cr.activityType
-   )
-   FROM User u
-   JOIN u.joinedChatRoom cr
-   JOIN cr.post p
-   LEFT JOIN LastMessages lm ON lm.chatRoomId = cr.id
-   LEFT JOIN ChatMessage latestMsg ON latestMsg.id = lm.maxId
-   WHERE u.email = :email    """)
-    List<UserChatRoomDTO> findUserChatRoomDTOsNew(@Param("email") String email);
+//    @Query("""
+//
+//            WITH LastMessages AS (
+//       SELECT\s
+//           msg.chatRoom.id as chatRoomId,\s
+//           MAX(msg.id) as maxId
+//       FROM ChatMessage msg\s
+//       GROUP BY msg.chatRoom.id
+//   )
+//   SELECT NEW com.example.simplechatapp.dto.UserChatRoomDTO(
+//       cr.id,
+//       p.id,
+//       p.title,
+//       p.meetingTime,
+//       cr.participantCount,
+//       p.capacity,
+//       latestMsg.createdAt,
+//       SUBSTRING(latestMsg.content, 1, 30),
+//       cr.activityType
+//   )
+//   FROM User u
+//   JOIN u.joinedChatRoom cr
+//   JOIN cr.post p
+//   LEFT JOIN LastMessages lm ON lm.chatRoomId = cr.id
+//   LEFT JOIN ChatMessage latestMsg ON latestMsg.id = lm.maxId
+//   WHERE u.email = :email    """)
+//    List<UserChatRoomDTO> findUserChatRoomDTOsNew(@Param("email") String email);
 
 
 }
