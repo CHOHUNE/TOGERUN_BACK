@@ -51,12 +51,28 @@ services:
       - ${APP_DIR}/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
-  redis:
+  redis-master:
     image: redis:alpine
     container_name: redis_boot
     command: redis-server --requirepass "${REDIS_PASSWORD}"
+    port:
+      - "6379:6379"
     volumes:
-      - redis:/data
+      - redis-master:/data
+    networks:
+      - ubuntu_this_network
+    restart: always
+
+  redis-replica:
+    image: redis:alpine
+    container_name: redis-replica
+    command: redis-server --requirepass "${REDIS_PASSWORD}" --replicaof redis-master 6379 --masterauth "${REDIS_PASSWORD}"
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis-master
+    volumes:
+      - redis-replica:/data
     networks:
       - ubuntu_this_network
     restart: always
@@ -66,4 +82,5 @@ networks:
     external: true
 
 volumes:
-  redis:
+  redis-master:
+  redis-replica:
