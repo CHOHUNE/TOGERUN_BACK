@@ -31,6 +31,7 @@ public class RedisReplicaConfig {
     private String password;
 
     @Bean(name = "replicaConnectionFactory")
+    @Qualifier("replica")
     public RedisConnectionFactory replicaConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(replicaHost);
@@ -40,6 +41,7 @@ public class RedisReplicaConfig {
     }
 
     @Bean(name = "replicaTemplate")
+    @Qualifier("replica")
     public RedisTemplate<String, Object> replicaTemplate(
             @Qualifier("replicaConnectionFactory") RedisConnectionFactory connectionFactory,
             ObjectMapper objectMapper) {
@@ -55,6 +57,7 @@ public class RedisReplicaConfig {
 
 
     @Bean(name = "replicaCacheManager")
+    @Qualifier("replica")
     public RedisCacheManager replicaCacheManager(
             @Qualifier("replicaConnectionFactory") RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
