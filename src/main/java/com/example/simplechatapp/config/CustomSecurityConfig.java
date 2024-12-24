@@ -100,9 +100,6 @@ public class CustomSecurityConfig {
 
         http.addFilterBefore(new JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-        //포토폴리요 노출용 더미 관리자 계정 자동 로그인
-//        http.addFilterBefore(autoLoginFilter, JWTCheckFilter.class);
-
         http.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
                 httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler(userRepository, objectMapper)));
 
