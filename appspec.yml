@@ -25,6 +25,20 @@ permissions:
     group: ubuntu
     type:
       - file
+  - object: /home/ubuntu/app/nginx
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
+  - object: /home/ubuntu/app/nginx/conf.d
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
