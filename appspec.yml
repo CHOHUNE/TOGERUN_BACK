@@ -19,6 +19,34 @@ permissions:
     mode: 644
     type:
       - file
+  - object: /home/ubuntu/app/docker
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
+  - object: /home/ubuntu/app/logs
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
+  - object: /home/ubuntu/app/certbot
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
+  - object: /home/ubuntu/app/ssl
+    pattern: "**/*"
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
   - object: /home/ubuntu/app/.env
     mode: 600
     owner: ubuntu
@@ -43,7 +71,7 @@ hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
       timeout: 300
-      runas: ubuntu
+      runas: root
   AfterInstall:
     - location: scripts/set_environment.sh
       timeout: 300

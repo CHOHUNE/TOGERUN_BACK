@@ -33,12 +33,3 @@ mkdir -p "$APP_DIR/certbot/conf"
 mkdir -p "$APP_DIR/certbot/www"
 mkdir -p "$APP_DIR/ssl"
 mkdir -p "$APP_DIR/nginx/conf.d"
-
-# 권한 설정
-log "Setting directory permissions..."
-chown -R ubuntu:ubuntu "$APP_DIR"
-chmod 755 "$APP_DIR/scripts"
-chmod 755 "$APP_DIR/docker"
-chmod 755 "$APP_DIR/logs"
-chmod 755 "$APP_DIR/nginx"
-chmod 755 "$APP_DIR/nginx/conf.d"
