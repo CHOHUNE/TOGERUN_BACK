@@ -6,7 +6,6 @@ import com.example.simplechatapp.service.RedisSubscriber;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +52,7 @@ public class RedisConfig {
     }
 
     @Bean
+    @Primary
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(connectionFactory);
@@ -69,13 +69,11 @@ public class RedisConfig {
 
         mapper.addMixIn(PostDTO.class, TypeInfoMixin.class);
         mapper.addMixIn(CommentResponseDto.class, TypeInfoMixin.class);
-//        mapper.addMixIn(UserDTO.class, TypeInfoMixin.class);
 
         return mapper;
     }
 
     @Bean
-    @Qualifier("redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -88,7 +86,7 @@ public class RedisConfig {
     }
 
     @Bean
-    @Primary // 0순위
+    @Primary
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
