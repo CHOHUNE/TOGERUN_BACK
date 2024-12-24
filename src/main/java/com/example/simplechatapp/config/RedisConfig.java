@@ -17,7 +17,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
@@ -53,13 +52,14 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
-    @Bean
-    @Primary
-    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
-        StringRedisTemplate template = new StringRedisTemplate();
-        template.setConnectionFactory(connectionFactory);
-        return template;
-    }
+//
+//    @Bean
+//    @Primary
+//    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+//        StringRedisTemplate template = new StringRedisTemplate();
+//        template.setConnectionFactory(connectionFactory);
+//        return template;
+//    }
 
 
     @Bean
