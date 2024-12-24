@@ -41,7 +41,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String password;
 
-    @Bean RedisConnectionFactory redisConnectionFactory() {
+    @Bean
+    @Primary
+    RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
 
         config.setHostName(redisHost);
@@ -74,6 +76,7 @@ public class RedisConfig {
     }
 
     @Bean
+    @Primary
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
