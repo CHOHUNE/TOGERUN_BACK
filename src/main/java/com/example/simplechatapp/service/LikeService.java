@@ -1,5 +1,6 @@
 package com.example.simplechatapp.service;
 
+import com.example.simplechatapp.annotation.DistributedLock;
 import com.example.simplechatapp.dto.LikeDTO;
 import com.example.simplechatapp.entity.Like;
 import com.example.simplechatapp.entity.Post;
@@ -22,8 +23,9 @@ public class LikeService {
     private final UserRepository userRepository;
 
 
-    @Transactional // 여러 사람이 좋아요를 누를 때를 대비해 동시성 이슈를 피하기 위해 트랜잭션 처리를 한다.
+    @Transactional
     @CacheEvict(value = "post", key = "#postId")
+    @DistributedLock(key = "'LikeService:' + #postId")
     public LikeDTO likeToggle(String email, Long postId) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));

@@ -1,5 +1,6 @@
 package com.example.simplechatapp.security.handler;
 
+import com.example.simplechatapp.util.LockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -53,4 +54,29 @@ public class GlobalExceptionHandler {
                 .build();
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(LockException.AcquisitionException.class)
+    public ResponseEntity<ErrorResponse> handleLockAcquisitionException(LockException.AcquisitionException e) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message("Failed to acquire lock for key: " + e.getLockKey())
+                .redirect("/error")
+                .errorStatus("LOCK_ACQUISITION_FAILED")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(LockException.ReleaseException.class)
+    public ResponseEntity<ErrorResponse> handleLockReleaseException(LockException.ReleaseException e) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message("Failed to release lock for key: " + e.getLockKey())
+                .redirect("/error")
+                .errorStatus("LOCK_RELEASE_FAILED")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+
+
 }
