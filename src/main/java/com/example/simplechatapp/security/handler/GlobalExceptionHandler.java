@@ -1,6 +1,8 @@
 package com.example.simplechatapp.security.handler;
 
 import com.example.simplechatapp.util.LockException;
+import com.example.simplechatapp.util.NicknameAlreadyExistException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -77,6 +79,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(NicknameAlreadyExistException.class)
+    public ResponseEntity<ErrorResponse> handleNicknameAlreadyExists(NicknameAlreadyExistException e) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getMessage())
+                .redirect("/member/modify")  // 적절한 리다이렉트 경로
+                .errorStatus("NICKNAME_DUPLICATE")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message("이미 사용중인 닉네임입니다.")
+                .redirect("/member/modify")
+                .errorStatus("DATA_INTEGRITY_VIOLATION")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 
 }

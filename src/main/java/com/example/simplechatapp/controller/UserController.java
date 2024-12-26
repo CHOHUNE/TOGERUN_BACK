@@ -77,13 +77,11 @@ public class UserController {
         // 새로운 토큰 생성 및 쿠키 설정
         authenticationService.setAuthenticationTokens(updatedUser, response);
 
-        Map<String, Object> result = new HashMap<>();
-
-        result.put("result", "modified");
-        result.put("updatedUser", updatedUser);
-        result.put("tokenRefreshed", true);
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(Map.of(
+                "result", "modified",
+                "updatedUser", updatedUser,
+                "tokenRefreshed", true
+        ));
     }
 
 

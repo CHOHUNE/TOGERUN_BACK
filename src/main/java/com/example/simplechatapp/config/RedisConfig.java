@@ -97,6 +97,7 @@ public class RedisConfig {
                 .withCacheConfiguration("chat", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
                 .withCacheConfiguration("view", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
                 .withCacheConfiguration("postComments", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
+                .withCacheConfiguration("userChatRooms", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)))
 
                 .build();
     }

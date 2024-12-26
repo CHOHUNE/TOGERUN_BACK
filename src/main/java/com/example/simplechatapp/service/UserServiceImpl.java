@@ -5,6 +5,7 @@ import com.example.simplechatapp.dto.UserModifyDTO;
 import com.example.simplechatapp.entity.User;
 import com.example.simplechatapp.entity.UserRole;
 import com.example.simplechatapp.repository.UserRepository;
+import com.example.simplechatapp.util.NicknameAlreadyExistException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,33 +36,45 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO modifyMember(UserDTO currentUser, UserModifyDTO userModifyDTO) {
 
+        // 현재 사용자와 다른 닉네임으로 변경하려는 경우에만 체크
+        if (!currentUser.getNickname().equals(userModifyDTO.getNickname())) {
+            boolean nicknameExists = userRepository.findByNickname(userModifyDTO.getNickname())
+                    .isPresent();
+
+            if (nicknameExists) {
+                throw new NicknameAlreadyExistException("이미 사용중인 닉네임입니다.");
+            }
+        }
+
         User user = userRepository.findByEmail(currentUser.getEmail())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        user.changeNickname(userModifyDTO.getNickname());
-        user.setAge(userModifyDTO.getAge());
-        user.setGender(userModifyDTO.getGender());
-        user.setMobile(userModifyDTO.getMobile());
-        user.setDeleted(false);
-        user.setDeletedAt(null);
-        user.changeSocial(false);
+
+            user.changeNickname(userModifyDTO.getNickname());
+            user.setAge(userModifyDTO.getAge());
+            user.setGender(userModifyDTO.getGender());
+            user.setMobile(userModifyDTO.getMobile());
+            user.setDeleted(false);
+            user.setDeletedAt(null);
+            user.changeSocial(false);
 
 //        user.changePw(passwordEncoder.encode(userModifyDTO.getPw()));
 //       일반 로그인 기능 폐기로 인한 주석 처리
 
-        List<UserRole> currentRoles = user.getUserRoleList();
+            List<UserRole> currentRoles = user.getUserRoleList();
 
-        if (currentRoles.contains(UserRole.ROLE_BRONZE)|| currentRoles.isEmpty()) {
+            if (currentRoles.contains(UserRole.ROLE_BRONZE) || currentRoles.isEmpty()) {
 
-            log.info("CATCH BRONZE:{}", user.getUserRoleList());
-            user.getUserRoleList().clear();
-            user.getUserRoleList().add(UserRole.ROLE_SILVER);
-        }
+                log.info("CATCH BRONZE:{}", user.getUserRoleList());
+                user.getUserRoleList().clear();
+                user.getUserRoleList().add(UserRole.ROLE_SILVER);
+            }
 
-        User savedUser = userRepository.save(user);
-        updateSecurityContext(user);
+            User savedUser = userRepository.save(user);
+            updateSecurityContext(user);
 
-        return entityToDTO(savedUser);
+            return entityToDTO(savedUser);
+
     }
 
 
