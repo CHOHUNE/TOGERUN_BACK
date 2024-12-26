@@ -3,17 +3,35 @@
 APP_DIR="/home/ubuntu/app"
 LOG_FILE="${APP_DIR}/logs/deployment.log"
 
+BLUE_PORT=8081
+GREEN_PORT=8082
+
 # 로깅 함수
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
 }
 
-# 컨테이너 헬스체크
+
+# deployment target 결정 함수
+get_deployment_target() {
+    local current_target=$(docker exec nginx readlink /etc/nginx/conf.d/current.conf)
+
+
+    if [[ $current_target == *"blue"* ]]; then
+        echo "green spring-boot-green $GREEN_PORT"
+    else
+        echo "blue spring-boot-blue $BLUE_PORT"
+    fi
+}
+
+
+# 컨테이너 헬스체크 (공통 함수로 통합)
 check_container_health() {
     local container=$1
-    local port=$2    # 포트를 파라미터로 받음
-    local max_attempts=${3:-10}
+    local port=$2
+    local max_attempts=${3:-30}
     local attempt=1
+    local sleep_time=${4:-10}
 
     while [ $attempt -le $max_attempts ]; do
         log "Health check attempt $attempt of $max_attempts for $container..."
@@ -22,7 +40,7 @@ check_container_health() {
             return 0
         fi
         attempt=$((attempt + 1))
-        sleep 15
+        sleep $sleep_time
     done
     return 1
 }
@@ -129,20 +147,3 @@ switch_nginx() {
     return 1
     }
 
-check_container_health_validate() {
-    local container=$1
-    local port=$2
-    local max_attempts=${3:-30}
-    local attempt=1
-
-    while [ $attempt -le $max_attempts ]; do
-        log "Health check attempt $attempt of $max_attempts for $container..."
-        if docker exec $container curl -f http://localhost:$port/actuator/health > /dev/null 2>&1; then
-            log "Health check passed for $container!"
-            return 0
-        fi
-        attempt=$((attempt + 1))
-        sleep 10
-    done
-    return 1
-}
