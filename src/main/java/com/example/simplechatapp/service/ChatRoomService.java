@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -202,6 +203,7 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "userChatRooms", key = "#userEmail") // TTL 시간을 짧게해서 정합성은 포기 하더라도 cash-aside 하는 비용 절감
     public List<UserChatRoomDTO> getUserChatRoom(String userEmail) {
         return chatRoomRepository.findUserChatRoomDTOs(userEmail);
     }

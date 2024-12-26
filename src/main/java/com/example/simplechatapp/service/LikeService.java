@@ -25,7 +25,7 @@ public class LikeService {
 
     @Transactional
     @CacheEvict(value = "post", key = "#postId")
-    @DistributedLock(key = "'LikeService:' + #postId")
+    @DistributedLock(key = "'#postId")
     public LikeDTO likeToggle(String email, Long postId) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
