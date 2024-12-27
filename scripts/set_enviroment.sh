@@ -10,9 +10,9 @@ mkdir -p "$APP_DIR"
 # 환경 변수 파일 생성
 log "Creating environment file..."
 cat > "$APP_DIR/.env" << EOF
-
 DOCKER_USERNAME=${DOCKER_USERNAME}
 REDIS_PASSWORD=${REDIS_PASSWORD}
+SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 EOF
 
 # 파일 권한 및 소유권 설정
@@ -21,7 +21,13 @@ chown ubuntu:ubuntu "$APP_DIR/.env"
 chmod 600 "$APP_DIR/.env"
 
 # 환경 변수 파일 검증
-check_environment || exit 1
-
-log "Environment setup completed successfully"
-exit 0
+if check_environment; then
+    send_slack_notification "#36a64f" "✅ 환경 설정 완료" "환경 변수가 성공적으로 설정되었습니다." "[
+        {\"type\": \"mrkdwn\", \"text\": \"*Status:* Success\"},
+        {\"type\": \"mrkdwn\", \"text\": \"*Location:* ${APP_DIR}/.env\"}
+    ]"
+    log "Environment setup completed successfully"
+    exit 0
+else
+    exit 1
+fi

@@ -11,11 +11,48 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
 }
 
+# Slack 알림 함수
+send_slack_notification() {
+    local color=$1
+    local title=$2
+    local message=$3
+    local fields=$4
+
+    if [ -z "$SLACK_WEBHOOK_URL" ]; then
+        log "Warning: SLACK_WEBHOOK_URL is not set. Skipping notification."
+        return 0
+    }
+
+    curl -s -X POST -H 'Content-type: application/json' \
+    --data "{
+        \"attachments\": [
+            {
+                \"color\": \"${color}\",
+                \"blocks\": [
+                    {
+                        \"type\": \"section\",
+                        \"text\": {
+                            \"type\": \"mrkdwn\",
+                            \"text\": \"*${title}*\n${message}\"
+                        }
+                    },
+                    {
+                        \"type\": \"section\",
+                        \"fields\": ${fields}
+                    }
+                ]
+            }
+        ]
+    }" $SLACK_WEBHOOK_URL
+
+    if [ $? -ne 0 ]; then
+        log "Failed to send Slack notification: ${title}"
+    fi
+}
 
 # deployment target 결정 함수
 get_deployment_target() {
     local current_target=$(docker exec nginx readlink /etc/nginx/conf.d/current.conf)
-
 
     if [[ $current_target == *"blue"* ]]; then
         echo "green spring-boot-green $GREEN_PORT"
@@ -24,8 +61,7 @@ get_deployment_target() {
     fi
 }
 
-
-# 컨테이너 헬스체크 (공통 함수로 통합)
+# 컨테이너 헬스체크
 check_container_health() {
     local container=$1
     local port=$2
@@ -35,13 +71,24 @@ check_container_health() {
 
     while [ $attempt -le $max_attempts ]; do
         log "Health check attempt $attempt of $max_attempts for $container..."
+
         if docker exec $container curl -f http://localhost:$port/actuator/health > /dev/null 2>&1; then
             log "Health check passed for $container!"
+            send_slack_notification "#36a64f" "✅ 컨테이너 헬스체크 성공" "컨테이너가 정상적으로 동작 중입니다." "[
+                {\"type\": \"mrkdwn\", \"text\": \"*Container:* ${container}\"},
+                {\"type\": \"mrkdwn\", \"text\": \"*Port:* ${port}\"}
+            ]"
             return 0
         fi
+
         attempt=$((attempt + 1))
         sleep $sleep_time
     done
+
+    send_slack_notification "#dc3545" "❌ 컨테이너 헬스체크 실패" "컨테이너 상태 확인 실패" "[
+        {\"type\": \"mrkdwn\", \"text\": \"*Container:* ${container}\"},
+        {\"type\": \"mrkdwn\", \"text\": \"*Attempts:* ${max_attempts}\"}
+    ]"
     return 1
 }
 
@@ -55,18 +102,25 @@ get_running_containers() {
 check_environment() {
     if [ ! -f "$APP_DIR/.env" ]; then
         log "Error: .env file not found"
+        send_slack_notification "#dc3545" "⚠️ 환경 설정 오류" ".env 파일을 찾을 수 없습니다." "[
+            {\"type\": \"mrkdwn\", \"text\": \"*Location:* ${APP_DIR}/.env\"},
+            {\"type\": \"mrkdwn\", \"text\": \"*Status:* Missing\"}
+        ]"
         return 1
     fi
 
     source "$APP_DIR/.env"
 
-    if [ -z "$DOCKER_USERNAME" ]; then
-        log "Error: DOCKER_USERNAME is not set"
-        return 1
-    fi
+    local missing_vars=""
+    [ -z "$DOCKER_USERNAME" ] && missing_vars+="DOCKER_USERNAME "
+    [ -z "$REDIS_PASSWORD" ] && missing_vars+="REDIS_PASSWORD "
+    [ -z "$SLACK_WEBHOOK_URL" ] && missing_vars+="SLACK_WEBHOOK_URL "
 
-    if [ -z "$REDIS_PASSWORD" ]; then
-        log "Error: REDIS_PASSWORD is not set"
+    if [ ! -z "$missing_vars" ]; then
+        log "Error: Required environment variables are not set: $missing_vars"
+        send_slack_notification "#dc3545" "⚠️ 환경 변수 오류" "필수 환경 변수가 설정되지 않았습니다." "[
+            {\"type\": \"mrkdwn\", \"text\": \"*Missing Variables:* ${missing_vars}\"}
+        ]"
         return 1
     fi
     return 0
@@ -77,24 +131,18 @@ ensure_network() {
     if ! docker network ls | grep -q "ubuntu_this_network"; then
         log "Creating Docker network: ubuntu_this_network"
         docker network create ubuntu_this_network
-    fi
-}
 
-# 컨테이너 존재 여부 확인
-check_container_exists() {
-    local container_name=$1
-    docker ps -a --filter "name=$container_name" --format '{{.Names}}' | grep -q "^$container_name$"
-}
-
-# 컨테이너 정리 함수
-cleanup_container() {
-    local container_name=$1
-    local timeout=${2:-30}
-
-    if check_container_exists "$container_name"; then
-        log "Stopping container $container_name with $timeout seconds timeout..."
-        docker stop -t "$timeout" "$container_name" || true
-        docker rm "$container_name" || true
+        if [ $? -eq 0 ]; then
+            send_slack_notification "#36a64f" "🌐 네트워크 생성 완료" "Docker 네트워크가 생성되었습니다." "[
+                {\"type\": \"mrkdwn\", \"text\": \"*Network:* ubuntu_this_network\"},
+                {\"type\": \"mrkdwn\", \"text\": \"*Status:* Created\"}
+            ]"
+        else
+            send_slack_notification "#dc3545" "❌ 네트워크 생성 실패" "Docker 네트워크 생성에 실패했습니다." "[
+                {\"type\": \"mrkdwn\", \"text\": \"*Network:* ubuntu_this_network\"},
+                {\"type\": \"mrkdwn\", \"text\": \"*Status:* Failed\"}
+            ]"
+        fi
     fi
 }
 
@@ -104,46 +152,40 @@ switch_nginx() {
     local nginx_container="nginx"
 
     log "Switching to $target_color deployment..."
+    send_slack_notification "#36a64f" "🔄 트래픽 전환 시작" "Nginx 설정을 변경합니다." "[
+        {\"type\": \"mrkdwn\", \"text\": \"*Target:* ${target_color}\"},
+        {\"type\": \"mrkdwn\", \"text\": \"*Container:* ${nginx_container}\"}
+    ]"
 
-    # nginx 컨테이너가 실행 중인지 확인
     if ! docker ps -q -f name=$nginx_container | grep -q .; then
-        log "Error: Nginx container is not running"
+        send_slack_notification "#dc3545" "❌ Nginx 오류" "Nginx 컨테이너가 실행중이지 않습니다." "[
+            {\"type\": \"mrkdwn\", \"text\": \"*Container:* ${nginx_container}\"},
+            {\"type\": \"mrkdwn\", \"text\": \"*Status:* Not Running\"}
+        ]"
         return 1
     fi
 
-    # 새로운 설정 적용
     docker exec $nginx_container sh -c "ln -sf /etc/nginx/conf.d/${target_color}.conf /etc/nginx/conf.d/current.conf"
 
-    # nginx 설정 리로드
-    if ! docker exec $nginx_container nginx -s reload; then
-        log "Error: Failed to reload nginx configuration"
-        return 1
-    fi
-
-    # switch_nginx 함수에 디버깅 로그 추가
-    docker exec $nginx_container ls -l /etc/nginx/conf.d/ || log "Error: Cannot list nginx config directory"
-    docker exec $nginx_container cat /etc/nginx/conf.d/current.conf || log "Error: Cannot read current nginx config"
-
-    # nginx 설정 테스트 단계 추가
     if ! docker exec $nginx_container nginx -t; then
-        log "Error: Nginx configuration test failed"
+        send_slack_notification "#dc3545" "❌ Nginx 설정 오류" "Nginx 설정 테스트에 실패했습니다." "[
+            {\"type\": \"mrkdwn\", \"text\": \"*Config:* ${target_color}.conf\"},
+            {\"type\": \"mrkdwn\", \"text\": \"*Status:* Test Failed\"}
+        ]"
         return 1
     fi
 
-    # 헬스체크
-    local max_attempts=30
-    local attempt=1
-    while [ $attempt -le $max_attempts ]; do
-        log "Health check attempt $attempt of $max_attempts for nginx..."
-        if docker exec $nginx_container wget -q --spider http://localhost/health; then
-            log "Health check passed for nginx!"
-            return 0
-        fi
-        attempt=$((attempt + 1))
-        sleep 5
-    done
+    if ! docker exec $nginx_container nginx -s reload; then
+        send_slack_notification "#dc3545" "❌ Nginx 재시작 실패" "Nginx 설정 리로드에 실패했습니다." "[
+            {\"type\": \"mrkdwn\", \"text\": \"*Action:* Reload\"},
+            {\"type\": \"mrkdwn\", \"text\": \"*Status:* Failed\"}
+        ]"
+        return 1
+    fi
 
-    log "Error: Health check failed for nginx"
-    return 1
-    }
-
+    send_slack_notification "#36a64f" "✅ 트래픽 전환 완료" "Nginx 설정이 성공적으로 변경되었습니다." "[
+        {\"type\": \"mrkdwn\", \"text\": \"*Active:* ${target_color}\"},
+        {\"type\": \"mrkdwn\", \"text\": \"*Status:* Success\"}
+    ]"
+    return 0
+}

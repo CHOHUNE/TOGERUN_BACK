@@ -28,7 +28,7 @@ check_container_health $NEW_CONTAINER $NEW_PORT 10 10 || {
 # nginx 전환
 if switch_nginx $NEW_COLOR; then
     log "Successfully switched to $NEW_COLOR"
-    cleanup_container "spring-boot-$CURRENT_COLOR"
+#    cleanup_container "spring-boot-$CURRENT_COLOR"
 else
     log "Error: Failed to switch nginx to $NEW_COLOR"
     switch_nginx $CURRENT_COLOR # 실패시 롤백
