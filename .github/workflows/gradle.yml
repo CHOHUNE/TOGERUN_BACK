@@ -83,6 +83,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --info
 
+      # Step : 배포 시간 기록
+      - name: Get Current Time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH:mm:ss
+          utcOffset: "+09:00"
+
       # Step 7: Gradle 빌드 결과 알림
       - name: Notify Build Result
         uses: 8398a7/action-slack@v3
@@ -318,13 +326,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
         if: always()
 
-      # Step 16: 배포 시간 기록
-      - name: Get Current Time
-        uses: 1466587594/get-current-time@v2
-        id: current-time
-        with:
-          format: YYYY-MM-DDTHH:mm:ss
-          utcOffset: "+09:00"
+
 
       - name: Print Current Time
         run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"

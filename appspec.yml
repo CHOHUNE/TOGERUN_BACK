@@ -4,8 +4,6 @@ files:
   - source: /
     destination: /home/ubuntu/app
 files_exists_behavior: overwrite
-environment_variables:
-  SLACK_WEBHOOK_URL: "#{SLACK_WEBHOOK_URL}"
 permissions:
   - object: /home/ubuntu/app/scripts
     pattern: "*.sh"
