@@ -21,7 +21,7 @@ send_slack_notification() {
     if [ -z "$SLACK_WEBHOOK_URL" ]; then
         log "Warning: SLACK_WEBHOOK_URL is not set. Skipping notification."
         return 0
-    }
+    fi
 
     curl -s -X POST -H 'Content-type: application/json' \
     --data "{
@@ -58,6 +58,16 @@ get_deployment_target() {
         echo "green spring-boot-green $GREEN_PORT"
     else
         echo "blue spring-boot-blue $BLUE_PORT"
+    fi
+}
+
+# cleanup container 함수 추가
+cleanup_container() {
+    local container=$1
+    if docker ps -a | grep -q $container; then
+        log "Stopping and removing container $container..."
+        docker stop $container >/dev/null 2>&1
+        docker rm $container >/dev/null 2>&1
     fi
 }
 
