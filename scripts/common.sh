@@ -19,9 +19,10 @@ send_slack_notification() {
     local fields=$4
 
     if [ -z "$SLACK_WEBHOOK_URL" ]; then
-        log "Warning: SLACK_WEBHOOK_URL is not set. Skipping notification."
+        log "Warning: SLACK_WEBHOOK_URL is not set. Value: '$SLACK_WEBHOOK_URL'"
         return 0
     fi
+    log "Sending notification to Slack webhook: ${SLACK_WEBHOOK_URL}"
 
     curl -s -X POST -H 'Content-type: application/json' \
     --data "{
