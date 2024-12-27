@@ -6,6 +6,25 @@ LOG_FILE="${APP_DIR}/logs/deployment.log"
 BLUE_PORT=8081
 GREEN_PORT=8082
 
+
+
+load_environment() {
+    if [ -f "$APP_DIR/.env" ]; then
+        while IFS= read -r line || [ -n "$line" ]; do
+            if [[ ! $line =~ ^# ]] && [[ -n $line ]]; then
+                export "$line"
+            fi
+        done < "$APP_DIR/.env"
+        return 0
+    else
+        echo "Error: .env file not found at $APP_DIR/.env"
+        return 1
+    fi
+}
+
+# 스크립트 시작시 환경변수 자동 로드
+load_environment
+
 # 로깅 함수
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
@@ -18,10 +37,14 @@ send_slack_notification() {
     local message=$3
     local fields=$4
 
+    # 환경변수 다시 로드 시도
+    load_environment
+
     if [ -z "$SLACK_WEBHOOK_URL" ]; then
-        log "Warning: SLACK_WEBHOOK_URL is not set. Value: '$SLACK_WEBHOOK_URL'"
+        log "Error: SLACK_WEBHOOK_URL is not set. Attempting to reload from .env"
         return 0
     fi
+
     log "Sending notification to Slack webhook: ${SLACK_WEBHOOK_URL}"
 
     curl -s -X POST -H 'Content-type: application/json' \
@@ -50,6 +73,7 @@ send_slack_notification() {
         log "Failed to send Slack notification: ${title}"
     fi
 }
+
 
 # deployment target 결정 함수
 get_deployment_target() {
