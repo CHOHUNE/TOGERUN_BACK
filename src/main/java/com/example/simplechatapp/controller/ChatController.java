@@ -1,9 +1,9 @@
 package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.annotation.NeedNotify;
+import com.example.simplechatapp.annotation.RateLimit;
 import com.example.simplechatapp.dto.ChatMessageDTO;
 import com.example.simplechatapp.service.ChatMessageService;
-import com.example.simplechatapp.service.ChatRoomService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,7 @@ public class ChatController {
     private final ObjectMapper objectMapper;
 
 
+    @RateLimit(maxRequests = 20, duration = 10)
     @MessageMapping("/chat/{postId}/send")
     @SendTo("/topic/chat/{postId}")
     @NeedNotify

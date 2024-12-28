@@ -2,6 +2,7 @@ package com.example.simplechatapp.controller;
 
 
 import com.example.simplechatapp.annotation.NeedNotify;
+import com.example.simplechatapp.annotation.RateLimit;
 import com.example.simplechatapp.dto.*;
 import com.example.simplechatapp.entity.Post;
 import com.example.simplechatapp.entity.User;
@@ -55,6 +56,7 @@ public class PostController {
 
 
     //    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    @RateLimit(maxRequests = 10, duration = 3600)
     @PostMapping
     public Map<String, Long> createPost(
             @AuthenticationPrincipal UserDTO principal,
@@ -73,6 +75,7 @@ public class PostController {
     }
 
     //    @Cacheable(value = "postList", key = "#pageRequestDTO.toString()")
+    @RateLimit(maxRequests = 60, duration = 60)
     @GetMapping("/list")
     public PageResponseDTO<PostListDTO> list(PageRequestDTO pageRequestDTO) {
 
@@ -120,6 +123,7 @@ public class PostController {
         return ResponseEntity.ok(favoriteDTO);
     }
 
+    @RateLimit(maxRequests = 30, duration = 60)
     @PostMapping("/{id}/like")
     @NeedNotify
     public ResponseEntity<LikeDTO> toggleLike(@PathVariable Long id, @AuthenticationPrincipal UserDTO principal) {
