@@ -16,10 +16,11 @@ public interface PostRepository extends JpaRepository<Post,Long>,PostSearch {
 
     @Modifying
     @Query("""
-            UPDATE Post p SET p.participateFlag = false 
-            WHERE p.meetingTime <: now
-            AND p.participateFlag=true
-            """)
+        UPDATE Post p 
+        SET p.participateFlag = false 
+        WHERE p.meetingTime < :now 
+        AND p.participateFlag = true
+        """)
     int bulkUpdateParticipateFlag(LocalDateTime now);
 
 //    @Query("select p from Post p where p.meetingTime < :now")
