@@ -4,10 +4,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.lettuce.core.RedisConnectionException;
 import io.lettuce.core.RedisException;
-import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisCallback;
@@ -24,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RedisHighAvailabilityService {
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final int MAX_BACKOFF_DELAY = 30_000;
@@ -55,28 +52,33 @@ public class RedisHighAvailabilityService {
         • 복구시간: %s
         """;
 
-    @Value("${redis.retry.batch-size:100}")
-    private int retryBatchSize;
-
-    @Value("${redis.health-check.interval:30000}")
-    private long healthCheckInterval;
-
     private final RedisTemplate<String, Object> masterTemplate;
     private final RedisTemplate<String, Object> replicaTemplate;
     private final SlackNotificationService slackNotification;
-    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final CircuitBreaker circuitBreaker;
+    private final int retryBatchSize;
+    private final long healthCheckInterval;
 
     private final AtomicBoolean isRecoveryRunning = new AtomicBoolean(false);
     private final AtomicBoolean masterAvailable = new AtomicBoolean(true);
     private final AtomicInteger failedQueueAttempts = new AtomicInteger(0);
-    private final BlockingQueue<FailedOperation> failedOperationsQueue =
-            new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    private final BlockingQueue<FailedOperation> failedOperationsQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
 
-    private CircuitBreaker circuitBreaker;
+    public RedisHighAvailabilityService(
+            RedisTemplate<String, Object> masterTemplate,
+            RedisTemplate<String, Object> replicaTemplate,
+            SlackNotificationService slackNotification,
+            CircuitBreakerRegistry circuitBreakerRegistry,
+            @Value("${redis.retry.batch-size:100}") int retryBatchSize,
+            @Value("${redis.health-check.interval:30000}") long healthCheckInterval) {
 
-    @PostConstruct
-    public void init() {
+        this.masterTemplate = masterTemplate;
+        this.replicaTemplate = replicaTemplate;
+        this.slackNotification = slackNotification;
+        this.retryBatchSize = retryBatchSize;
+        this.healthCheckInterval = healthCheckInterval;
         this.circuitBreaker = circuitBreakerRegistry.circuitBreaker(CIRCUIT_BREAKER_NAME);
+
         log.info("Redis High Availability Service initialized with batch size: {}", retryBatchSize);
     }
 

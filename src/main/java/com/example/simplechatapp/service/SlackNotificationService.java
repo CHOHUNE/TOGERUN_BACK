@@ -4,8 +4,6 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import io.micrometer.common.util.StringUtils;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -21,7 +19,6 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class SlackNotificationService {
     private static final String RETRY_NAME = "slack-notification-retry";
     private static final int MAX_ATTEMPTS = 3;
@@ -29,16 +26,21 @@ public class SlackNotificationService {
 
     private final RetryRegistry retryRegistry;
     private final RestTemplate restTemplate;
-    private Retry retry;
+    private final String webhookUrl;
+    private final Retry retry;
 
-    @Value("${slack.alert.incident.webhook-url}")
-    private String webhookUrl;
+    public SlackNotificationService(
+            RetryRegistry retryRegistry,
+            RestTemplate restTemplate,
+            @Value("${slack.alert.incident.webhook-url}") String webhookUrl) {
 
-    @PostConstruct
-    public void init() {
+        this.retryRegistry = retryRegistry;
+        this.restTemplate = restTemplate;
+
         if (StringUtils.isEmpty(webhookUrl)) {
             throw new IllegalStateException("Slack webhook URL must be configured in application.yml");
         }
+        this.webhookUrl = webhookUrl;
 
         RetryConfig config = RetryConfig.custom()
                 .maxAttempts(MAX_ATTEMPTS)
@@ -47,6 +49,8 @@ public class SlackNotificationService {
                 .build();
 
         this.retry = retryRegistry.retry(RETRY_NAME, config);
+
+        log.debug("SlackNotificationService initialized with webhook URL configured");
     }
 
     public void sendAlert(String message) {
