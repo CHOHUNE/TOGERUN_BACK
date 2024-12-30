@@ -1,10 +1,12 @@
 package com.example.simplechatapp.service;
 
 import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryRegistry;
 import io.github.resilience4j.retry.RetryConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.resilience4j.retry.RetryRegistry;
+import io.micrometer.common.util.StringUtils;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,42 +14,39 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class SlackNotificationService {
-
-    private static final Logger logger = LoggerFactory.getLogger(SlackNotificationService.class);
+    private static final String RETRY_NAME = "slack-notification-retry";
+    private static final int MAX_ATTEMPTS = 3;
+    private static final long WAIT_DURATION = 1000L;
 
     private final RetryRegistry retryRegistry;
     private final RestTemplate restTemplate;
-    private final Retry retry;
+    private Retry retry;
 
-    @Value("${slack.webhook.url}")
+    @Value("${slack.alert.incident.webhook-url}")
     private String webhookUrl;
-
-    public SlackNotificationService(RetryRegistry retryRegistry, RestTemplate restTemplate) {
-        this.retryRegistry = retryRegistry;
-        this.restTemplate = restTemplate;
-
-        RetryConfig retryConfig = RetryConfig.custom()
-                .maxAttempts(3)
-                .waitDuration(Duration.ofMillis(100))
-                .retryExceptions(RuntimeException.class)
-                .build();
-
-        this.retry = retryRegistry.retry("slack-notification", retryConfig);
-    }
 
     @PostConstruct
     public void init() {
-        if (webhookUrl == null || webhookUrl.isEmpty()) {
-            throw new IllegalStateException("Slack webhook URL is not configured");
+        if (StringUtils.isEmpty(webhookUrl)) {
+            throw new IllegalStateException("Slack webhook URL must be configured in application.yml");
         }
+
+        RetryConfig config = RetryConfig.custom()
+                .maxAttempts(MAX_ATTEMPTS)
+                .waitDuration(Duration.ofMillis(WAIT_DURATION))
+                .retryExceptions(RuntimeException.class)
+                .build();
+
+        this.retry = retryRegistry.retry(RETRY_NAME, config);
     }
 
     public void sendAlert(String message) {
@@ -59,8 +58,8 @@ public class SlackNotificationService {
         try {
             decoratedSupplier.get();
         } catch (Exception e) {
-            logger.error("Failed to send Slack notification after retries", e);
-            throw new RuntimeException("Slack notification failed", e);
+            log.error("Failed to send Slack notification after {} retries: {}", MAX_ATTEMPTS, e.getMessage(), e);
+            throw new SlackNotificationException("Failed to send notification to Slack", e);
         }
     }
 
@@ -75,10 +74,16 @@ public class SlackNotificationService {
 
         try {
             restTemplate.postForEntity(webhookUrl, request, String.class);
-            logger.info("Slack notification sent successfully");
+            log.debug("Slack notification sent successfully: {}", message);
         } catch (Exception e) {
-            logger.error("Error sending Slack notification", e);
-            throw new RuntimeException("Network Error", e);
+            log.error("Error sending Slack notification: {}", e.getMessage());
+            throw new SlackNotificationException("Network error while sending notification", e);
+        }
+    }
+
+    public static class SlackNotificationException extends RuntimeException {
+        public SlackNotificationException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

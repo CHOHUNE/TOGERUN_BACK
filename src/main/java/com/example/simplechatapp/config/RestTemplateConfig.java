@@ -1,24 +1,20 @@
-//package com.example.simplechatapp.config;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.fasterxml.jackson.databind.SerializationFeature;
-//import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.web.client.RestTemplate;
-//
-//@Configuration
-//public class RestTemplateConfig {
-//
-//    @Bean
-//    public RestTemplate restTemplate() {
-//        return new RestTemplate();
-//    }
-//
-//    @Bean
-//    public ObjectMapper objectMapper() {
-//        return new ObjectMapper()
-//                .registerModule(new JavaTimeModule())
-//                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//    }
-//}
+package com.example.simplechatapp.config;
+
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
+
+@Configuration
+public class RestTemplateConfig {
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofSeconds(5))
+                .setReadTimeout(Duration.ofSeconds(5))
+                .build();
+    }
+}
