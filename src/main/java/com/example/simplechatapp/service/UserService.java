@@ -11,8 +11,6 @@ import java.util.List;
 @Transactional
 public interface UserService {
 
-//    UserDTO getKakaoMember(String accessToken);
-
     UserDTO modifyMember(UserDTO userDTO,UserModifyDTO userModifyDTO);
 
     UserDTO getMember(String email);
@@ -43,9 +41,4 @@ public interface UserService {
                     user.getDeletedAt()
 
             );}
-
-
-
-
-
 }

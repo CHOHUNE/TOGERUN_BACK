@@ -20,7 +20,6 @@ public class TokenService {
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 60 * 24 * 60 * 1000L;
 
 
-
     public TokenInfo generateTokens(Map<String, Object> claims) {
 
         String accessToken = jwtUtil.generateAccessToken(claims, 10);

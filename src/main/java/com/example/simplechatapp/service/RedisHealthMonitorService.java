@@ -18,7 +18,7 @@ public class RedisHealthMonitorService {
     private final SlackService slackService;
     private AtomicBoolean masterHealthy = new AtomicBoolean(true);
 
-    @Scheduled(fixedRateString = "${redis.health-check.interval:30000}")
+    @Scheduled(fixedRate = 60000) // 60초마다 실행
     public void monitorRedisHealth() {
         boolean currentHealth = checkMasterHealth();
         boolean previousHealth = masterHealthy.get();
