@@ -50,4 +50,8 @@ public class RedisHealthMonitorService {
             return false;
         }
     }
+
+    public boolean isMasterHealthy() {
+        return masterHealthy.get();
+    }
 }

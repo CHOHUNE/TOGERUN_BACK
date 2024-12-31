@@ -1,7 +1,7 @@
 package com.example.simplechatapp.aop;
 
 import com.example.simplechatapp.annotation.DistributedLock;
-import com.example.simplechatapp.service.RedisLockService;
+import com.example.simplechatapp.service.FaultTolerantLockService;
 import com.example.simplechatapp.util.LockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,24 +22,48 @@ import java.lang.reflect.Parameter;
 @RequiredArgsConstructor
 @Slf4j
 public class DistributedLockAspect {
-    private final RedisLockService lockService;
+    private final FaultTolerantLockService lockService;
     private final SpelExpressionParser parser = new SpelExpressionParser();
 
     @Around("@annotation(distributedLock)")
     public Object executeWithLock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String lockKey = generateLockKey(joinPoint, distributedLock);
 
+        log.debug("Attempting to acquire lock - Method: {}, Key: {}, WaitTime: {}s",
+                signature.getMethod().getName(), lockKey, distributedLock.waitTime());
+
+        boolean lockAcquired = false;
         try {
-            if (!lockService.acquireLock(lockKey, distributedLock.waitTime())) {
+            // FaultTolerantLockService를 사용하여 락 획득 시도
+            lockAcquired = lockService.acquireLock(lockKey, distributedLock.waitTime());
+            if (!lockAcquired) {
+                log.warn("Failed to acquire lock - Method: {}, Key: {}",
+                        signature.getMethod().getName(), lockKey);
                 throw new LockException.AcquisitionException(lockKey);
             }
+
+            log.debug("Lock acquired successfully - Method: {}, Key: {}",
+                    signature.getMethod().getName(), lockKey);
             return joinPoint.proceed();
+
+        } catch (LockException e) {
+            throw e;
+        } catch (Throwable e) {
+            log.error("Error while executing locked method - Method: {}, Key: {}",
+                    signature.getMethod().getName(), lockKey, e);
+            throw e;
         } finally {
-            try {
-                lockService.releaseLock(lockKey);
-            } catch (Exception e) {
-                log.error("Failed to release lock for key: {}", lockKey, e);
-                throw new LockException.ReleaseException(lockKey);
+            if (lockAcquired) {
+                try {
+                    lockService.releaseLock(lockKey);
+                    log.debug("Lock released successfully - Method: {}, Key: {}",
+                            signature.getMethod().getName(), lockKey);
+                } catch (Exception e) {
+                    log.error("Failed to release lock - Method: {}, Key: {}",
+                            signature.getMethod().getName(), lockKey, e);
+                    throw new LockException.ReleaseException(lockKey);
+                }
             }
         }
     }
