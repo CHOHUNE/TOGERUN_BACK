@@ -107,6 +107,9 @@ public class RedisConfig {
     @Bean
     public MessageListenerAdapter messageListener(RedisSubscriber redisSubscriber) {
         return new MessageListenerAdapter(redisSubscriber,"onMessage");
+        // onMessage 라는 메소드를 호출 -> 직접적으로 참조가 아닌 이름만 지정함
+        // onMessage 에 직접적인 참조가 없는 이유 -> 옵저버 패턴과 유사한 이벤트 기반의 아키텍처 특성
+
     }
 
     @Bean

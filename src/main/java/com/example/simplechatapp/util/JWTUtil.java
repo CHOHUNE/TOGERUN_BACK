@@ -1,7 +1,5 @@
 package com.example.simplechatapp.util;
 
-import com.example.simplechatapp.dto.oauth2.TokenResponse;
-import com.example.simplechatapp.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -22,18 +20,6 @@ public class JWTUtil {
     @Value("${jwt.secret.key}")
     private String key;
 
-    private final RefreshTokenRepository refreshTokenRepository;
-
-
-    public TokenResponse createTokens(Map<String, Object> claims) {
-        String accessToken = generateAccessToken(claims, 10);
-        String refreshToken = generateRefreshToken(claims, 60 * 24);
-
-        String email=claims.get("email").toString();
-        refreshTokenRepository.saveRefreshToken(email, refreshToken, 60 * 24 * 60 * 1000);
-
-        return new TokenResponse(accessToken, refreshToken);
-    }
 
     public String generateToken(Map<String, Object> claims, int min) {
         SecretKey secretKey = Keys.hmacShaKeyFor(this.key.getBytes(StandardCharsets.UTF_8));
@@ -85,19 +71,9 @@ public class JWTUtil {
     }
 
     public String generateRefreshToken(Map<String, Object> claims, int min) {
-
-//        String refreshToken = generateToken(claims, min);
-//        String email = claims.get("email").toString();
-//        refreshTokenRepository.saveRefreshToken(email, refreshToken, min * 60 * 1000L);
-//        return refreshToken;
-
         return generateToken(claims, min);
     }
 
-    public boolean validRefreshToken(String email, String refreshToken) {
-        String storedRefreshToken = refreshTokenRepository.getRefreshToken(email);
-        return refreshToken.equals(storedRefreshToken);
-    }
 
     public Map<String, Object> getClaims(String token) {
         try {
