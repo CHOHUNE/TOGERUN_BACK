@@ -1,5 +1,6 @@
 package com.example.simplechatapp.config;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -30,6 +31,12 @@ public class ResilienceConfig {
                 .build();
 
         return CircuitBreakerRegistry.of(config);
+    }
+
+
+    @Bean
+    public CircuitBreaker redisCircuitBreaker(CircuitBreakerRegistry circuitBreakerRegistry) {
+        return circuitBreakerRegistry.circuitBreaker("redisCircuitBreaker");
     }
 
     @Bean

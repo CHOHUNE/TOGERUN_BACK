@@ -2,8 +2,8 @@ package com.example.simplechatapp.controller;
 
 import com.example.simplechatapp.annotation.NeedNotify;
 import com.example.simplechatapp.annotation.RateLimit;
-import com.example.simplechatapp.dto.CommentRequestDto;
-import com.example.simplechatapp.dto.CommentResponseDto;
+import com.example.simplechatapp.dto.CommentRequestDTO;
+import com.example.simplechatapp.dto.CommentResponseDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -24,22 +24,22 @@ public class CommentController {
     @RateLimit(maxRequests = 20, duration = 600)
     @PostMapping // postId 는 CommentRequestDto 에 포함 되어 있어서 파라메터로 받지 않음
     @NeedNotify
-    public ResponseEntity<CommentResponseDto> createComment(@RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDTO principal) {
+    public ResponseEntity<CommentResponseDTO> createComment(@RequestBody CommentRequestDTO commentRequestDto, @AuthenticationPrincipal UserDTO principal) {
 
-        CommentResponseDto commentResponseDto = commentService.createComment(commentRequestDto, principal);
+        CommentResponseDTO commentResponseDto = commentService.createComment(commentRequestDto, principal);
         return ResponseEntity.ok().body(commentResponseDto);
     }
 
     @PutMapping
-    public ResponseEntity<CommentResponseDto> modifyComment(@RequestBody CommentRequestDto commentRequestDto,@AuthenticationPrincipal UserDTO principal) {
-        CommentResponseDto commentResponseDto = commentService.modifyComment(commentRequestDto, principal);
+    public ResponseEntity<CommentResponseDTO> modifyComment(@RequestBody CommentRequestDTO commentRequestDto, @AuthenticationPrincipal UserDTO principal) {
+        CommentResponseDTO commentResponseDto = commentService.modifyComment(commentRequestDto, principal);
         return ResponseEntity.ok().body(commentResponseDto);
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<List<CommentResponseDto>> getComment(@PathVariable Long postId) {
-        List<CommentResponseDto> commentResponseDtoList = commentService.findCommentListByPostId(postId);
-        return ResponseEntity.ok().body(commentResponseDtoList);
+    public ResponseEntity<List<CommentResponseDTO>> getComment(@PathVariable Long postId) {
+        List<CommentResponseDTO> commentResponseDTOList = commentService.findCommentListByPostId(postId);
+        return ResponseEntity.ok().body(commentResponseDTOList);
     }
 
     @DeleteMapping("/{commentId}")

@@ -52,6 +52,7 @@ public class RateLimitAspect {
 
             return String.format("%s:user:%d", methodName, user.getId());
         }
+
         // 비인증 사용자는 IP 주소로 구분
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         String clientIp = "unknown";
