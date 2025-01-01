@@ -35,32 +35,10 @@ public class ChatRoomService {
 
 
     public List<ChatMessageDTO> getMessageByPostId(Long postId) {
-//        String redisKey = "chat:messages:" + postId;
-//        String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-//
-//        if (cachedMessages != null && !cachedMessages.isEmpty()) {
-//            try {
-//                List<ChatMessageDTO> messages = objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
-//                });
-//                log.info("Cache Hit! {} messages", messages.size());
-//                return messages;
-//            } catch (Exception e) {
-//                log.error("Error deserializing messages from Redis {}", e.getMessage());
-//            }
-//        }
+
 
         List<ChatMessage> chatMessages = chatMessageRepository.findChatMessageByPostId(postId);
         List<ChatMessageDTO> messageDTOs = chatMessages.stream().map(ChatMessageDTO::ChatMessageEntityToDto).toList();
-
-//        if (!messageDTOs.isEmpty()) {
-//            try {
-//                String jsonMessages = objectMapper.writeValueAsString(messageDTOs);
-//                redisTemplate.opsForValue().set(redisKey, jsonMessages);
-//                redisTemplate.expire(redisKey, 1, TimeUnit.HOURS);
-//            } catch (Exception e) {
-//                log.error("Error serializing messages for Redis", e);
-//            }
-//        }
 
         return messageDTOs;
     }
@@ -111,24 +89,10 @@ public class ChatRoomService {
             ChatMessage savedJoinMessage = chatMessageRepository.save(joinMessage);
             ChatMessageDTO joinMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedJoinMessage);
 
-//            // Redis에 메시지 저장
-//            String redisKey = "chat:messages:" + postId;
-//            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-//            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
-//            }) : new ArrayList<>();
-//
-//            messages.add(joinMessageDTO);
-//            String updatedMessages = objectMapper.writeValueAsString(messages);
-//            redisTemplate.opsForValue().set(redisKey, updatedMessages);
-
-
             String jsonMessage = objectMapper.writeValueAsString(joinMessageDTO);
             // Redis Pub/Sub을 통해 메시지 발행
             redisTemplate.convertAndSend("chat." + postId, jsonMessage);
 
-            // WebSocket을 통해 클라이언트에게 메시지 전송
-            // 이 부분은 RedisSubscriber.java 에서 처리
-//            messagingTemplate.convertAndSend("/topic/chat." + postId, joinMessageDTO);
         }
 
         chatRoomRepository.save(chatRoom);
@@ -162,17 +126,6 @@ public class ChatRoomService {
 
             ChatMessage savedLeaveMessage = chatMessageRepository.save(leaveMessage);
             ChatMessageDTO leaveMessageDTO = ChatMessageDTO.ChatMessageEntityToDto(savedLeaveMessage);
-
-            //Redis 에 메세지 저장
-//            String redisKey = "chat:messages:" + postId;
-//            String cachedMessages = redisTemplate.opsForValue().get(redisKey);
-//
-//            List<ChatMessageDTO> messages = cachedMessages != null ? objectMapper.readValue(cachedMessages, new TypeReference<List<ChatMessageDTO>>() {
-//            }) : new ArrayList<>();
-//
-//            messages.add(leaveMessageDTO);
-//            String updatedMessages = objectMapper.writeValueAsString(messages);
-//            redisTemplate.opsForValue().set(redisKey, updatedMessages);
 
             String jsonMessage = objectMapper.writeValueAsString(leaveMessageDTO);
             redisTemplate.convertAndSend("chat." + postId, jsonMessage);
@@ -208,10 +161,7 @@ public class ChatRoomService {
         return chatRoomRepository.findUserChatRoomDTOs(userEmail);
     }
 
-//    @Transactional(readOnly = true)
-//    public List<UserChatRoomDTO> getUserChatRoomNewVer(String userEmail) {
-//        return chatRoomRepository.findUserChatRoomDTOsNew(userEmail);
-//    }
+
 
 
     private UserChatRoomDTO convertTouserChatRoomDTO(ChatRoom chatRoom) {

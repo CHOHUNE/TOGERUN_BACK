@@ -1,6 +1,6 @@
 package com.example.simplechatapp.config;
 
-import com.example.simplechatapp.dto.CommentResponseDto;
+import com.example.simplechatapp.dto.CommentResponseDTO;
 import com.example.simplechatapp.dto.PostDTO;
 import com.example.simplechatapp.service.RedisSubscriber;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,12 +39,6 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int masterPort;
 
-//    @Value("${spring.data.redis.replica.host}")
-//    private String replicaHost;
-//
-//    @Value("${spring.data.redis.replica.port}")
-//    private int replicaPort;
-
     @Value("${spring.data.redis.password}")
     private String password;
 
@@ -79,7 +73,7 @@ public class RedisConfig {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         mapper.addMixIn(PostDTO.class, TypeInfoMixin.class);
-        mapper.addMixIn(CommentResponseDto.class, TypeInfoMixin.class);
+        mapper.addMixIn(CommentResponseDTO.class, TypeInfoMixin.class);
 
         return mapper;
     }

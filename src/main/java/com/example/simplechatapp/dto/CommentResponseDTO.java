@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommentResponseDto implements NotifyInfo {
+public class CommentResponseDTO implements NotifyInfo {
 
     private Long id;
     private Long postId;
@@ -39,7 +39,7 @@ public class CommentResponseDto implements NotifyInfo {
     private String img;
 
     @Builder.Default
-    private List<CommentResponseDto> children = new ArrayList<>();
+    private List<CommentResponseDTO> children = new ArrayList<>();
     private LocalDateTime createdAt;
     private boolean delFlag;
 
@@ -53,8 +53,8 @@ public class CommentResponseDto implements NotifyInfo {
 //        this.createdAt = createdAt;
 //    }
 
-    public static CommentResponseDto convertCommentToDto(Comment comment) {
-        return CommentResponseDto.builder()
+    public static CommentResponseDTO convertCommentToDto(Comment comment) {
+        return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .postId(comment.getPost().getId())
                 .content(comment.getContent())

@@ -1,8 +1,8 @@
 package com.example.simplechatapp.service;
 
 
-import com.example.simplechatapp.dto.CommentRequestDto;
-import com.example.simplechatapp.dto.CommentResponseDto;
+import com.example.simplechatapp.dto.CommentRequestDTO;
+import com.example.simplechatapp.dto.CommentResponseDTO;
 import com.example.simplechatapp.dto.UserDTO;
 import com.example.simplechatapp.entity.Comment;
 import com.example.simplechatapp.entity.Post;
@@ -30,7 +30,7 @@ public class CommentService {
 
     @CacheEvict(value="postComments", key="#commentRequestDto.post_id")
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto commentRequestDto, UserDTO principal) {
+    public CommentResponseDTO createComment(CommentRequestDTO commentRequestDto, UserDTO principal) {
 
         Optional<Post> post = postRepository.findById(commentRequestDto.getPost_id());
 
@@ -48,11 +48,11 @@ public class CommentService {
         // 게시글에는 본인도 댓글을 달 수 있기 때문에, 다른 사람이 댓글 달때에만 알림을 전송 해야 한다.
         // 해당 부분은 추후에 추가
 
-        return CommentResponseDto.convertCommentToDto(comment);
+        return CommentResponseDTO.convertCommentToDto(comment);
     }
 
     @CacheEvict(value="postComments", key="#commentRequestDto.post_id")
-    public CommentResponseDto modifyComment(CommentRequestDto commentRequestDto,UserDTO principal) {
+    public CommentResponseDTO modifyComment(CommentRequestDTO commentRequestDto, UserDTO principal) {
 
         //댓글 조회 : RequestDto 에 있는 id 로 조회
         Comment comment = commentRepository.findById(commentRequestDto.getId()).orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
@@ -68,21 +68,21 @@ public class CommentService {
         //저장
         commentRepository.save(comment);
 
-        return CommentResponseDto.convertCommentToDto(comment);
+        return CommentResponseDTO.convertCommentToDto(comment);
     }
 
 
     @Cacheable(value = "postComments", key = "#postId")
-    public List<CommentResponseDto> findCommentListByPostId(Long postId) {
+    public List<CommentResponseDTO> findCommentListByPostId(Long postId) {
 
         List<Comment> commentLIst = commentRepository.findCommentByPostId(postId);
         // entity <-> dto
 
-        List<CommentResponseDto> commentResponseDtoList = commentLIst.stream()
-                .map(CommentResponseDto::convertCommentToDto)
+        List<CommentResponseDTO> commentResponseDTOList = commentLIst.stream()
+                .map(CommentResponseDTO::convertCommentToDto)
                 .collect(Collectors.toList());
 
-        return convertNestedStructure(commentResponseDtoList);
+        return convertNestedStructure(commentResponseDTOList);
     }
 
 
@@ -100,12 +100,12 @@ public class CommentService {
     }
 
 
-    private List<CommentResponseDto> convertNestedStructure(List<CommentResponseDto> commentResponseDtoList) {
+    private List<CommentResponseDTO> convertNestedStructure(List<CommentResponseDTO> commentResponseDTOList) {
 
-        List<CommentResponseDto> result = new ArrayList<>();
-        Map<Long, CommentResponseDto> map = new HashMap<>();
+        List<CommentResponseDTO> result = new ArrayList<>();
+        Map<Long, CommentResponseDTO> map = new HashMap<>();
 
-        commentResponseDtoList.forEach(comment -> {
+        commentResponseDTOList.forEach(comment -> {
 
             map.put(comment.getId(), comment);
 

@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CommentRequestDto {
+public class CommentRequestDTO {
 
 
     private Long id;
