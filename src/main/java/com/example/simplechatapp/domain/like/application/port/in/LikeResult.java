@@ -15,5 +15,7 @@ public class LikeResult {
     private final Long userId;
     private final Long postId;
     private final boolean isActive;
+    private final boolean isFirstActivation;
+    private final boolean isSelfLike;
 
 }
