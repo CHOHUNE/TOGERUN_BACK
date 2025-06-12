@@ -30,7 +30,6 @@ public class LikeService implements LikeUseCase {
         // 1. 사용자 ID 조회
         Long userId = userPort.findUserIdByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found" + userEmail));
         // 2. 게시글 존재 확인
-
         if (postPort.existById(postId)) {
             throw new IllegalArgumentException(postId + "post doesnt exist");
         }
