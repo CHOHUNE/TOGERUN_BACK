@@ -1,333 +1,333 @@
-name: Java CI/CD with Gradle
-
-# 워크플로우 트리거 설정
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
-# 기본 권한 설정
-permissions:
-  contents: read
-
-# 환경 변수 설정
-env:
-  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/spring
-  API_DOMAIN: api.togerun.shop
-  EMAIL: ${{ secrets.EMAIL }}
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      # 배포 시작 알림
-      - name: Notify Deploy Start
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
-            {
-              "attachments": [{
-                "color": "#36a64f",
-                "blocks": [
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "🚀 *배포가 시작되었습니다*\n\n*Branch:* ${{ github.ref }}\n*Trigger:* ${{ github.event_name }}\n*Commit Message:* ${{ github.event.head_commit.message }}"
-                    }
-                  }
-                ]
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-        if: success()
-
-      # Step 1: 소스 코드 체크아웃
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # Step 2: Java 개발 환경 설정
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      # Step 3: application.yml 파일 생성 및 검증
-      - name: Create and verify application.yml
-        run: |
-          mkdir -p ./src/main/resources
-          cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
-          echo "Created application.yml:"
-          cat application.yml
-
-      # Step 4: Gradle 설정
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
-
-      # Step 5: Gradle 실행 권한 부여
-      - name: Grant Execute Permission For Gradlew
-        run: chmod +x gradlew
-
-      # Step 6: Gradle 빌드 실행
-      - name: Build with Gradle
-        run: ./gradlew build --info
-
-      # Step : 배포 시간 기록
-      - name: Get Current Time
-        uses: 1466587594/get-current-time@v2
-        id: current-time
-        with:
-          format: YYYY-MM-DDTHH:mm:ss
-          utcOffset: "+09:00"
-
-      # Step 7: Gradle 빌드 결과 알림
-      - name: Notify Build Result
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
-            {
-              "attachments": [{
-                "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
-                "blocks": [
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "${{ job.status == 'success' && '✅ *빌드 성공*' || '❌ *빌드 실패*' }}\n\n*Image:* ${{ env.DOCKER_IMAGE }}:latest\n*Build Time:* ${{steps.current-time.outputs.formattedTime}}"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "*변경사항:*\n```${{ github.event.head_commit.message }}```"
-                    }
-                  }
-                ]
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-        if: always()
-
-      # Step 8: Docker 빌드 컨텍스트 생성
-      - name: Create build context
-        run: |
-          mkdir -p docker-build
-          EXEC_JAR=$(find build/libs/ -name "*.jar" -not -name "*plain.jar" -type f)
-          
-          if [ -z "$EXEC_JAR" ]; then
-            echo "Error: No executable JAR file found"
-            exit 1
-          fi
-          
-          echo "Found executable JAR: $EXEC_JAR"
-          cp "$EXEC_JAR" docker-build/app.jar
-          cp Dockerfile docker-build/
-
-      # Step 9: DockerHub 로그인
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # Step 10: Docker 이미지 빌드 및 푸시
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: docker-build
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/spring:latest
-
-      # Step 11: 배포 패키지 생성
-      - name: Create deployment package
-        run: |
-          mkdir -p deploy
-          mkdir -p deploy/nginx/conf.d
-          
-          # Docker 관련 파일 복사
-          cp -r docker-build/* deploy/
-          cp docker-compose.blue.yml deploy/
-          cp docker-compose.green.yml deploy/
-          
-          # 배포 스크립트 디렉토리 생성
-          mkdir -p deploy/scripts
-          mkdir -p deploy/nginx
-          
-          # nginx 설정 파일 복사
-          cp nginx.conf deploy/nginx/
-          cp blue.conf deploy/nginx/conf.d/
-          cp green.conf deploy/nginx/conf.d/
-          
-          # 필수 파일 존재 확인 및 복사
-          required_files=(
-            "scripts/common.sh"
-            "scripts/before_install.sh"
-            "scripts/start_application.sh"
-            "scripts/validate_service.sh"
-            "appspec.yml"
-          )
-          
-          for file in "${required_files[@]}"; do
-            if [ ! -f "$file" ]; then
-              echo "Error: Required file $file not found"
-              exit 1
-            fi
-          
-            if [[ $file == scripts/* ]]; then
-              cp "$file" deploy/scripts/
-            else
-              cp "$file" deploy/
-            fi
-          done
-          
-          echo "All required files copied successfully"
-
-          # 환경 변수 설정 스크립트 생성
-          cat << 'EOF' > deploy/scripts/set_environment.sh
-          #!/bin/bash
-          
-          # 앱 디렉토리 설정
-          APP_DIR="/home/ubuntu/app"
-          
-          # 로그 파일 설정
-          LOG_FILE="/home/ubuntu/app/logs/deployment.log"
-          
-          # 로깅 함수
-          log() {
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
-          }
-          
-          # 디렉토리 존재 확인 및 생성
-          log "Creating app directory if not exists..."
-          mkdir -p "$APP_DIR"
-          mkdir -p "$APP_DIR/nginx"
-          mkdir -p "$APP_DIR/logs"
-          
-          # 환경 변수 파일 생성
-          log "Creating environment file..."
-          cat > "$APP_DIR/.env" << ENVEOF
-          APP_DIR=/home/ubuntu/app
-          DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-          SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
-          ENVEOF
-          
-          # 파일 권한 및 소유권 설정
-          log "Setting file permissions..."
-          chown ubuntu:ubuntu "$APP_DIR/.env"
-          chmod 600 "$APP_DIR/.env"
-          chmod 755 "$APP_DIR/nginx"
-          chmod 644 "$APP_DIR/nginx/*.conf"
-          
-          # 환경 변수 파일 확인
-          echo "Verifying .env file creation:"
-          ls -l "$APP_DIR/.env"
-          
-          # 환경 변수 파일 내용 확인 (값 제외)
-          log "Environment file contents (without values):"
-          grep -v '^#' "$APP_DIR/.env" | cut -d'=' -f1
-          
-          # 환경 변수 파일 검증
-          if [ ! -f "$APP_DIR/.env" ]; then
-            log "Error: Failed to create .env file"
-            exit 1
-          fi
-          
-          log "Environment setup completed successfully"
-          exit 0
-          EOF
-          
-          # SSL 인증서 디렉토리 구조 생성
-          mkdir -p deploy/certbot/conf
-          mkdir -p deploy/certbot/www
-          mkdir -p deploy/ssl
-          
-          # 모든 스크립트에 실행 권한 부여
-          chmod +x deploy/scripts/*.sh
-          
-          # 파일 존재 여부 확인
-          echo "Verifying deployment files:"
-          ls -la deploy/
-          echo "Verifying scripts:"
-          ls -la deploy/scripts/
-          echo "Verifying nginx configs:"
-          ls -la deploy/nginx/
-          
-          # 배포 패키지 생성
-          cd deploy && zip -r ../deploy.zip .
-
-      # Step 12: AWS 자격 증명 설정
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # Step 13: S3에 배포 패키지 업로드
-      - name: Upload to S3
-        run: |
-          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/deploy.zip
-
-      # Step 14: CodeDeploy 배포 시작
-      - name: Start CodeDeploy Deployment
-        run: |
-          aws deploy create-deployment \
-            --application-name ${{ secrets.CODE_DEPLOY_APP_NAME }} \
-            --deployment-group-name ${{ secrets.CODE_DEPLOY_GROUP_NAME }} \
-            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=deploy.zip \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --file-exists-behavior OVERWRITE
-
-      # Step 15: 최종 배포 결과 알림
-      - name: Notify Deploy Result
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
-            {
-              "attachments": [{
-                "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
-                "blocks": [
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "${{ job.status == 'success' && '🎉 *배포 완료*' || '💥 *배포 실패*' }}\n\n*Application:* ${{ secrets.CODE_DEPLOY_APP_NAME }}\n*Environment:* Production\n*Deploy Time:* ${{steps.current-time.outputs.formattedTime}}"
-                    }
-                  },
-                  {
-                    "type": "context",
-                    "elements": [
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Triggered by:* ${{ github.actor }}"
-                      }
-                    ]
-                  }
-                ]
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-        if: always()
-
-
-
-      - name: Print Current Time
-        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
-        shell: bash
+#name: Java CI/CD with Gradle
+#
+## 워크플로우 트리거 설정
+#on:
+#  push:
+#    branches:
+#      - master
+#  pull_request:
+#    branches:
+#      - master
+#
+## 기본 권한 설정
+#permissions:
+#  contents: read
+#
+## 환경 변수 설정
+#env:
+#  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/spring
+#  API_DOMAIN: api.togerun.shop
+#  EMAIL: ${{ secrets.EMAIL }}
+#  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#
+#jobs:
+#  build-and-deploy:
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#
+#    steps:
+#      # 배포 시작 알림
+#      - name: Notify Deploy Start
+#        uses: 8398a7/action-slack@v3
+#        with:
+#          status: custom
+#          custom_payload: |
+#            {
+#              "attachments": [{
+#                "color": "#36a64f",
+#                "blocks": [
+#                  {
+#                    "type": "section",
+#                    "text": {
+#                      "type": "mrkdwn",
+#                      "text": "🚀 *배포가 시작되었습니다*\n\n*Branch:* ${{ github.ref }}\n*Trigger:* ${{ github.event_name }}\n*Commit Message:* ${{ github.event.head_commit.message }}"
+#                    }
+#                  }
+#                ]
+#              }]
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+#        if: success()
+#
+#      # Step 1: 소스 코드 체크아웃
+#      - name: Checkout Repository
+#        uses: actions/checkout@v4
+#
+#      # Step 2: Java 개발 환경 설정
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#
+#      # Step 3: application.yml 파일 생성 및 검증
+#      - name: Create and verify application.yml
+#        run: |
+#          mkdir -p ./src/main/resources
+#          cd ./src/main/resources
+#          echo "${{ secrets.APPLICATION_YML }}" | base64 -d > application.yml
+#          echo "Created application.yml:"
+#          cat application.yml
+#
+#      # Step 4: Gradle 설정
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+#
+#      # Step 5: Gradle 실행 권한 부여
+#      - name: Grant Execute Permission For Gradlew
+#        run: chmod +x gradlew
+#
+#      # Step 6: Gradle 빌드 실행
+#      - name: Build with Gradle
+#        run: ./gradlew build --info
+#
+#      # Step : 배포 시간 기록
+#      - name: Get Current Time
+#        uses: 1466587594/get-current-time@v2
+#        id: current-time
+#        with:
+#          format: YYYY-MM-DDTHH:mm:ss
+#          utcOffset: "+09:00"
+#
+#      # Step 7: Gradle 빌드 결과 알림
+#      - name: Notify Build Result
+#        uses: 8398a7/action-slack@v3
+#        with:
+#          status: custom
+#          custom_payload: |
+#            {
+#              "attachments": [{
+#                "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
+#                "blocks": [
+#                  {
+#                    "type": "section",
+#                    "text": {
+#                      "type": "mrkdwn",
+#                      "text": "${{ job.status == 'success' && '✅ *빌드 성공*' || '❌ *빌드 실패*' }}\n\n*Image:* ${{ env.DOCKER_IMAGE }}:latest\n*Build Time:* ${{steps.current-time.outputs.formattedTime}}"
+#                    }
+#                  },
+#                  {
+#                    "type": "section",
+#                    "text": {
+#                      "type": "mrkdwn",
+#                      "text": "*변경사항:*\n```${{ github.event.head_commit.message }}```"
+#                    }
+#                  }
+#                ]
+#              }]
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+#        if: always()
+#
+#      # Step 8: Docker 빌드 컨텍스트 생성
+#      - name: Create build context
+#        run: |
+#          mkdir -p docker-build
+#          EXEC_JAR=$(find build/libs/ -name "*.jar" -not -name "*plain.jar" -type f)
+#
+#          if [ -z "$EXEC_JAR" ]; then
+#            echo "Error: No executable JAR file found"
+#            exit 1
+#          fi
+#
+#          echo "Found executable JAR: $EXEC_JAR"
+#          cp "$EXEC_JAR" docker-build/app.jar
+#          cp Dockerfile docker-build/
+#
+#      # Step 9: DockerHub 로그인
+#      - name: Login to DockerHub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      # Step 10: Docker 이미지 빌드 및 푸시
+#      - name: Build and push Docker image
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: docker-build
+#          push: true
+#          tags: ${{ secrets.DOCKER_USERNAME }}/spring:latest
+#
+#      # Step 11: 배포 패키지 생성
+#      - name: Create deployment package
+#        run: |
+#          mkdir -p deploy
+#          mkdir -p deploy/nginx/conf.d
+#
+#          # Docker 관련 파일 복사
+#          cp -r docker-build/* deploy/
+#          cp docker-compose.blue.yml deploy/
+#          cp docker-compose.green.yml deploy/
+#
+#          # 배포 스크립트 디렉토리 생성
+#          mkdir -p deploy/scripts
+#          mkdir -p deploy/nginx
+#
+#          # nginx 설정 파일 복사
+#          cp nginx.conf deploy/nginx/
+#          cp blue.conf deploy/nginx/conf.d/
+#          cp green.conf deploy/nginx/conf.d/
+#
+#          # 필수 파일 존재 확인 및 복사
+#          required_files=(
+#            "scripts/common.sh"
+#            "scripts/before_install.sh"
+#            "scripts/start_application.sh"
+#            "scripts/validate_service.sh"
+#            "appspec.yml"
+#          )
+#
+#          for file in "${required_files[@]}"; do
+#            if [ ! -f "$file" ]; then
+#              echo "Error: Required file $file not found"
+#              exit 1
+#            fi
+#
+#            if [[ $file == scripts/* ]]; then
+#              cp "$file" deploy/scripts/
+#            else
+#              cp "$file" deploy/
+#            fi
+#          done
+#
+#          echo "All required files copied successfully"
+#
+#          # 환경 변수 설정 스크립트 생성
+#          cat << 'EOF' > deploy/scripts/set_environment.sh
+#          #!/bin/bash
+#
+#          # 앱 디렉토리 설정
+#          APP_DIR="/home/ubuntu/app"
+#
+#          # 로그 파일 설정
+#          LOG_FILE="/home/ubuntu/app/logs/deployment.log"
+#
+#          # 로깅 함수
+#          log() {
+#            echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a $LOG_FILE
+#          }
+#
+#          # 디렉토리 존재 확인 및 생성
+#          log "Creating app directory if not exists..."
+#          mkdir -p "$APP_DIR"
+#          mkdir -p "$APP_DIR/nginx"
+#          mkdir -p "$APP_DIR/logs"
+#
+#          # 환경 변수 파일 생성
+#          log "Creating environment file..."
+#          cat > "$APP_DIR/.env" << ENVEOF
+#          APP_DIR=/home/ubuntu/app
+#          DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+#          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+#          SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
+#          ENVEOF
+#
+#          # 파일 권한 및 소유권 설정
+#          log "Setting file permissions..."
+#          chown ubuntu:ubuntu "$APP_DIR/.env"
+#          chmod 600 "$APP_DIR/.env"
+#          chmod 755 "$APP_DIR/nginx"
+#          chmod 644 "$APP_DIR/nginx/*.conf"
+#
+#          # 환경 변수 파일 확인
+#          echo "Verifying .env file creation:"
+#          ls -l "$APP_DIR/.env"
+#
+#          # 환경 변수 파일 내용 확인 (값 제외)
+#          log "Environment file contents (without values):"
+#          grep -v '^#' "$APP_DIR/.env" | cut -d'=' -f1
+#
+#          # 환경 변수 파일 검증
+#          if [ ! -f "$APP_DIR/.env" ]; then
+#            log "Error: Failed to create .env file"
+#            exit 1
+#          fi
+#
+#          log "Environment setup completed successfully"
+#          exit 0
+#          EOF
+#
+#          # SSL 인증서 디렉토리 구조 생성
+#          mkdir -p deploy/certbot/conf
+#          mkdir -p deploy/certbot/www
+#          mkdir -p deploy/ssl
+#
+#          # 모든 스크립트에 실행 권한 부여
+#          chmod +x deploy/scripts/*.sh
+#
+#          # 파일 존재 여부 확인
+#          echo "Verifying deployment files:"
+#          ls -la deploy/
+#          echo "Verifying scripts:"
+#          ls -la deploy/scripts/
+#          echo "Verifying nginx configs:"
+#          ls -la deploy/nginx/
+#
+#          # 배포 패키지 생성
+#          cd deploy && zip -r ../deploy.zip .
+#
+#      # Step 12: AWS 자격 증명 설정
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
+#
+#      # Step 13: S3에 배포 패키지 업로드
+#      - name: Upload to S3
+#        run: |
+#          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/deploy.zip
+#
+#      # Step 14: CodeDeploy 배포 시작
+#      - name: Start CodeDeploy Deployment
+#        run: |
+#          aws deploy create-deployment \
+#            --application-name ${{ secrets.CODE_DEPLOY_APP_NAME }} \
+#            --deployment-group-name ${{ secrets.CODE_DEPLOY_GROUP_NAME }} \
+#            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=deploy.zip \
+#            --deployment-config-name CodeDeployDefault.AllAtOnce \
+#            --file-exists-behavior OVERWRITE
+#
+#      # Step 15: 최종 배포 결과 알림
+#      - name: Notify Deploy Result
+#        uses: 8398a7/action-slack@v3
+#        with:
+#          status: custom
+#          custom_payload: |
+#            {
+#              "attachments": [{
+#                "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
+#                "blocks": [
+#                  {
+#                    "type": "section",
+#                    "text": {
+#                      "type": "mrkdwn",
+#                      "text": "${{ job.status == 'success' && '🎉 *배포 완료*' || '💥 *배포 실패*' }}\n\n*Application:* ${{ secrets.CODE_DEPLOY_APP_NAME }}\n*Environment:* Production\n*Deploy Time:* ${{steps.current-time.outputs.formattedTime}}"
+#                    }
+#                  },
+#                  {
+#                    "type": "context",
+#                    "elements": [
+#                      {
+#                        "type": "mrkdwn",
+#                        "text": "*Triggered by:* ${{ github.actor }}"
+#                      }
+#                    ]
+#                  }
+#                ]
+#              }]
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+#        if: always()
+#
+#
+#
+#      - name: Print Current Time
+#        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}"
+#        shell: bash
